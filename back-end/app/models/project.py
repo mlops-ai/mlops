@@ -3,12 +3,14 @@ from pydantic import Field
 from typing import Optional, List
 from datetime import datetime
 
+from app.models.experiment import Experiment
+
 
 class Project(Document):
     title: str = Field(..., description="Project title", min_length=1, max_length=40)
     # description?
     created_at: Optional[datetime] = Field(default_factory=datetime.now)
-    experiments: Optional[List[str]] = []  # TODO: List[Experiment]
+    experiments: List[Experiment] = []  # TODO: List[Experiment]
 
     def __repr__(self) -> str:
         return f"<Project {self.title}>"

@@ -16,7 +16,7 @@ async def init_mongo_db():
     await init_beanie(
         database=db_client[db_name],
         document_models=[
-            Project,
+            Project
         ]
     )
 
