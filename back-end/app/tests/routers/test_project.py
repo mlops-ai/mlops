@@ -59,9 +59,25 @@ async def test_change_project_title(client: AsyncClient):
     new_title = "New title"
     response = await client.get(f"/projects/title/{project_title}")
     project_id = response.json()["_id"]
-    response = await client.put(f"/projects/{project_id}?title={new_title}")
+    response = await client.put(f"/projects/{project_id}", json={"title": new_title})
     assert response.status_code == 200
     assert response.json()["title"] == new_title
+
+
+@pytest.mark.asyncio
+async def test_change_project_status(client: AsyncClient):
+    project_title = "New title"
+    new_status = "wrong status"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+    response = await client.put(f"/projects/{project_id}", json={"status": new_status})
+    assert response.status_code == 400
+
+    new_status = "completed"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+    response = await client.put(f"/projects/{project_id}", json={"status": new_status})
+    assert response.status_code == 200
 
 
 @pytest.mark.asyncio

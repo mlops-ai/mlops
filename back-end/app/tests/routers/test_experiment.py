@@ -8,6 +8,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 @pytest.mark.asyncio
 async def test_empty_get_experiments(client: AsyncClient):
     """
@@ -26,6 +27,7 @@ async def test_empty_get_experiments(client: AsyncClient):
 
     assert response.status_code == 200
     assert(len(response.json()) == 0)
+
 
 @pytest.mark.asyncio
 async def test_add_experiment(client: AsyncClient):
@@ -46,6 +48,7 @@ async def test_add_experiment(client: AsyncClient):
     response = await client.post(f"/projects/{project_id}/experiments/", json=experiment)
     assert response.status_code == 201
     assert response.json()['name'] == experiment['name']
+
 
 @pytest.mark.asyncio
 async def test_get_experiments(client: AsyncClient):
@@ -114,6 +117,26 @@ async def test_change_experiment_name(client: AsyncClient):
 
     assert response.status_code == 200
     assert response.json()['name'] == new_name
+
+
+@pytest.mark.asyncio
+async def test_get_experiment_by_name(client: AsyncClient):
+    """
+    Test get experiment by name
+    """
+    project_title = "Test project 2"
+
+    # Find the project ID for the project with the given title
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment 1"
+
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    print(response.json())
+    assert response.status_code == 200
+    assert response.json()['name'] == experiment_name
+
 
 @pytest.mark.asyncio
 async def test_delete_experiment(client: AsyncClient):

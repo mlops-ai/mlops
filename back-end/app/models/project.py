@@ -1,16 +1,29 @@
 from beanie import Document
-from pydantic import Field
+from pydantic import Field, validator
 from typing import Optional, List
 from datetime import datetime
+from fastapi import HTTPException, status
 
 from app.models.experiment import Experiment
 
 
 class Project(Document):
-    title: str = Field(..., description="Project title", min_length=1, max_length=40)
-    # description?
-    created_at: Optional[datetime] = Field(default_factory=datetime.now)
-    experiments: List[Experiment] = []  # TODO: List[Experiment]
+    title: str = Field(description="Project title", min_length=1, max_length=40)
+    description: Optional[str] = Field(default=None, description="Project description", max_length=150)
+    status: str = Field(default='not_started', description="Project status")
+    archived: bool = Field(default=False, description="Project status")
+    created_at: datetime = Field(default_factory=datetime.now)
+    experiments: List[Experiment] = []
+
+    @validator('status')
+    def validate_status(cls, v):
+        valid_statuses = ['not_started', 'in_progress', 'completed']
+        if v not in valid_statuses:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Status must be one of {valid_statuses}"
+            )
+        return v
 
     def __repr__(self) -> str:
         return f"<Project {self.title}>"
@@ -34,5 +47,22 @@ class Project(Document):
             "example": {
                 "title": "Titanic",
                 "created_at": datetime.now()
+            }
+        }
+
+
+class UpdateProject(Project):
+    title: Optional[str]
+    description: Optional[str]
+    status: Optional[str]
+    archived: Optional[bool]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "Titanic",
+                "description": "Titanic dataset",
+                "status": "not_started",
+                "archived": False
             }
         }
