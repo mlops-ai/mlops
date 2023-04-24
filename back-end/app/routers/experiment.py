@@ -39,6 +39,19 @@ async def get_experiment(project_id: PydanticObjectId, id: PydanticObjectId) -> 
     return experiment
 
 
+@experiment_router.get("/name/{name}", response_model=Experiment, status_code=status.HTTP_200_OK)
+async def get_experiment_by_name(project_id: PydanticObjectId, name: str) -> Experiment:
+    project = await Project.get(project_id)
+    if not project:
+        raise project_not_found_exception()
+
+    experiment = next((exp for exp in project.experiments if exp.name == name), None)
+    if not experiment:
+        raise experiment_not_found_exception()
+
+    return experiment
+
+
 @experiment_router.post("/", response_model=Experiment, status_code=status.HTTP_201_CREATED)
 async def add_experiment(project_id: PydanticObjectId, experiment: Experiment) -> Experiment:
     project = await Project.get(project_id)
