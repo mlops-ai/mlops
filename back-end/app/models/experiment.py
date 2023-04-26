@@ -7,7 +7,10 @@ from beanie import PydanticObjectId
 class Experiment(BaseModel):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     name: str = Field(..., description="Experiment title", min_length=1, max_length=40)
+    description: Optional[str] = Field(default=None, description="Experiment description", max_length=150)
     created_at: Optional[datetime] = Field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
+
     # iterations: Optional[List[str]] = []  # TODO: List[Iteration]
 
     def __repr__(self) -> str:
@@ -31,6 +34,21 @@ class Experiment(BaseModel):
         schema_extra = {
             "example": {
                 "name": "Is the passenger survived?",
+                "description": "Predicting if the passenger survived the Titanic disaster.",
                 "created_at": datetime.now()
+            }
+        }
+
+
+class UpdateExperiment(Experiment):
+    name: Optional[str]
+    description: Optional[str]
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "Is the passenger survived?",
+                "description": "Predicting if the passenger survived the Titanic disaster."
             }
         }

@@ -113,10 +113,34 @@ async def test_change_experiment_name(client: AsyncClient):
     experiment_id = response.json()["id"]
 
     new_name = "new_name experiment"
-    response = await client.put(f"/projects/{project_id}/experiments/{experiment_id}?name={new_name}")
+    response = await client.put(f"/projects/{project_id}/experiments/{experiment_id}", json={"name": new_name})
 
     assert response.status_code == 200
     assert response.json()['name'] == new_name
+
+@pytest.mark.asyncio
+async def test_change_experiment_description(client: AsyncClient):
+    """
+    Test change experiment description
+    """
+    project_title = "Test project 2"
+
+    # Find the project ID for the project with the given title
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment = {
+        "name": "Test experiment 4"
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/", json=experiment)
+    experiment_id = response.json()["id"]
+
+    description = "I have changed the description"
+    response = await client.put(f"/projects/{project_id}/experiments/{experiment_id}", json={"description": description})
+
+    assert response.status_code == 200
+    assert response.json()['description'] == description
 
 
 @pytest.mark.asyncio

@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List
 
-from app.models.experiment import Experiment
+from app.models.experiment import Experiment, UpdateExperiment
 from app.models.project import Project
 from app.routers.exceptions.experiment import experiment_name_not_unique_exception, experiment_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
@@ -21,7 +23,7 @@ async def get_experiments(project_id: PydanticObjectId) -> List[Experiment]:
 
     experiments = project.experiments
 
-    #experiments = await Experiment.find_all().to_list()
+    # experiments = await Experiment.find_all().to_list()
 
     return experiments
 
@@ -69,7 +71,8 @@ async def add_experiment(project_id: PydanticObjectId, experiment: Experiment) -
 
 
 @experiment_router.put("/{id}", response_model=Experiment, status_code=status.HTTP_200_OK)
-async def change_experiment_name(project_id: PydanticObjectId, id: PydanticObjectId, name: str) -> Experiment:
+async def update_experiment(project_id: PydanticObjectId, id: PydanticObjectId,
+                            updated_experiment: UpdateExperiment) -> Experiment:
     project = await Project.get(project_id)
     if not project:
         raise project_not_found_exception()
@@ -78,11 +81,14 @@ async def change_experiment_name(project_id: PydanticObjectId, id: PydanticObjec
     if not experiment:
         raise experiment_not_found_exception()
 
-    name_unique = await is_name_unique(project.experiments, name)
+    name_unique = await is_name_unique(project.experiments, updated_experiment.name)
     if not name_unique:
         raise experiment_name_not_unique_exception()
 
-    experiment.name = name
+    experiment.name = updated_experiment.name or experiment.name
+    experiment.description = updated_experiment.description or experiment.description
+    experiment.updated_at = datetime.now()
+
     await project.save()
 
     return experiment
