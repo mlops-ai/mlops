@@ -1,4 +1,4 @@
-from beanie import Document
+from beanie import Document, before_event, Replace, Insert
 from pydantic import Field, validator
 from typing import Optional, List
 from datetime import datetime
@@ -13,6 +13,7 @@ class Project(Document):
     status: str = Field(default='not_started', description="Project status")
     archived: bool = Field(default=False, description="Project status")
     created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
     experiments: List[Experiment] = []
 
     @validator('status')
@@ -39,6 +40,10 @@ class Project(Document):
             return self.id == other.id
         return False
 
+    @before_event([Insert, Replace])
+    def update_updated_at(self):
+        self.updated_at = datetime.now()
+
     class Settings:
         name = "project"
 
@@ -56,6 +61,7 @@ class UpdateProject(Project):
     description: Optional[str]
     status: Optional[str]
     archived: Optional[bool]
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     class Config:
         schema_extra = {
