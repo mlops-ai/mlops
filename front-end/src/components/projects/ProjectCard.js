@@ -70,14 +70,14 @@ function ProjectCard(props) {
                                                     props.setCurrentProject({
                                                         _id: props.projectId,
                                                         title: props.projectName,
-                                                        description: props.projectDescription,
+                                                        description: props.projectDescription || "",
                                                         status: props.projectStatus,
                                                         archived: props.projectIsArchived
                                                     })
                                                     props.setCurrentProjectEditable({
                                                         _id: props.projectId,
                                                         title: props.projectName,
-                                                        description: props.projectDescription,
+                                                        description: props.projectDescription || "",
                                                         status: props.projectStatus,
                                                         archived: props.projectIsArchived
                                                     })
@@ -98,7 +98,7 @@ function ProjectCard(props) {
                                                 () => props.setCurrentProject({
                                                     _id: props.projectId,
                                                     title: props.projectName,
-                                                    description: props.projectDescription,
+                                                    description: props.projectDescription || "",
                                                     status: props.projectStatus,
                                                     archived: props.projectIsArchived}
                                                 )}
@@ -118,7 +118,7 @@ function ProjectCard(props) {
                                                 () => props.setCurrentProject({
                                                     _id: props.projectId,
                                                     title: props.projectName,
-                                                    description: props.projectDescription,
+                                                    description: props.projectDescription || "",
                                                     status: props.projectStatus,
                                                     archived: props.projectIsArchived}
                                                 )}
@@ -153,7 +153,7 @@ function ProjectCard(props) {
                                                     props.setCurrentProject({
                                                         _id: props.projectId,
                                                         title: props.projectName,
-                                                        description: props.projectDescription,
+                                                        description: props.projectDescription || "",
                                                         status: props.projectStatus,
                                                         archived: props.projectIsArchived
                                                     })
@@ -174,7 +174,7 @@ function ProjectCard(props) {
                                                 () => props.setCurrentProject({
                                                     _id: props.projectId,
                                                     title: props.projectName,
-                                                    description: props.projectDescription,
+                                                    description: props.projectDescription || "",
                                                     status: props.projectStatus,
                                                     archived: props.projectIsArchived}
                                                 )}
