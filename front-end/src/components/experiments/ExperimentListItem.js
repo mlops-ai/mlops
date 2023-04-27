@@ -34,7 +34,8 @@ function ExperimentListItem(props) {
                           onClick={
                               () => props.setCurrentExperiment({
                                   id: props.experimentID,
-                                  name: props.experimentName}
+                                  name: props.experimentName,
+                                  description: props.experimentDescription || ""}
                               )}
                           data-bs-target="#delete-experiment">
                         delete
