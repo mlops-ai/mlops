@@ -49,7 +49,9 @@ def create_experiment(experiment_name: str, project_id: str, experiment_descript
         "description": experiment_description,
         "created_at": str(datetime.now)
     }
+    
+    request_path = url + "/projects/"+ project_id + "/experiments/"
 
-    response = requests.post(url + "/projects/"+ project_id + "/experiments/", json=data)
+    response = requests.post(request_path, json=data)
 
 
