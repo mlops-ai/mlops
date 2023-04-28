@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime
 
-url = "http://localhost:8000"
+url = "http://127.0.0.1:8000"
 
 
 def get_project(project_id: str) -> dict:
@@ -17,17 +17,17 @@ def get_project(project_id: str) -> dict:
     '''
     app_response = requests.get(f"{url}/projects/{project_id}")
 
-    response_json = app_response.json()
-
-    detail = response_json['detail']
 
     if app_response.status_code == 200:
         project = app_response.json()
         return project
-    else: 
+    else:
+        response_json = app_response.json()
+        detail = response_json['detail']
         raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
 
-def create_project(project_title: str) -> bool:
+
+def create_project(project_title: str):
 
     '''
     Function for getting projects from mlops server
@@ -47,12 +47,12 @@ def create_project(project_title: str) -> bool:
     }
 
     app_response = requests.post(f"{url}/projects/", json=data)
-    
+
     response_json = app_response.json()
 
     if app_response.status_code == 201:
-        return True
-    else: 
+        return response_json
+    else:
         detail = response_json['detail']
         raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
 
@@ -113,7 +113,7 @@ def create_experiment(experiment_name: str, project_id: str, experiment_descript
     response_json = app_response.json()
 
     if app_response.status_code == 201:
-        return True
+        return response_json
     else:
         detail = response_json['detail']
         raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
