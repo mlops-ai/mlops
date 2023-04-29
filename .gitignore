@@ -1,0 +1,9 @@
+# TODO, some initial yet:
+__pycache__/
+.idea/
+
+# Front-end
+front-end/node_modules
+front-end/coverage
+front-end/build
+front-end/package-lock.json

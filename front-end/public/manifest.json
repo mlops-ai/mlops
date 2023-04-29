@@ -1,0 +1,16 @@
+{
+  "short_name": "MLOps",
+  "name": "MLOps - Tracking Experiments and Model Deployment",
+  "description": "Machine learning flow platform for tracking experiment and deploy models.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "374x433",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#f3f6fd",
+  "background_color": "#f3f6fd"
+}
