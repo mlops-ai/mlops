@@ -1,53 +1,49 @@
 import requests
-from datetime import datetime
-
-url = "http://127.0.0.1:8000"
+from config.config import settings
 
 
-def get_project(project_id: str) -> dict:
-
-    '''
+def get_project(project_id: str = settings.active_project) -> dict:
+    """
     Function for getting projects from mlops server
 
     Args:
         project_id: Id od the desired project, that will be retrieved from mlops app
 
     Returns:
-        project: Mlops project json
-    '''
-    app_response = requests.get(f"{url}/projects/{project_id}")
-
+        project: json data of the project
+    """
+    app_response = requests.get(f"{settings.url}/projects/{project_id}")
+    response_json = app_response.json()
 
     if app_response.status_code == 200:
-        project = app_response.json()
-        return project
+        return response_json
     else:
-        response_json = app_response.json()
         detail = response_json['detail']
         raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
 
 
-def create_project(project_title: str):
-
-    '''
+def create_project(title: str, description: str = None,
+                   status: str = 'not_started', archived: bool = False) -> dict:
+    """
     Function for getting projects from mlops server
 
     Args:
-        project_title: Id of theproject, that will be retrieved from mlops app
+        title: Title of the created project
+        description: Description of the created project (optional)
+        status: Status of the created project (optional)
+        archived: Archived status of the created project (optional)
 
     Returns:
-        True: project was created succesfully
-        False: there was an error creating the object
-    '''
-    created_at = datetime.now()
-
+        project: json data of the created project
+    """
     data = {
-        "title": project_title,
-        "created_at": created_at.strftime('%Y-%m-%d %H:%M:%S')
+        "title": title,
+        "description": description,
+        "status": status,
+        "archived": archived
     }
 
-    app_response = requests.post(f"{url}/projects/", json=data)
-
+    app_response = requests.post(f"{settings.url}/projects/", json=data)
     response_json = app_response.json()
 
     if app_response.status_code == 201:
@@ -57,22 +53,36 @@ def create_project(project_title: str):
         raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
 
 
-def get_experiment(project_id: str, experiment_id: str) -> dict:
+def set_active_project(project_id: str) -> dict:
+    """
+    Function for setting active project
 
-    '''
+    Args:
+        project_id: Id of the project, that will be set as active
+
+    Returns:
+        project: json data of the active project
+    """
+    try:
+        project = get_project(project_id)
+        settings.change_active_project(project_id)
+        return project
+    except Exception as e:
+        raise Exception(f"Failed to set active project: {e}")
+
+
+def get_experiment(experiment_id: str, project_id: str = settings.active_project) -> dict:
+    """
     Function for getting projects from mlops server
 
     Args:
-        project_id: Id of the project, that the experiment is the part of
-
-        experiment_id: Id of the experiment, that will be retrived from mlops app
+        experiment_id: Id of the experiment, that will be retrieved from mlops app
+        project_id: Id of the project, that the experiment comes from (optional)
 
     Returns:
-        experiment: Mlops experiment json data
-    '''
-    
-    app_response = requests.get(f"{url}/projects/{project_id}/experiments/{experiment_id}")
-    
+        experiment: json data of the experiment
+    """
+    app_response = requests.get(f"{settings.url}/projects/{project_id}/experiments/{experiment_id}")
     response_json = app_response.json()
 
     if app_response.status_code == 200:
@@ -82,34 +92,26 @@ def get_experiment(project_id: str, experiment_id: str) -> dict:
         detail = response_json['detail']
         raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
 
-def create_experiment(experiment_name: str, project_id: str, experiment_description: str) -> bool:
-    
-    '''
+
+def create_experiment(name: str, description: str = None,
+                      project_id: str = settings.active_project) -> dict:
+    """
     Function for creating mlops app experiments
 
     Args:
-        experiment_name: Name of the created experiment
-    
-        project_id: Id od the desired project, that will be retrieved from mlops app
-
-        experiment_description: Description of the created experiment
+        name: Name of the created experiment
+        description: Description of the created experiment (optional)
+        project_id: Id of the project, that the experiment comes from (optional)
 
     Returns:
-        True: experiment was created successfully 
-
-        False: experiment wasn't created due to an error
-    '''
-
-    created_at = datetime.now()
-
+        experiment: json data of the created experiment
+    """
     data = {
-        "name": experiment_name,
-        "description": experiment_description,
-        "created_at": created_at.strftime('%Y-%m-%d %H:%M:%S')
+        "name": name,
+        "description": description,
     }
 
-    app_response = requests.post(f"{url}/projects/{project_id}/experiments/", json=data)
-    
+    app_response = requests.post(f"{settings.url}/projects/{project_id}/experiments/", json=data)
     response_json = app_response.json()
 
     if app_response.status_code == 201:
