@@ -39,6 +39,9 @@
     --color-danger: #dc3545;
     --color-dark: #212529;
 }
+main#content {
+    min-height: 80vh !important;
+}
 
 body {
     font-family: var(--font-lato);
@@ -705,7 +708,6 @@ a:hover {
 /* ZESPOŁY */
 
 .add-button {
-    height: 32px;
     background-color: #3b7ddd;
     padding: 4px 12px 4px 6px;
     margin-right: 12px;
