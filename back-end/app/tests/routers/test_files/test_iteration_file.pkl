@@ -1,0 +1,31 @@
+There is simple example of ML code to predict the price of a house based on its size.
+The code is written in Python and uses the scikit-learn library. There is code:
+```
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Training data
+# Format: [size of house in square feet, price of house]
+train_data = np.array([[2104, 400],
+                       [1600, 330],
+                       [2400, 369],
+                       [1416, 232],
+                       [3000, 540]])
+
+# Create linear regression object
+regr = LinearRegression()
+
+# Train the model using the training sets
+regr.fit(train_data[:,0].reshape(-1, 1), train_data[:,1].reshape(-1, 1))
+
+# Test data
+test_data = np.array([[1000, 200],
+                      [1500, 300],
+                      [2000, 400]])
+
+# Make predictions using the testing set
+predictions = regr.predict(test_data[:,0].reshape(-1, 1))
+
+# Print predictions
+print(predictions)
+```

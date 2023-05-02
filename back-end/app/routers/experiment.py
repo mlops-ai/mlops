@@ -23,8 +23,6 @@ async def get_experiments(project_id: PydanticObjectId) -> List[Experiment]:
 
     experiments = project.experiments
 
-    # experiments = await Experiment.find_all().to_list()
-
     return experiments
 
 
@@ -103,10 +101,6 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId):
     experiment = next((exp for exp in project.experiments if exp.id == id), None)
     if not experiment:
         raise experiment_not_found_exception()
-
-    # let's not allow deleting if experiment has remaining iterations # TODO: List[Iteration] field in Experiment model
-    # if experiment.iterations:
-    #    raise experiment_has_remaining_iterations_exception()
 
     project.experiments.remove(experiment)
     await project.save()
