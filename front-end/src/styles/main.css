@@ -731,7 +731,7 @@ a:hover {
     border: 1.5px solid var(--color-primary);
 }
 
-.section.projects .modal :is(input, textarea, select){
+.section .modal :is(input, textarea, select){
     border: 1.5px solid rgba(1, 41, 112, 0.2);
     transition: 0.3s;
 }
@@ -740,7 +740,7 @@ a:hover {
     cursor: pointer;
 }
 
-.section.projects .modal :is(input:hover, input:focus, textarea:hover, textarea:focus, select:hover, select:focus) {
+.section .modal :is(input:hover, input:focus, textarea:hover, textarea:focus, select:hover, select:focus) {
     border: 1.5px solid var(--color-primary);
 }
 
@@ -856,4 +856,5 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus{
 
 .ag-theme-alpine .ag-root-wrapper {
     border-radius: 3px;
+    font-size: 13px !important;
 }

@@ -1,17 +1,16 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 
 import Masonry from "react-masonry-css";
 
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
-import BounceLoader from "react-spinners/BounceLoader";
 
 import ProjectCard from "../components/projects/ProjectCard";
-import {CSSProperties} from "react";
 import LoadingData from "../components/LoadingData";
 
 function Projects(props) {
+    console.log("PROJEKTY")
 
     // Referencje do zamykania modali
     const closeModalRef = useRef();

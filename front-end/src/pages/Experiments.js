@@ -1,14 +1,14 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {useParams, useNavigate} from "react-router-dom";
 import ExperimentListItem from "../components/experiments/ExperimentListItem";
 import Models from "../components/Models";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import moment from "moment/moment";
 import LoadingData from "../components/LoadingData";
-import BounceLoader from "react-spinners/BounceLoader";
 
 function Experiments(props) {
+
+    console.log("EKSPERYMENTY")
 
     // Referencje do zamykania modali
     const closeModalRef = useRef();
@@ -90,6 +90,7 @@ function Experiments(props) {
 
     // REST API do BACK-ENDU
     useEffect(() => {
+
         fetch('http://localhost:8000/projects/' + project_id)
             .then(response => {
                 if (response.ok) {
@@ -108,40 +109,28 @@ function Experiments(props) {
                 }
 
                 if (filtered_ids && filtered_ids.length !== 0) {
-                    data.experiments = data.experiments.map((experiments, index) => {
-                        if (filtered_ids.includes(experiments.id)) {
+                    data.experiments = data.experiments.map((experiment, index) => {
+                        if (filtered_ids.includes(experiment.id)) {
                             return {
-                                id: experiments.id,
-                                name: experiments.name,
-                                description: experiments.description,
-                                created_at: experiments.created_at,
+                                ...experiment,
                                 checked: true
                             }
                         }
                         return {
-                            id: experiments.id,
-                            name: experiments.name,
-                            description: experiments.description,
-                            created_at: experiments.created_at,
+                            ...experiment,
                             checked: false
                         }
                     });
                 } else {
-                    data.experiments = data.experiments.map((experiments, index) => {
+                    data.experiments = data.experiments.map((experiment, index) => {
                         if (index === 0) {
                             return {
-                                id: experiments.id,
-                                name: experiments.name,
-                                description: experiments.description,
-                                created_at: experiments.created_at,
+                                ...experiment,
                                 checked: true
                             }
                         }
                         return {
-                            id: experiments.id,
-                            name: experiments.name,
-                            description: experiments.description,
-                            created_at: experiments.created_at,
+                            ...experiment,
                             checked: false
                         }
                     });
@@ -227,7 +216,6 @@ function Experiments(props) {
                 }
                 return Promise.reject(response);
             }).then((json) => {
-                console.log(json)
             toast.success('Experiment created successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -326,7 +314,6 @@ function Experiments(props) {
         };
         fetch('http://localhost:8000/projects/' + projectData._id + '/experiments/' + currentExperimentData.id, requestOptions)
             .then((response) => {
-                console.log(response.ok)
                 if (response.ok) {
                     return response
                 }
@@ -362,32 +349,88 @@ function Experiments(props) {
         });
     }
 
-    let experiments;
-    let experiments_filtered;
-    let active_experiments;
+    // let experiments;
+    // let experiments_filtered;
+    // let active_experiments;
+    //
+    // if (projectData) {
+    //     experiments_filtered = projectData.experiments.filter((experiment) => experiment.name.toLowerCase().includes(searchData.searchExperiments.toLowerCase().trim()))
+    //
+    //     active_experiments = projectData.experiments.filter((experiment) => experiment.checked);
+    //
+    //     experiments = experiments_filtered.map((experiment) => {
+    //         return <ExperimentListItem
+    //             key={experiment.id}
+    //             experimentID={experiment.id}
+    //             experimentName={experiment.name}
+    //             experimentDescription={experiment.description}
+    //             experimentActive={experiment.checked}
+    //             handleChange={handleCheckbox}
+    //             handleChangeSingle={handleCheckboxSingle}
+    //             setCurrentExperiment={setCurrentExperimentData}
+    //             setCurrentExperimentEditable={setCurrentExperimentDataEditable}
+    //         />
+    //     });
+    // }
 
-    if (projectData) {
-        active_experiments = projectData.experiments.filter((experiment) => experiment.checked)
+    const experiments = useMemo(() => {
+        let experiments;
+        let experiments_filtered;
 
-        experiments_filtered = projectData.experiments.filter((experiment) => experiment.name.toLowerCase().includes(searchData.searchExperiments.toLowerCase().trim()))
+        if (projectData) {
+            experiments_filtered = projectData.experiments.filter((experiment) => experiment.name.toLowerCase().includes(searchData.searchExperiments.toLowerCase().trim()))
 
-        experiments = experiments_filtered.map((experiment) => {
-            return <ExperimentListItem
-                key={experiment.id}
-                experimentID={experiment.id}
-                experimentName={experiment.name}
-                experimentDescription={experiment.description}
-                experimentActive={experiment.checked}
-                handleChange={handleCheckbox}
-                handleChangeSingle={handleCheckboxSingle}
-                setCurrentExperiment={setCurrentExperimentData}
-                setCurrentExperimentEditable={setCurrentExperimentDataEditable}
+            experiments = experiments_filtered.map((experiment) => {
+                return <ExperimentListItem
+                    key={experiment.id}
+                    experimentID={experiment.id}
+                    experimentName={experiment.name}
+                    experimentDescription={experiment.description}
+                    experimentActive={experiment.checked}
+                    handleChange={handleCheckbox}
+                    handleChangeSingle={handleCheckboxSingle}
+                    setCurrentExperiment={setCurrentExperimentData}
+                    setCurrentExperimentEditable={setCurrentExperimentDataEditable}
+                />
+            });
+            return experiments
+        }
+        return null
+    }, [projectData, searchData, refresh])
+
+    const active_experiments = useMemo(() => {
+        if (projectData) {
+            return projectData.experiments.filter((experiment) => experiment.checked)
+        }
+        return
+    }, [projectData, refresh]);
+
+    const models = useMemo(() => {
+        return (
+            <Models
+                gridData={active_experiments}
+                projectID={project_id}
+                refresher={setRefresh}
             />
-        });
-
-    }
+        );
+    }, [active_experiments, refresh])
 
     if (projectData) {
+        let rowData = active_experiments.map(experiment => {
+            return {
+                ...experiment,
+                iterations: experiment.iterations.map(iteration => {
+                    return {
+                        ...iteration,
+                        experiment_name: experiment.name,
+                        experiment_id: experiment.id
+                    }
+                })
+            }
+        })
+        rowData = rowData.map(experiment => experiment.iterations)
+        rowData = rowData.flat()
+        console.log(rowData)
         return (
             <main id="content">
 
@@ -483,15 +526,27 @@ function Experiments(props) {
                                         <p style={{fontSize: 13 + "px"}} className="pe-3">Experiment ID: {active_experiments[0].id}</p>
                                         <p style={{fontSize: 13 + "px"}} className="pe-3">Creation Date: {moment(new Date(active_experiments[0].created_at)).format("DD-MM-YYYY, HH:mm:ss")}</p>
                                     </div>
-                                    <Models />
+                                    {/*{models}*/}
+                                    <Models
+                                        gridData={active_experiments}
+                                        projectID={project_id}
+                                        refresher={setRefresh}
+                                    />
                                 </>
                             }
 
                             { projectData.experiments.length !== 0 && active_experiments && active_experiments.length > 1 &&
                                 <>
-                                    <h5>Displaying runs from {active_experiments.length} experiments</h5>
-                                    <Models />
+                                    <h5><span className="fw-semibold">Displaying runs from {active_experiments.length} experiments</span></h5>
+                                    <p><span className="fst-italic">{active_experiments.map(experiment => experiment.name).join(', ')}</span></p>
+                                    {/*{models}*/}
+                                    <Models
+                                        gridData={active_experiments}
+                                        projectID={project_id}
+                                        refresher={setRefresh}
+                                    />
                                 </>
+
                             }
 
                             { projectData.experiments.length === 0 &&
@@ -714,6 +769,6 @@ function Experiments(props) {
             </main>
         );
     }
-};
+}
 
 export default Experiments;
