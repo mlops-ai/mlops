@@ -1,6 +1,9 @@
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
 import {Helmet} from "react-helmet";
 
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primereact/resources/primereact.css';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/main.css';
 

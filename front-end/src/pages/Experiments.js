@@ -416,21 +416,21 @@ function Experiments(props) {
     }, [active_experiments, refresh])
 
     if (projectData) {
-        let rowData = active_experiments.map(experiment => {
-            return {
-                ...experiment,
-                iterations: experiment.iterations.map(iteration => {
-                    return {
-                        ...iteration,
-                        experiment_name: experiment.name,
-                        experiment_id: experiment.id
-                    }
-                })
-            }
-        })
-        rowData = rowData.map(experiment => experiment.iterations)
-        rowData = rowData.flat()
-        console.log(rowData)
+        // let rowData = active_experiments.map(experiment => {
+        //     return {
+        //         ...experiment,
+        //         iterations: experiment.iterations.map(iteration => {
+        //             return {
+        //                 ...iteration,
+        //                 experiment_name: experiment.name,
+        //                 experiment_id: experiment.id
+        //             }
+        //         })
+        //     }
+        // })
+        // rowData = rowData.map(experiment => experiment.iterations)
+        // rowData = rowData.flat()
+        // console.log(rowData)
         return (
             <main id="content">
 
@@ -458,7 +458,7 @@ function Experiments(props) {
 
                         {experimentList ?
 
-                            <div id="exp" className="col-xl-3 col-lg-3 mb-3">
+                            <div id="exp" className="col-xl-3 col-lg-3 col-md-12 mb-3">
                                 <h5 className="d-flex align-items-center justify-content-between">
                                     Experiments
                                     <div className="d-flex align-items-center">
@@ -506,10 +506,10 @@ function Experiments(props) {
 
                             :
 
-                            <div className="col-xl-1 col-lg-1 w-auto m-0">
-                            <span className="material-symbols-rounded icon-border" title="Show experiments" onClick={handleHideExperiments}>
-                                chevron_right
-                            </span>
+                            <div className="col-xl-1 col-lg-1 m-0">
+                                <span className="material-symbols-rounded icon-border ms-0" title="Show experiments" onClick={handleHideExperiments}>
+                                    chevron_right
+                                </span>
                             </div>
                         }
 
@@ -517,7 +517,7 @@ function Experiments(props) {
                             MODELE - ITERACJE
                         */}
 
-                        <div className="col-xl col-lg">
+                        <div className={experimentList ? "col-xl-9 col-lg-9 col-md-12" : "col-xl-12 col-lg-12 col-md-12"}>
                             {projectData.experiments.length !== 0 && active_experiments && active_experiments.length === 1 &&
                                 <>
                                     <h5><span className="fw-semibold">{active_experiments[0].name}</span></h5>
@@ -526,12 +526,6 @@ function Experiments(props) {
                                         <p style={{fontSize: 13 + "px"}} className="pe-3">Experiment ID: {active_experiments[0].id}</p>
                                         <p style={{fontSize: 13 + "px"}} className="pe-3">Creation Date: {moment(new Date(active_experiments[0].created_at)).format("DD-MM-YYYY, HH:mm:ss")}</p>
                                     </div>
-                                    {/*{models}*/}
-                                    <Models
-                                        gridData={active_experiments}
-                                        projectID={project_id}
-                                        refresher={setRefresh}
-                                    />
                                 </>
                             }
 
@@ -539,14 +533,14 @@ function Experiments(props) {
                                 <>
                                     <h5><span className="fw-semibold">Displaying runs from {active_experiments.length} experiments</span></h5>
                                     <p><span className="fst-italic">{active_experiments.map(experiment => experiment.name).join(', ')}</span></p>
-                                    {/*{models}*/}
-                                    <Models
-                                        gridData={active_experiments}
-                                        projectID={project_id}
-                                        refresher={setRefresh}
-                                    />
                                 </>
 
+                            }
+
+                            { projectData.experiments.length !== 0 && active_experiments && active_experiments.length >= 1 &&
+                                <>
+                                    {models}
+                                </>
                             }
 
                             { projectData.experiments.length === 0 &&
