@@ -8,7 +8,7 @@ from app.models.iteration import Iteration
 class Experiment(BaseModel):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     name: str = Field(..., description="Experiment title", min_length=1, max_length=40)
-    description: Optional[str] = Field(default=None, description="Experiment description", max_length=150)
+    description: Optional[str] = Field(default="", description="Experiment description", max_length=150)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
     iterations: List[Iteration] = []

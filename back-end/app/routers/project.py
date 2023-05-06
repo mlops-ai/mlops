@@ -8,7 +8,6 @@ from app.models.project import Project, UpdateProject
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
-    project_has_remaining_experiments_exception
 )
 
 router = APIRouter()
@@ -73,10 +72,6 @@ async def delete_project(id: PydanticObjectId):
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
-
-    # let's not allow deleting if project has remaining experiments
-    if project.experiments:
-        raise project_has_remaining_experiments_exception()
 
     await project.delete()
     return None
