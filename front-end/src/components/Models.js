@@ -77,32 +77,38 @@ function Models (props) {
     function handleEditIteration(event) {
         event.preventDefault();
 
-        let body = { iteration_name: currentIterationDataEditable.iteration_name.trim()};
+        let body = { iteration_name: currentIterationDataEditable.iteration_name.trim() };
 
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         };
-    }
 
-    function handleDeleteIterations(event) {
-        event.preventDefault();
-        const requestOptions = {
-            method: 'DELETE'
-        };
-        if (gridRef.current.api.getSelectedRows().length === 0) {
-            return
-        }
-        gridRef.current.api.getSelectedRows().forEach(row => {
-            fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + row.experiment_id + '/iterations/' + row.id, requestOptions)
-                .then((response) => {
-                    if (response.ok) {
-                        return response
-                    }
-                    return Promise.reject(response);
-                }).then((response) => {
-                toast.success('Iteration deleted successfully!', {
+        fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + currentIterationDataEditable.iteration_name.trim(), requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+            toast.success('Iteration updated successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+            props.refresher(prevRefresh => {
+                return prevRefresh+1
+            })
+            closeEditModalRef.current.click();
+        }).catch((response) => {
+            response.json().then((json: any) => {
+                toast.error(json.detail, {
                     position: "bottom-center",
                     autoClose: 3000,
                     hideProgressBar: false,
@@ -112,28 +118,82 @@ function Models (props) {
                     progress: undefined,
                     theme: "light",
                 });
+            })
+        });
+    }
 
-                props.refresher(prevRefresh => {
-                    return prevRefresh+1
-                })
+    function handleDeleteIterations(event) {
+        event.preventDefault();
 
-                closeDeleteModalRef.current.click();
+        if (gridRef.current.api.getSelectedRows().length === 0) {
+            return
+        }
 
-            }).catch((response) => {
-                response.body && response.json().then((json: any) => {
-                    toast.error(json.detail, {
-                        position: "bottom-center",
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: false,
-                        draggable: true,
-                        progress: undefined,
-                        theme: "light",
-                    });
-                })
-            });
+        gridRef.current.api.getSelectedRows().map((iteration) => {
+            return {
+                experiment_id: iteration.experiment_id,
+                iteration_id: iteration.id
+            }
         })
+
+        let body = gridRef.current.api.getSelectedRows().map((iteration) => {
+            return {
+                experiment_id: iteration.experiment_id,
+                iteration_id: iteration.id
+            }
+        })
+
+        body = body.reduce((group, iteration) => {
+            let category = iteration.experiment_id
+            group[category] = group[category] ?? []
+            group[category].push(iteration.iteration_id)
+            return group
+        }, {})
+
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        };
+
+        fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/delete_iterations', requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response
+                }
+                return Promise.reject(response);
+            }).then((response) => {
+            toast.success('Iteration/s deleted successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            props.refresher(prevRefresh => {
+                return prevRefresh+1
+            })
+
+            closeDeleteModalRef.current.click();
+
+        }).catch((response) => {
+            response.body && response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
     }
 
 
@@ -563,12 +623,12 @@ function Models (props) {
                 renameButton.disabled = false
                 setCurrentIterationData({
                     experiment_id: selectedRows[0].experiment_id,
-                    id: selectedRows.id,
+                    id: selectedRows[0].id,
                     iteration_name: selectedRows[0].iteration_name
                 })
                 setCurrentIterationDataEditable({
                     experiment_id: selectedRows[0].experiment_id,
-                    id: selectedRows.id,
+                    id: selectedRows[0].id,
                     iteration_name: selectedRows[0].iteration_name
                 })
             } else {
@@ -836,7 +896,7 @@ function Models (props) {
             <div className="modal fade" id="edit-iteration" tabIndex="-1" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
-                        <form onSubmit={null}>
+                        <form onSubmit={handleEditIteration}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Rename iteration</h5>
                                 <button ref={closeEditModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
