@@ -14,8 +14,12 @@ logger = logging.getLogger(__name__)
 async def test_empty_get_iterations(client: AsyncClient):
     """
     Test get all iterations when there are no iterations.
-    :param client:
-    :return:
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
     """
 
     await drop_database()
@@ -44,8 +48,12 @@ async def test_empty_get_iterations(client: AsyncClient):
 async def test_add_iteration(client: AsyncClient):
     """
     Test add iteration without path_to_model.
-    :param client:
-    :return:
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
     """
 
     project_title = "Test project"
@@ -74,8 +82,12 @@ async def test_add_iteration(client: AsyncClient):
 async def test_add_iteration2(client: AsyncClient):
     """
     Test add iteration with path_to_model.
-    :param client:
-    :return:
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
     """
 
     project_title = "Test project"
@@ -107,8 +119,12 @@ async def test_add_iteration2(client: AsyncClient):
 async def test_get_iterations(client: AsyncClient):
     """
     Test get all iterations if there are iterations.
-    :param client:
-    :return:
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
     """
 
     project_title = "Test project"
@@ -130,8 +146,12 @@ async def test_get_iterations(client: AsyncClient):
 async def test_get_iteration_or_iterations_by_name(client: AsyncClient):
     """
     Test get iteration or iterations by name.
-    :param client:
-    :return:
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
     """
 
     project_title = "Test project"
@@ -151,11 +171,55 @@ async def test_get_iteration_or_iterations_by_name(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_change_iteration_name(client: AsyncClient):
+    """
+    Test change iteration name.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project_title = "Test project"
+
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration to change",
+        "description": "Test iteration description to change",
+        "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
+        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
+        "model_name": "Test model name to change"
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    new_name = "Changed iteration name"
+    response = await client.put(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}",
+                                json={"iteration_name": new_name})
+
+    assert response.status_code == 200
+    assert response.json()['iteration_name'] == new_name
+
+
+@pytest.mark.asyncio
 async def test_delete_iteration_by_id(client: AsyncClient):
     """
     Test delete iteration by id.
-    :param client:
-    :return:
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
     """
 
     project_title = "Test project"

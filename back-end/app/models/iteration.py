@@ -14,11 +14,11 @@ class Iteration(BaseModel):
     metrics: Optional[dict] = Field(default=None, description="Iteration metrics")
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
-    model_name: Optional[str] = Field(default=None, description="Model name")
+    model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
 
     @validator('path_to_model')
     def path_to_model_exists(cls, path):
-        if path is None or path == '':
+        if not path:
             return path
         path = r'{}'.format(path)
         if os.path.isfile(path):
@@ -60,3 +60,13 @@ class Iteration(BaseModel):
             }
         }
 
+
+class UpdateIteration(Iteration):
+    iteration_name: Optional[str]
+
+    class Config:
+        schema_extra = {
+                    "example": {
+                        "iteration_name": "New name"
+                    }
+                }
