@@ -179,15 +179,16 @@ function Models (props) {
 
         // setNodes(data)
 
+        let iteration_info
         let model_info
         let columns_data
         let columns_data_checked
         let columns_list
         if (numberOfExperiments > 1) {
-            model_info = [
+            iteration_info = [
                 {
                     field: 'iteration_name',
-                    headerName: 'Run Name',
+                    headerName: 'Name',
                     pinned: true,
                     filter: true,
                     cellRenderer: (props) => {
@@ -212,7 +213,10 @@ function Models (props) {
                 {
                     field: 'user_name',
                     headerName: "User"
-                },
+                }
+            ]
+
+            model_info = [
                 {
                     field: 'model_name',
                     headerName: 'Model',
@@ -224,8 +228,8 @@ function Models (props) {
 
             columns_data = [
                 {
-                    key: 'attributes',
-                    label: 'Model info',
+                    key: 'iteration',
+                    label: 'Iteration info',
                     leaf: true,
                     children: [
                         {
@@ -235,7 +239,14 @@ function Models (props) {
                         {
                             key: 'user_name',
                             label: 'User'
-                        },
+                        }
+                    ]
+                },
+                {
+                    key: 'model',
+                    label: 'Model info',
+                    leaf: true,
+                    children: [
                         {
                             key: 'model_name',
                             label: 'Model'
@@ -245,7 +256,7 @@ function Models (props) {
             ]
 
             columns_data_checked = {
-                attributes: {
+                iteration: {
                     checked: true,
                     partialChecked: false,
                 },
@@ -253,11 +264,16 @@ function Models (props) {
                     checked: true,
                     partialChecked: false,
                 },
-                model_name: {
+                user_name: {
                     checked: true,
                     partialChecked: false,
                 },
-                user_name: {
+                model: {
+                    checked: true,
+                    partialChecked: false,
+                },
+
+                model_name: {
                     checked: true,
                     partialChecked: false,
                 }
@@ -265,10 +281,10 @@ function Models (props) {
 
             columns_list = ['experiment_name', 'model_name', 'user_name']
         } else {
-            model_info = [
+            iteration_info = [
                 {
                     field: 'iteration_name',
-                    headerName: 'Run Name',
+                    headerName: 'Name',
                     pinned: true,
                     filter: true,
                     cellRenderer: (props) => {
@@ -290,6 +306,10 @@ function Models (props) {
                     field: 'user_name',
                     headerName: "User",
                 },
+                
+            ]
+
+            model_info = [
                 {
                     field: 'model_name',
                     headerName: 'Model',
@@ -301,14 +321,21 @@ function Models (props) {
 
             columns_data = [
                 {
-                    key: 'attributes',
-                    label: 'Model info',
+                    key: 'iteration',
+                    label: 'Iteration info',
                     leaf: true,
                     children: [
                         {
                             key: 'user_name',
                             label: 'User'
-                        },
+                        }
+                    ]
+                },
+                {
+                    key: 'model',
+                    label: 'Model info',
+                    leaf: true,
+                    children: [
                         {
                             key: 'model_name',
                             label: 'Model'
@@ -318,7 +345,15 @@ function Models (props) {
             ]
 
             columns_data_checked = {
-                attributes: {
+                iteration: {
+                    checked: true,
+                    partialChecked: false,
+                },
+                user_name: {
+                    checked: true,
+                    partialChecked: false,
+                },
+                model: {
                     checked: true,
                     partialChecked: false,
                 },
@@ -326,10 +361,6 @@ function Models (props) {
                     checked: true,
                     partialChecked: false,
                 },
-                user_name: {
-                    checked: true,
-                    partialChecked: false,
-                }
             }
             columns_list = ['model_name', 'user_name']
         }
@@ -496,6 +527,10 @@ function Models (props) {
                 sortable: false,
                 resizable: false,
                 pinned: true
+            },
+            {
+                headerName: 'Iteration info',
+                children: iteration_info
             },
             {
                 headerName: 'Model info',
