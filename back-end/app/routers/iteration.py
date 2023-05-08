@@ -19,11 +19,11 @@ async def get_iterations(project_id: PydanticObjectId, experiment_id: PydanticOb
     Retrieve all iteration for selected experiment.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_id (PydanticObjectId): Experiment id
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_id (PydanticObjectId)**: Experiment id
 
     Returns:
-        List[Iteration]: List of iterations
+    - **List[Iteration]**: List of iterations
     """
     project = await Project.get(project_id)
     if not project:
@@ -46,12 +46,12 @@ async def get_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     Retrieve iteration by id.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_id (PydanticObjectId): Experiment id
-        id (PydanticObjectId): Iteration id
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_id (PydanticObjectId)**: Experiment id
+    - **id (PydanticObjectId)**: Iteration id
 
     Returns:
-        Iteration: Iteration
+    - **Iteration**: Iteration
     """
 
     project = await Project.get(project_id)
@@ -76,12 +76,12 @@ async def get_iterations_by_name(project_id: PydanticObjectId, experiment_id: Py
     Retrieve all iterations by name.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_id (PydanticObjectId): Experiment id
-        name (str): Iteration name
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_id (PydanticObjectId)**: Experiment id
+    - **name (str)**: Iteration name
 
     Returns:
-        List[Iteration]: List of iterations with selected name
+    - **List[Iteration]**: List of iterations with selected name
     """
 
     project = await Project.get(project_id)
@@ -107,12 +107,12 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     Add new iteration to experiment.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_id (PydanticObjectId): Experiment id
-        iteration (Iteration): Iteration
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_id (PydanticObjectId)**: Experiment id
+    - **iteration (Iteration)**: Iteration
 
     Returns:
-        Iteration: Iteration added to experiment
+    - **Iteration**: Iteration added to experiment
     """
 
     project = await Project.get(project_id)
@@ -138,13 +138,13 @@ async def update_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     Update iteration by id.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_id (PydanticObjectId): Experiment id
-        id (PydanticObjectId): Iteration id
-        updated_iteration (UpdateIteration): Updated iteration
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_id (PydanticObjectId)**: Experiment id
+    - **id (PydanticObjectId)**: Iteration id
+    - **updated_iteration (UpdateIteration)**: Updated iteration
 
     Returns:
-        Iteration: Updated iteration
+    - **Iteration**: Updated iteration
     """
 
     project = await Project.get(project_id)
@@ -172,12 +172,12 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     Delete iteration by id.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_id (PydanticObjectId): Experiment id
-        id (PydanticObjectId): Iteration id
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_id (PydanticObjectId)**: Experiment id
+    - **id (PydanticObjectId)**: Iteration id
 
     Returns:
-        None: None
+    - **None**: None
     """
 
     project = await Project.get(project_id)

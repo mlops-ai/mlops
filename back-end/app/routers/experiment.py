@@ -19,10 +19,11 @@ async def get_experiments(project_id: PydanticObjectId) -> List[Experiment]:
     Retrieve all experiments.
 
     Args:
-        project_id (PydanticObjectId): Project id
+
+    - **project_id (PydanticObjectId)**: Project id
 
     Returns:
-        List[Experiment]: List of experiments
+    - **List[Experiment]**: List of experiments
     """
     project = await Project.get(project_id)
     if not project:
@@ -39,11 +40,11 @@ async def get_experiment(project_id: PydanticObjectId, id: PydanticObjectId) -> 
     Retrieve experiment by id.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        id (PydanticObjectId): Experiment id
+    - **project_id (PydanticObjectId)**: Project id
+    - **id (PydanticObjectId)**: Experiment id
 
     Returns:
-        Experiment: Experiment
+    - **Experiment**: Experiment
     """
     project = await Project.get(project_id)
     if not project:
@@ -62,11 +63,11 @@ async def get_experiment_by_name(project_id: PydanticObjectId, name: str) -> Exp
     Retrieve experiment by name.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        name (str): Experiment name
+    - **project_id (PydanticObjectId)**: Project id
+    - **name (str)**: Experiment name
 
     Returns:
-        Experiment: Experiment
+    - **Experiment**: Experiment
     """
     project = await Project.get(project_id)
     if not project:
@@ -85,11 +86,11 @@ async def add_experiment(project_id: PydanticObjectId, experiment: Experiment) -
     Add new experiment.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment (Experiment): Experiment
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment (Experiment)**: Experiment
 
     Returns:
-        Experiment: Experiment
+    - **Experiment**: Experiment
     """
     project = await Project.get(project_id)
     if not project:
@@ -112,12 +113,12 @@ async def update_experiment(project_id: PydanticObjectId, id: PydanticObjectId,
     Update experiment.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        id (PydanticObjectId): Experiment id
-        updated_experiment (UpdateExperiment): Updated experiment
+    - **project_id (PydanticObjectId)**: Project id
+    - **id (PydanticObjectId)**: Experiment id
+    - **updated_experiment (UpdateExperiment)**: Updated experiment
 
     Returns:
-        Experiment: Experiment
+    - **Experiment**: Experiment
     """
     project = await Project.get(project_id)
     if not project:
@@ -146,11 +147,11 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
     Delete experiment by id.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        id (PydanticObjectId): Experiment id
+    - **project_id (PydanticObjectId)**: Project id
+    - **id (PydanticObjectId)**: Experiment id
 
     Returns:
-        None
+    - **None**
     """
     project = await Project.get(project_id)
     if not project:
@@ -173,12 +174,12 @@ async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[
     Delete iterations by ids.
 
     Args:
-        project_id (PydanticObjectId): Project id
-        experiment_dict (Dict[PydanticObjectId, List[PydanticObjectId]]): Dictionary with experiment id as key and list
+    - **project_id (PydanticObjectId)**: Project id
+    - **experiment_dict (Dict[PydanticObjectId, List[PydanticObjectId]])**: Dictionary with experiment id as key and list
             of iteration ids as value
 
     Returns:
-        None
+    - **None**
     """
 
     project = await Project.get(project_id)
@@ -207,11 +208,11 @@ async def is_name_unique(experiments: List[Experiment], name: str) -> bool:
     Util function for checking if experiment name is unique within project.
 
     Args:
-        experiments: List of experiments in the project.
-        name: Experiment name to check.
+    - **experiments**: List of experiments in the project.
+    - **name**: Experiment name to check.
 
     Returns:
-        True if name is unique, False otherwise.
+    - True if name is unique, False otherwise.
     """
     for exp in experiments:
         if exp.name == name:
