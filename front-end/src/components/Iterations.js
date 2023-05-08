@@ -11,9 +11,12 @@ import {TreeSelect} from "primereact/treeselect";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
-function Models (props) {
+/**
+ * Iterations component for displaying grid containing information about runs and models in single or multiple experiments on experiments page.
+ */
+function Iterations (props) {
 
-    console.log("ITERACJE")
+    console.log("[DEBUG] ITERATIONS !")
 
     const [nodes, setNodes] = useState(null);
     const [cols, setCols] = useState(null);
@@ -42,8 +45,6 @@ function Models (props) {
     let moment = require('moment');
 
     const gridRef = useRef();
-
-    // console.log(props.selectedRows)
 
     const [rowData, numberOfExperiments] = useMemo(() => {
         let rowData
@@ -251,8 +252,8 @@ function Models (props) {
                     headerName: 'Name',
                     pinned: true,
                     filter: true,
-                    cellRenderer: (props) => {
-                        return <a href={"../model/" + props.data["id"]}>{props.data["iteration_name"]}</a>
+                    cellRenderer: (val) => {
+                        return <a href={"/projects/" + props.projectID + "/experiments/" + val.data["experiment_id"] + "/iterations/" + val.data["id"]}>{val.data["iteration_name"]}</a>
                     }
                 },
                 {
@@ -347,8 +348,8 @@ function Models (props) {
                     headerName: 'Name',
                     pinned: true,
                     filter: true,
-                    cellRenderer: (props) => {
-                        return <a href={"../model/" + props.data["id"]}>{props.data["iteration_name"]}</a>
+                    cellRenderer: (val) => {
+                        return <a href={"/projects/" + props.projectID + "/experiments/" + val.data["experiment_id"] + "/iterations/" + val.data["id"]}>{val.data["iteration_name"]}</a>
                     }
                 },
                 {
@@ -456,7 +457,7 @@ function Models (props) {
                         headerName: parameters_names[i],
                         filter: 'agNumberColumnFilter',
                         cellRenderer: (props) => {
-                            if (props.data["parameters"][parameters_names[i]]) {
+                            if (props.data["parameters"] && props.data["parameters"][parameters_names[i]]) {
                                 return props.data["parameters"][parameters_names[i]]
                             }
                             return '-'
@@ -518,7 +519,7 @@ function Models (props) {
                         headerName: metrics_names[i],
                         filter: 'agNumberColumnFilter',
                         cellRenderer: (props) => {
-                            if (props.data["metrics"][metrics_names[i]]) {
+                            if (props.data["metrics"] && props.data["metrics"][metrics_names[i]]) {
                                 return props.data["metrics"][metrics_names[i]]
                             }
                             return '-'
@@ -850,12 +851,12 @@ function Models (props) {
             <div className="d-flex align-items-center flex-wrap">
                 <div className="single-select mb-3">
                     <TreeSelect className="tree-select shadow-none single-select"
-                                value={selectedDateFilter}
-                                onChange={(e) => {
-                                    externalFilterChanged(e.value);
-                                    setSelectedDateFilter(e.value);
-                                }}
-                                options={date_filters}>
+                        value={selectedDateFilter}
+                        onChange={(e) => {
+                            externalFilterChanged(e.value);
+                            setSelectedDateFilter(e.value);
+                        }}
+                        options={date_filters}>
                     </TreeSelect>
                 </div>
                 <input type="text" className="search mb-3" id="filter-text-box" placeholder="Filter rows by text data columns ..." onChange={onFilterTextBoxChanged}/>
@@ -863,7 +864,6 @@ function Models (props) {
                     <TreeSelect className="tree-select shadow-none checkbox-select"
                         value={selectedNodeKey}
                         onChange={(e) => {
-                            // console.log(e.value)
                             setSelectedNodeKey(e.value);
                             updateColumnVisibility(e.value);
                         }}
@@ -961,4 +961,4 @@ function Models (props) {
     );
 };
 
-export default Models;
+export default Iterations;
