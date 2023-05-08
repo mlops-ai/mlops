@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {useParams, useNavigate} from "react-router-dom";
 import ExperimentListItem from "../components/experiments/ExperimentListItem";
-import Models from "../components/Models";
+import Iterations from "../components/Iterations";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingData from "../components/LoadingData";
@@ -407,7 +407,7 @@ function Experiments(props) {
 
     const models = useMemo(() => {
         return (
-            <Models
+            <Iterations
                 gridData={active_experiments}
                 projectID={project_id}
                 refresher={setRefresh}
@@ -435,18 +435,18 @@ function Experiments(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1>Experiments & Models</h1>
+                    <h1>Experiments & Iterations</h1>
                     <nav>
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href="/projects">Projects</a></li>
                             <li className="breadcrumb-item">{ projectData.title }</li>
-                            <li className="breadcrumb-item active">Experiments & Models</li>
+                            <li className="breadcrumb-item active">Experiments & Iterations</li>
                         </ol>
                     </nav>
                 </div>
 
                 {/*
-                    WYŚWIETLANIE EKSPERYMENTÓW I MODELI
+                    WYŚWIETLANIE EKSPERYMENTÓW I ITERACJI
                 */}
 
                 <section className="experiments section content-data">
@@ -520,7 +520,7 @@ function Experiments(props) {
                         <div className={experimentList ? "col-xl-9 col-lg-9 col-md-12" : "col-xl-12 col-lg-12 col-md-12"}>
                             {projectData.experiments.length !== 0 && active_experiments && active_experiments.length === 1 &&
                                 <>
-                                    <h5><span className="fw-semibold">{active_experiments[0].name}</span></h5>
+                                    <h4><span className="fw-semibold">{active_experiments[0].name}</span></h4>
                                     <p><span className="fst-italic">{active_experiments[0].description}</span></p>
                                     <div className="d-flex align-items-center">
                                         <p style={{fontSize: 13 + "px"}} className="pe-3">Experiment ID: {active_experiments[0].id}</p>
@@ -531,7 +531,7 @@ function Experiments(props) {
 
                             { projectData.experiments.length !== 0 && active_experiments && active_experiments.length > 1 &&
                                 <>
-                                    <h5><span className="fw-semibold">Displaying runs from {active_experiments.length} experiments</span></h5>
+                                    <h4><span className="fw-semibold">Displaying runs from {active_experiments.length} experiments</span></h4>
                                     <p><span className="fst-italic">{active_experiments.map(experiment => experiment.name).join(', ')}</span></p>
                                 </>
 
