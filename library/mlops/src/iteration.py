@@ -1,5 +1,5 @@
 from mlops.config.config import settings
-
+import requests
 
 class Iteration:
     """
@@ -33,7 +33,10 @@ class Iteration:
         """
         # TODO: we need to take as an input path with single backslashes (e.g. "C:\mlops-inzynierka\LICENSE") and
         # use some regex to parse it to double backslashes, because JSON doesn't accept single ones
-        raise NotImplementedError
+        # add universal path support :)
+        #raise NotImplementedError
+
+        self.path_to_model = path_to_model.replace('/', '\\').replace('\f', '\\f').replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('\\','\\\\')
 
     def log_metric(self, metric_name: str, value):
         """
@@ -73,9 +76,12 @@ class Iteration:
         """
         self.parameters.update(parameters)
 
-    def end_iteration(self):
+    def end_iteration(self) -> dict:
         """
         End iteration and send data to API.
+
+        Returns:
+            iteration: json data of created iteration
         """
         data = {
             "user_name": self.user_name,
@@ -88,3 +94,14 @@ class Iteration:
 
         print(data)
         # TODO: send data to API here
+
+        app_response = requests.post(
+            f'{settings.url}/projects/{self.project_id}/experiments/{self.experiment_id}/iterations/', json=data)
+
+        response_json = app_response.json()
+
+        if app_response.status_code == 201:
+            return response_json
+        else:
+            detail = response_json['detail']
+            raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")

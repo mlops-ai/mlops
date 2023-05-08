@@ -2,7 +2,7 @@ import requests
 from contextlib import contextmanager
 from mlops.config.config import settings
 from mlops.src.iteration import Iteration
-
+from mlops.exceptions.tracking import project_id_missing_exception, experiment_id_missing_exception
 
 def get_project(project_id: str = None) -> dict:
     """
@@ -168,6 +168,12 @@ def start_iteration(iteration_name: str, project_id: str = None, experiment_id: 
     # TODO: add exceptions when one of id = None or id does not exists
     # In general, we can create separate folder exceptions, same as it's done in back-end routers,
     # because we need to also add some exceptions for further functions
+
+    if not project_id:
+        raise project_id_missing_exception()
+    if not experiment_id:
+        raise experiment_id_missing_exception()
+
     iteration = Iteration(
         iteration_name=iteration_name,
         project_id=project_id,
