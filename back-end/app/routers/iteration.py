@@ -125,6 +125,8 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
 
     iteration.experiment_id = experiment_id
     iteration.project_id = project_id
+    iteration.experiment_name = experiment.name
+    iteration.project_title = project.title
     iteration.created_at = datetime.now()
 
     experiment.iterations.append(iteration)

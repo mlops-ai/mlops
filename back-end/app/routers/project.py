@@ -49,7 +49,10 @@ async def get_all_projects_base() -> List[DisplayProject]:
             id=project.id,
             title=project.title,
             description=project.description,
+            status=project.status,
             archived=project.archived,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
             experiments=[]
         )
 
@@ -81,7 +84,10 @@ async def get_project_base(id: PydanticObjectId) -> DisplayProject:
         id=project.id,
         title=project.title,
         description=project.description,
+        status=project.status,
         archived=project.archived,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
         experiments=[]
     )
 
