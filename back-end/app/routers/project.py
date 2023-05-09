@@ -1,10 +1,11 @@
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
-from typing import List
+from typing import List, Dict
 
-from app.models.project import Project, UpdateProject
+from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
@@ -26,6 +27,75 @@ async def get_all_projects() -> List[Project]:
     """
     projects = await Project.find_all().to_list()
     return projects
+
+
+@router.get("/base", response_model=List[DisplayProject], status_code=status.HTTP_200_OK)
+async def get_all_projects_base() -> List[DisplayProject]:
+    """
+    Get base information about all projects.
+
+    Args:
+    - **None**
+
+    Returns:
+    - **List[DisplayProject]**: List of base information about all projects.
+    """
+
+    projects = await Project.find_all().to_list()
+    display_projects = []
+
+    for project in projects:
+        display_project = DisplayProject(
+            id=project.id,
+            title=project.title,
+            description=project.description,
+            status=project.status,
+            archived=project.archived,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+            experiments=[]
+        )
+
+        experiments_names = [experiment.name for experiment in project.experiments]
+
+        display_project.experiments = experiments_names
+
+        display_projects.append(display_project)
+
+    return display_projects
+
+
+@router.get("/{id}/base", response_model=DisplayProject, status_code=status.HTTP_200_OK)
+async def get_project_base(id: PydanticObjectId) -> DisplayProject:
+    """
+    Get base information about project by id.
+
+    Args:
+    - **id** (PydanticObjectId): Project id.
+
+    Returns:
+    - **DisplayProject**: Base information about project.
+    """
+    project = await Project.get(id)
+    if not project:
+        raise project_not_found_exception()
+
+    display_project = DisplayProject(
+        id=project.id,
+        title=project.title,
+        description=project.description,
+        status=project.status,
+        archived=project.archived,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        experiments=[]
+    )
+
+    experiments_names = [experiment.name for experiment in project.experiments]
+
+    display_project.experiments = experiments_names
+
+    return display_project
 
 
 @router.get("/non-archived", response_model=List[Project], status_code=status.HTTP_200_OK)

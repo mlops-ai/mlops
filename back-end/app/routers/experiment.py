@@ -100,6 +100,8 @@ async def add_experiment(project_id: PydanticObjectId, experiment: Experiment) -
     if not name_unique:
         raise experiment_name_not_unique_exception()
 
+    experiment.project_id = project_id
+
     project.experiments.append(experiment)
     await project.save()
 
@@ -169,7 +171,7 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
 
 @experiment_router.post("/delete_iterations", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[PydanticObjectId,
-        List[PydanticObjectId]]) -> None:
+    List[PydanticObjectId]]) -> None:
     """
     Delete iterations by ids.
 

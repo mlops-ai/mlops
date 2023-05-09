@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
-from typing import List
+from typing import List, Dict
 
 from app.models.iteration import Iteration, UpdateIteration
 from app.models.project import Project
@@ -123,6 +123,10 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     if not experiment:
         raise experiment_not_found_exception()
 
+    iteration.experiment_id = experiment_id
+    iteration.project_id = project_id
+    iteration.experiment_name = experiment.name
+    iteration.project_title = project.title
     iteration.created_at = datetime.now()
 
     experiment.iterations.append(iteration)
