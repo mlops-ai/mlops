@@ -1,10 +1,12 @@
 from mlops.config.config import settings
 import requests
 
+
 class Iteration:
     """
     Class for logging iteration data.
     """
+
     def __init__(self, iteration_name: str, project_id: str = None, experiment_id: str = None):
         self.iteration_name: str = iteration_name
         self.project_id: str = project_id
@@ -14,6 +16,10 @@ class Iteration:
         self.path_to_model: str = ""
         self.parameters: dict = {}
         self.metrics: dict = {}
+
+    def format_path(self):
+        self.path_to_model = self.path_to_model.replace('/', '\\').replace('\f', '\\f').replace('\t', '\\t').replace(
+            '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('\\', '\\\\')
 
     def log_model_name(self, model_name: str):
         """
@@ -34,9 +40,9 @@ class Iteration:
         # TODO: we need to take as an input path with single backslashes (e.g. "C:\mlops-inzynierka\LICENSE") and
         # use some regex to parse it to double backslashes, because JSON doesn't accept single ones
         # add universal path support :)
-        #raise NotImplementedError
+        # raise NotImplementedError
 
-        self.path_to_model = path_to_model.replace('/', '\\').replace('\f', '\\f').replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('\\','\\\\')
+        self.path_to_model = path_to_model
 
     def log_metric(self, metric_name: str, value):
         """
@@ -83,6 +89,9 @@ class Iteration:
         Returns:
             iteration: json data of created iteration
         """
+
+        self.format_path()
+
         data = {
             "user_name": self.user_name,
             "iteration_name": self.iteration_name,
