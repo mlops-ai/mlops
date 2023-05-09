@@ -8,6 +8,8 @@ from beanie import PydanticObjectId
 
 class Iteration(BaseModel):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
+    experiment_id: PydanticObjectId = Field(default=None,  alias="experiment_id")
+    project_id: PydanticObjectId = Field(default=None, alias="project_id")
     user_name: str = Field(default=getpass.getuser(), description="User name")
     iteration_name: str = Field(..., description="Iteration title", min_length=1, max_length=100)
     created_at: datetime = Field(default_factory=datetime.now)
