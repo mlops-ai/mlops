@@ -1,5 +1,6 @@
 from mlops.config.config import settings
 import requests
+from mlops.exceptions.iteration import iteration_request_failed_exception
 
 
 class Iteration:
@@ -112,5 +113,4 @@ class Iteration:
         if app_response.status_code == 201:
             return response_json
         else:
-            detail = response_json['detail']
-            raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
+            raise iteration_request_failed_exception(app_response)
