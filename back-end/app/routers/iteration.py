@@ -133,7 +133,7 @@ async def get_base_iteration(project_id: PydanticObjectId, experiment_id: Pydant
         "experiment_id": iteration.experiment_id,
         "project_id": iteration.project_id,
         "experiment_name": experiment.name,
-        "project_name": project.project_name
+        "project_name": project.title
     }
 
     return base_information_iteration

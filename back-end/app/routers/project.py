@@ -28,8 +28,8 @@ async def get_all_projects() -> List[Project]:
     return projects
 
 
-@router.get("/base", response_model=List[Dict[str, str]], status_code=status.HTTP_200_OK)
-async def get_all_projects_base() -> List[Dict[str, str]]:
+@router.get("/base", response_model=List[Dict], status_code=status.HTTP_200_OK)
+async def get_all_projects_base() -> List[Dict[str, PydanticObjectId | str]]:
     """
     Get base information about all projects.
 
@@ -47,8 +47,8 @@ async def get_all_projects_base() -> List[Dict[str, str]]:
     return projects_base
 
 
-@router.get("/base/{id}", response_model=Dict[str, str], status_code=status.HTTP_200_OK)
-async def get_project_base(id: PydanticObjectId) -> Dict[str, str]:
+@router.get("/base/{id}", response_model=Dict, status_code=status.HTTP_200_OK)
+async def get_project_base(id: PydanticObjectId) -> Dict[str, PydanticObjectId | str | list[str]]:
     """
     Get base information about project by id.
 
