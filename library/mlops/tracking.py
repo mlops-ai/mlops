@@ -2,7 +2,9 @@ import requests
 from contextlib import contextmanager
 from mlops.config.config import settings
 from mlops.src.iteration import Iteration
-from mlops.exceptions.tracking import project_id_missing_exception, experiment_id_missing_exception
+from mlops.exceptions.tracking import project_id_is_none_exception, experiment_id_is_none_exception, \
+    failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_execption
+
 
 def get_project(project_id: str = None) -> dict:
     """
@@ -16,14 +18,16 @@ def get_project(project_id: str = None) -> dict:
     """
     project_id = settings.active_project_id if not project_id else project_id
 
+    if project_id is None:
+        raise project_id_is_none_exception()
+
     app_response = requests.get(f"{settings.url}/projects/{project_id}")
     response_json = app_response.json()
 
     if app_response.status_code == 200:
         return response_json
     else:
-        detail = response_json['detail']
-        raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
+        raise request_failed_execption(app_response)
 
 
 def create_project(title: str, description: str = None,
@@ -38,7 +42,7 @@ def create_project(title: str, description: str = None,
         archived: Archived status of the created project (optional)
 
     Returns:
-        project: json data of the created project
+        project: JSON data of the created project
     """
     data = {
         "title": title,
@@ -53,11 +57,10 @@ def create_project(title: str, description: str = None,
     if app_response.status_code == 201:
         return response_json
     else:
-        detail = response_json['detail']
-        raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
+        raise request_failed_execption(app_response)
 
 
-def set_active_project(project_id: str) -> dict:
+def set_active_project(project_id: str) -> str:
     """
     Function for setting active project
 
@@ -65,15 +68,16 @@ def set_active_project(project_id: str) -> dict:
         project_id: Id of the project, that will be set as active
 
     Returns:
-        project: json data of the active project
+        project: JSON data of the active project
     """
     try:
         project = get_project(project_id)
     except Exception as e:
-        raise Exception(f"Failed to set active project: {e}")
+        raise failed_to_set_active_project_exception(e)
 
     settings.change_active_project(project_id)
-    return project
+
+    return f"Active project set to: {settings.active_project_id}"
 
 
 def get_experiment(experiment_id: str = None, project_id: str = None) -> dict:
@@ -90,6 +94,11 @@ def get_experiment(experiment_id: str = None, project_id: str = None) -> dict:
     experiment_id = settings.active_experiment_id if not experiment_id else experiment_id
     project_id = settings.active_project_id if not project_id else project_id
 
+    if project_id is None:
+        raise project_id_is_none_exception()
+    if experiment_id is None:
+        raise experiment_id_is_none_exception()
+
     app_response = requests.get(f"{settings.url}/projects/{project_id}/experiments/{experiment_id}")
     response_json = app_response.json()
 
@@ -97,8 +106,7 @@ def get_experiment(experiment_id: str = None, project_id: str = None) -> dict:
         experiment = app_response.json()
         return experiment
     else:
-        detail = response_json['detail']
-        raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
+        raise request_failed_execption(app_response)
 
 
 def create_experiment(name: str, description: str = None,
@@ -115,6 +123,10 @@ def create_experiment(name: str, description: str = None,
         experiment: json data of the created experiment
     """
     project_id = settings.active_project_id if not project_id else project_id
+
+    if project_id is None:
+        raise project_id_is_none_exception()
+
     data = {
         "name": name,
         "description": description,
@@ -126,12 +138,11 @@ def create_experiment(name: str, description: str = None,
     if app_response.status_code == 201:
         return response_json
     else:
-        detail = response_json['detail']
-        raise Exception(f"Request failed with status code {app_response.status_code}: {detail}")
+        raise request_failed_execption(app_response)
 
 
 # TODO: write function for setting active experiment same as set_active_project()
-def set_active_experiment(experiment_id: str) -> dict:
+def set_active_experiment(experiment_id: str) -> str:
     """
     Function for setting active experiment
 
@@ -144,10 +155,10 @@ def set_active_experiment(experiment_id: str) -> dict:
     try:
         experiment = get_experiment(experiment_id, settings.active_project_id)
     except Exception as e:
-        raise Exception(f"Failed to set active experiment: {e}")
+        raise failed_to_set_active_experiment_exception(e)
 
     settings.change_active_experiment(experiment_id)
-    return experiment
+    return f"Active experiment set to: {settings.active_experiment_id}"
 
 
 @contextmanager
@@ -163,16 +174,17 @@ def start_iteration(iteration_name: str, project_id: str = None, experiment_id: 
     Returns:
         Iteration.end_iteration() method output
     """
+
     project_id = settings.active_project_id if not project_id else project_id
     experiment_id = settings.active_experiment_id if not experiment_id else experiment_id
     # TODO: add exceptions when one of id = None or id does not exists
     # In general, we can create separate folder exceptions, same as it's done in back-end routers,
     # because we need to also add some exceptions for further functions
 
-    if not project_id:
-        raise project_id_missing_exception()
-    if not experiment_id:
-        raise experiment_id_missing_exception()
+    if project_id is None:
+        raise project_id_is_none_exception()
+    if experiment_id is None:
+        raise experiment_id_is_none_exception()
 
     iteration = Iteration(
         iteration_name=iteration_name,
