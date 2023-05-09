@@ -1,10 +1,13 @@
 from mlops.config.config import settings
+import requests
+from mlops.exceptions.iteration import iteration_request_failed_exception
 
 
 class Iteration:
     """
     Class for logging iteration data.
     """
+
     def __init__(self, iteration_name: str, project_id: str = None, experiment_id: str = None):
         self.iteration_name: str = iteration_name
         self.project_id: str = project_id
@@ -14,6 +17,10 @@ class Iteration:
         self.path_to_model: str = ""
         self.parameters: dict = {}
         self.metrics: dict = {}
+
+    def format_path(self):
+        self.path_to_model = self.path_to_model.replace('/', '\\').replace('\f', '\\f').replace('\t', '\\t').replace(
+            '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('\\', '\\\\')
 
     def log_model_name(self, model_name: str):
         """
@@ -33,7 +40,10 @@ class Iteration:
         """
         # TODO: we need to take as an input path with single backslashes (e.g. "C:\mlops-inzynierka\LICENSE") and
         # use some regex to parse it to double backslashes, because JSON doesn't accept single ones
-        raise NotImplementedError
+        # add universal path support :)
+        # raise NotImplementedError
+
+        self.path_to_model = path_to_model
 
     def log_metric(self, metric_name: str, value):
         """
@@ -73,10 +83,16 @@ class Iteration:
         """
         self.parameters.update(parameters)
 
-    def end_iteration(self):
+    def end_iteration(self) -> dict:
         """
         End iteration and send data to API.
+
+        Returns:
+            iteration: json data of created iteration
         """
+
+        self.format_path()
+
         data = {
             "user_name": self.user_name,
             "iteration_name": self.iteration_name,
@@ -88,3 +104,13 @@ class Iteration:
 
         print(data)
         # TODO: send data to API here
+
+        app_response = requests.post(
+            f'{settings.url}/projects/{self.project_id}/experiments/{self.experiment_id}/iterations/', json=data)
+
+        response_json = app_response.json()
+
+        if app_response.status_code == 201:
+            return response_json
+        else:
+            raise iteration_request_failed_exception(app_response)
