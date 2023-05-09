@@ -100,45 +100,6 @@ async def get_iterations_by_name(project_id: PydanticObjectId, experiment_id: Py
     return iterations
 
 
-@iteration_router.get("/{id}/base", response_model=Dict, status_code=status.HTTP_200_OK)
-async def get_base_iteration(project_id: PydanticObjectId, experiment_id: PydanticObjectId, id: PydanticObjectId) -> \
-        Dict[str, PydanticObjectId]:
-    """
-    Retrieve base information about iteration by id.
-
-    Args:
-    - **project_id (PydanticObjectId)**: Project id
-    - **experiment_id (PydanticObjectId)**: Experiment id
-    - **id (PydanticObjectId)**: Iteration id
-
-    Returns:
-    - **dict[str, PydanticObjectId]**: Base information about iteration
-    """
-
-    project = await Project.get(project_id)
-    if not project:
-        raise project_not_found_exception()
-
-    experiment = next((exp for exp in project.experiments if exp.id == experiment_id), None)
-    if not experiment:
-        raise experiment_not_found_exception()
-
-    iteration = next((iter for iter in experiment.iterations if iter.id == id), None)
-    if not iteration:
-        raise iteration_not_found_exception()
-
-    base_information_iteration = {
-        "id": iteration.id,
-        "iteration_name": iteration.iteration_name,
-        "experiment_id": iteration.experiment_id,
-        "project_id": iteration.project_id,
-        "experiment_name": experiment.name,
-        "project_name": project.title
-    }
-
-    return base_information_iteration
-
-
 @iteration_router.post("/", response_model=Iteration, status_code=status.HTTP_201_CREATED)
 async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObjectId, iteration: Iteration) -> \
         Iteration:

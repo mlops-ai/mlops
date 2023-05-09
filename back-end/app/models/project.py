@@ -72,3 +72,18 @@ class UpdateProject(Project):
                 "archived": False
             }
         }
+
+
+class DisplayProject(Project):
+    experiments: List[str] = []
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "Titanic",
+                "description": "Titanic dataset",
+                "status": "not_started",
+                "archived": False,
+                "experiments": ["Titanic Experiment 1", "Titanic Experiment 2"]
+            }
+        }

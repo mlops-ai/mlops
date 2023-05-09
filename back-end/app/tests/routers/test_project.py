@@ -83,6 +83,27 @@ async def test_get_project_by_id(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_get_project_base(client: AsyncClient):
+    """
+    Test get project base.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project = {
+        "title": "Test project 5"
+    }
+    response = await client.post("/projects/", json=project)
+    project_id = response.json()["_id"]
+    response = await client.get(f"/projects/{project_id}/base")
+    assert response.status_code == 200
+    assert response.json()["title"] == project["title"]
+    assert response.json()["_id"] == project_id
+
+@pytest.mark.asyncio
 async def test_get_project_by_name(client: AsyncClient):
     """
     Test get project by name.
@@ -200,5 +221,5 @@ async def test_delete_project_with_experiments(client: AsyncClient):
 async def test_get_remaining_projects(client: AsyncClient):
     response = await client.get("/projects/")
     assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert len(response.json()) == 2
     assert response.json()[0]["title"] == "Test project"

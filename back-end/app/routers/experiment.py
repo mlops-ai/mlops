@@ -34,37 +34,6 @@ async def get_experiments(project_id: PydanticObjectId) -> List[Experiment]:
     return experiments
 
 
-@experiment_router.get("{id}/base", response_model=Dict, status_code=status.HTTP_200_OK)
-async def get_experiment_base(project_id: PydanticObjectId, id: PydanticObjectId) -> dict[
-    str, PydanticObjectId | list[PydanticObjectId]]:
-    """
-    Retrieve base information about experiment by id.
-
-    Args:
-    - **project_id (PydanticObjectId)**: Project id
-    - **id (PydanticObjectId)**: Experiment id
-
-    Returns:
-    - **Dict[str, str]**: Base information about experiment
-    """
-
-    project = await Project.get(project_id)
-    if not project:
-        raise project_not_found_exception()
-
-    experiment = next((exp for exp in project.experiments if exp.id == id), None)
-    if not experiment:
-        raise experiment_not_found_exception()
-
-    iterations_ids = [iteration.id for iteration in experiment.iterations]
-
-    return {
-        "id": experiment.id,
-        "project_id": experiment.project_id,
-        "iterations_ids": iterations_ids
-    }
-
-
 @experiment_router.get("/{id}", response_model=Experiment, status_code=status.HTTP_200_OK)
 async def get_experiment(project_id: PydanticObjectId, id: PydanticObjectId) -> Experiment:
     """
@@ -202,7 +171,7 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
 
 @experiment_router.post("/delete_iterations", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[PydanticObjectId,
-        List[PydanticObjectId]]) -> None:
+    List[PydanticObjectId]]) -> None:
     """
     Delete iterations by ids.
 

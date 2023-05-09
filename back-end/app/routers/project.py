@@ -1,10 +1,11 @@
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List, Dict
 
-from app.models.project import Project, UpdateProject
+from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
@@ -28,8 +29,8 @@ async def get_all_projects() -> List[Project]:
     return projects
 
 
-@router.get("/base", response_model=List[Dict], status_code=status.HTTP_200_OK)
-async def get_all_projects_base() -> List[Dict[str, PydanticObjectId | str]]:
+@router.get("/base", response_model=List[DisplayProject], status_code=status.HTTP_200_OK)
+async def get_all_projects_base() -> List[DisplayProject]:
     """
     Get base information about all projects.
 
@@ -37,18 +38,32 @@ async def get_all_projects_base() -> List[Dict[str, PydanticObjectId | str]]:
     - **None**
 
     Returns:
-    - **List[Dict[str, str]]**: List of dictionaries with base information about all projects.
+    - **List[DisplayProject]**: List of base information about all projects.
     """
+
     projects = await Project.find_all().to_list()
+    display_projects = []
 
-    projects_base = [
-        {"id": project.id, "title": project.title} for project in projects
-    ]
-    return projects_base
+    for project in projects:
+        display_project = DisplayProject(
+            id=project.id,
+            title=project.title,
+            description=project.description,
+            archived=project.archived,
+            experiments=[]
+        )
+
+        experiments_names = [experiment.name for experiment in project.experiments]
+
+        display_project.experiments = experiments_names
+
+        display_projects.append(display_project)
+
+    return display_projects
 
 
-@router.get("/base/{id}", response_model=Dict, status_code=status.HTTP_200_OK)
-async def get_project_base(id: PydanticObjectId) -> Dict[str, PydanticObjectId | str | list[str]]:
+@router.get("/{id}/base", response_model=DisplayProject, status_code=status.HTTP_200_OK)
+async def get_project_base(id: PydanticObjectId) -> DisplayProject:
     """
     Get base information about project by id.
 
@@ -56,15 +71,25 @@ async def get_project_base(id: PydanticObjectId) -> Dict[str, PydanticObjectId |
     - **id** (PydanticObjectId): Project id.
 
     Returns:
-    - **Dict[str, str]**: Dictionary with base information about project with given id.
+    - **DisplayProject**: Base information about project.
     """
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
 
+    display_project = DisplayProject(
+        id=project.id,
+        title=project.title,
+        description=project.description,
+        archived=project.archived,
+        experiments=[]
+    )
+
     experiments_names = [experiment.name for experiment in project.experiments]
 
-    return {"id": project.id, "title": project.title, "experiments": experiments_names}
+    display_project.experiments = experiments_names
+
+    return display_project
 
 
 @router.get("/non-archived", response_model=List[Project], status_code=status.HTTP_200_OK)
