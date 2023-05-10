@@ -1,7 +1,14 @@
+/**
+* Root
+* */
+
 :root {
     scroll-behavior: smooth;
 
-    /* ZMIENNE */
+    /**
+    * Main variables
+    * */
+
     --bg-primary: #f3f6fd;
     --bg-secondary: #fff;
     --font-lato: "Lato", sans-serif;
@@ -9,6 +16,10 @@
     --color-primary: #012970;
     --color-secondary: #444444;
     --color-light: #899bbd;
+
+    /**
+    * Secondary variables
+    * */
 
     --color-blue: #3b7ddd;
     --color-indigo: #0a0a0a;
@@ -39,6 +50,11 @@
     --color-danger: #dc3545;
     --color-dark: #212529;
 }
+
+/**
+* General styles
+* */
+
 main#content {
     min-height: 80vh !important;
 }
@@ -61,11 +77,9 @@ a:hover {
     font-family: var(--font-lato);
 }
 
-
-/* TOPBAR - NAVBAR */
-/* TOPBAR - NAVBAR */
-/* TOPBAR - NAVBAR */
-
+/**
+* Topbar Navbar
+* */
 
 .topbar-navbar {
     transition: all 0.5s;
@@ -76,7 +90,9 @@ a:hover {
     padding-left: 20px;
 }
 
-/* TOPBAR - NAVBAR => LOGO I NAZWA APLIKACJI */
+/**
+* Topbar Navbar => logo and app name
+* */
 
 .app-logo {
     line-height: 1;
@@ -101,7 +117,9 @@ a:hover {
     font-family: var(--font-lato);
 }
 
-/* TOPBAR-NAVBAR => SIDEBAR TOOGLE */
+/**
+* Topbar Navbar => sidebar toggle
+* */
 
 .topbar-navbar .toggle-sidebar-btn {
     font-size: 32px;
@@ -111,7 +129,9 @@ a:hover {
     user-select: none;
 }
 
-/* TOPBAR-NAVBAR => SEARCHBAR */
+/**
+* Topbar Navbar => searchbar
+* */
 
 .topbar-navbar .search-bar {
     min-width: 420px;
@@ -173,7 +193,9 @@ a:hover {
     color: var(--color-primary);
 }
 
-/* TOPBAR-NAVBAR => NAWIGACJA GÓRNA - PANEL PRAWY*/
+/**
+* Topbar Navbar => right panel
+* */
 
 .right-panel ul {
     list-style: none;
@@ -204,13 +226,15 @@ a:hover {
     padding: 3px 6px;
 }
 
-/* TOPBAR-NAVBAR => POWIADOMIENIA I WIADOMOŚCI */
+/**
+* Topbar Navbar => notifications and messages
+* */
 
 .right-panel :is(.notifications, .messages) {
     inset: 8px -15px auto auto !important;
 }
 
-.right-panel :is(.notifications, .messages)  :is(.notification-item, .message-item) p {
+.right-panel :is(.notifications, .messages) :is(.notification-item, .message-item) p {
     font-size: 13px;
     margin-bottom: 3px;
     color: #939393;
@@ -258,7 +282,9 @@ a:hover {
     max-height: 40px;
 }
 
-/* TOPBAR-NAVBAR => PANEL UŻYTKOWNIKA */
+/**
+* Topbar Navbar => user panel
+* */
 
 .right-panel .user-profile {
     color: var(--color-primary);
@@ -307,9 +333,9 @@ a:hover {
     background-color: var(--bg-primary);
 }
 
-/* SIDEBAR - PANEL BOCZNY - NAWIGACJA */
-/* SIDEBAR - PANEL BOCZNY - NAWIGACJA */
-/* SIDEBAR - PANEL BOCZNY - NAWIGACJA */
+/**
+* Sidebar
+* */
 
 .sidebar {
     position: fixed;
@@ -434,11 +460,9 @@ a:hover {
     color: #4154f1;
 }
 
-
-/* GŁÓWNY CONTENT */
-/* GŁÓWNY CONTENT */
-/* GŁÓWNY CONTENT */
-
+/**
+* Main content
+* */
 
 #content {
     padding: 20px 30px;
@@ -451,7 +475,9 @@ a:hover {
     }
 }
 
-/* ŚCIEŻKA STRONY - BREADCRUMB */
+/**
+* Main content - breadcrumb
+* */
 
 .page-path {
     margin-bottom: 10px;
@@ -489,11 +515,9 @@ a:hover {
     font-weight: 600;
 }
 
-
-/* ROZWIJALNE MENU - DROPDOWN */
-/* ROZWIJALNE MENU - DROPDOWN */
-/* ROZWIJALNE MENU - DROPDOWN */
-
+/**
+* Dropdown
+* */
 
 .dropdown-menu {
     border-radius: 4px;
@@ -557,25 +581,24 @@ a:hover {
     border-left: 1px solid #eaedf1;
 }
 
-
 @keyframes dropdown-animate {
     0% {
-    opacity: 0;
+        opacity: 0;
     }
 
     100% {
-    opacity: 1;
+        opacity: 1;
     }
 
     0% {
-    opacity: 0;
+        opacity: 0;
     }
 }
 
 
-/* KARTY - STYLE OGÓLNE */
-/* KARTY - STYLE OGÓLNE */
-/* KARTY - STYLE OGÓLNE */
+/**
+* Card
+* */
 
 .card {
     margin-bottom: 30px;
@@ -610,9 +633,9 @@ a:hover {
     background-color: rgba(255, 255, 255, 0.6);
 }
 
-/* MASONRY GRID - PROJEKTY / ZESPOŁY */
-/* MASONRY GRID - PROJEKTY / ZESPOŁY */
-/* MASONRY GRID - PROJEKTY / ZESPOŁY */
+/**
+* Masonry Grid
+* */
 
 .my-masonry-grid {
     display: -webkit-box;
@@ -632,15 +655,15 @@ a:hover {
     margin-bottom: 24px;
 }
 
-/* KARTA - PROJEKTY / ZESPOŁY */
-/* KARTA - PROJEKTY / ZESPOŁY */
-/* KARTA - PROJEKTY / ZESPOŁY */
+/**
+* Card - projects
+* */
 
-.card-view .more-action svg{
+.card-view .more-action svg {
     color: var(--color-gray-600);
 }
 
-.card-view .more-action svg:hover{
+.card-view .more-action svg:hover {
     transition: 0.5s;
     cursor: pointer;
     color: var(--color-primary);
@@ -703,10 +726,6 @@ a:hover {
     color: var(--color-gray-500);
 }
 
-/* ZESPOŁY */
-/* ZESPOŁY */
-/* ZESPOŁY */
-
 .add-button {
     background-color: #3b7ddd;
     padding: 4px 12px 4px 6px;
@@ -731,7 +750,7 @@ a:hover {
     border: 1.5px solid var(--color-primary);
 }
 
-.section .modal :is(input, textarea, select){
+.section .modal :is(input, textarea, select) {
     border: 1.5px solid rgba(1, 41, 112, 0.2);
     transition: 0.3s;
 }
@@ -743,6 +762,10 @@ a:hover {
 .section .modal :is(input:hover, input:focus, textarea:hover, textarea:focus, select:hover, select:focus) {
     border: 1.5px solid var(--color-primary);
 }
+
+/**
+* Experiments
+* */
 
 .icon-border {
     border: 2px solid var(--color-primary);
@@ -776,7 +799,7 @@ input[type="checkbox"] {
     transition: 0.3s;
 }
 
-input[type="checkbox"]:hover, input[type="checkbox"]:focus{
+input[type="checkbox"]:hover, input[type="checkbox"]:focus {
     border: 1.5px solid var(--color-primary);
 }
 
@@ -788,10 +811,9 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus{
     transition: 0.3s;
 }
 
-/* TABS */
-/* TABS */
-/* TABS */
-
+/**
+* Tabs
+* */
 
 .nav-tabs-bordered {
     border-bottom: 2px solid #ebeef4;
@@ -817,44 +839,9 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus{
     transition: 0s;
 }
 
-
-/* SCROLL-TO-TOP BUTTON */
-/* SCROLL-TO-TOP BUTTON */
-/* SCROLL-TO-TOP BUTTON */
-
-
-.back-to-top {
-    position: fixed;
-    visibility: hidden;
-    opacity: 0;
-    right: 15px;
-    bottom: 15px;
-    z-index: 99999;
-    background: var(--color-primary);
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    transition: all 0.4s;
-}
-
-.back-to-top i {
-    font-size: 24px;
-    color: #fff;
-    line-height: 0;
-}
-
-.back-to-top:hover {
-    transition: 0.3s;
-    background: #012a70e6;
-    color: #fff;
-}
-
-.back-to-top.active {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* STYLE DO GRIDA */
+/**
+* AG-GRID styles
+* */
 
 .ag-theme-alpine .ag-root-wrapper {
     border-radius: 3px;
@@ -885,7 +872,9 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus{
     background: none;
 }
 
-/* OGÓLNE STYLE DO TREE SELECTA */
+/**
+* TreeSelect styles
+* */
 
 .tree-select {
     height: 32px;
@@ -915,7 +904,7 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus{
     background-color: #fff !important;
 }
 
-.p-highlight .p-checkbox-box{
+.p-highlight .p-checkbox-box {
     background-color: #012970 !important;
 }
 
@@ -928,7 +917,7 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus{
     border: 2px solid var(--color-primary) !important;
 }
 
-.p-treenode-content.p-highlight .p-checkbox-box{
+.p-treenode-content.p-highlight .p-checkbox-box {
     border: 2px solid var(--color-primary) !important;
 }
 
@@ -946,7 +935,9 @@ button.p-tree-toggler:has(+.p-treenode-label) {
     border-radius: 3px !important;
 }
 
-/* STYLE DO TREE SELECTA - CHECKBOXY */
+/**
+* TreeSelect - checkbox
+* */
 
 .checkbox-select {
     margin-right: 6px;
@@ -965,7 +956,9 @@ button.p-tree-toggler:has(+.p-treenode-label) {
     font-weight: 500;
 }
 
-/* STYLE DO TREE SELECTA - POJEDYNCZY WYBÓR */
+/**
+* TreeSelect - single
+* */
 
 .single-select {
     margin-right: 6px;
@@ -984,9 +977,12 @@ button.p-tree-toggler:has(+.p-treenode-label) {
     font-weight: 500;
 }
 
+/**
+* Iterations
+* */
 
-.experiment-button {
-    padding: 4px 12px 4px 6px;
+.iterations-button {
+    padding: 4px 6px 4px 6px;
     margin-right: 12px;
     font-size: 16px;
     border-radius: 3px;
@@ -996,4 +992,35 @@ button.p-tree-toggler:has(+.p-treenode-label) {
 #filter-text-box {
     margin-right: 12px;
     width: 230px;
+}
+
+.button-container button {
+    background-color: #fff;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+    box-sizing: border-box;
+    height: 32px;
+}
+
+.button-container button:disabled {
+    background-color: #fff;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.button-container button:hover {
+    background-color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+.button-container div > button:last-of-type {
+    margin-right: 0px;
+}
+
+button > span {
+    margin-right: 4px;
 }

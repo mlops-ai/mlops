@@ -1,30 +1,40 @@
 import {ThreeDots} from "react-bootstrap-icons";
 
+/**
+ * Project card component.
+ * */
 function ProjectCard(props) {
-    // Funkcja do kapitalizacji stringa
+    /**
+     * Function for string captitalization.
+     * */
     const capitalizeFirstLetter = str => {
         return (
             str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
         );
     }
 
-    // Liczba wyświetlanych eksperymentów w liście
+    /**
+     * Variable defining the maximum number of experiments in the list.
+     * */
     const displayMaxExperiments = 3;
 
-    // Liczba wszystkich eksperymentów dla danego projektu
+    /**
+     * Variable containing the number of experiments in project.
+     * */
     const experimentsNumber = props.projectExperiments.length
 
-    // Generowanie listy eksperymentów
+    /**
+     * Generating experiments list.
+     * */
     let experiments;
 
     if (experimentsNumber === 0) {
         experiments = "This project has no experiments.";
     } else {
 
-        // Mapowanie nazw eksperymentów do elementów listy
         let experimentsList = props.projectExperiments.slice(0, displayMaxExperiments).map(experiment => {
             return (
-                <li key={experiment.id}>{experiment.name}</li>
+                <li key={experiment.id}>{experiment}</li>
             )
         });
 
@@ -37,6 +47,9 @@ function ProjectCard(props) {
 
     }
 
+    /**
+     * Component rendering.
+     * */
     return (
             <div className="project-card">
 
@@ -49,7 +62,6 @@ function ProjectCard(props) {
                             <div className="more-action float-end test ps-3">
 
                                 <ThreeDots size={20} data-bs-toggle="dropdown" title={"Project actions"}/>
-
 
 
                                 {!props.projectIsArchived ?

@@ -1,6 +1,12 @@
 import React from "react";
 
+/**
+ * Experiment list item component.
+ * */
 function ExperimentListItem(props) {
+    /**
+     * Component rendering.
+     * */
     return (
         <div className={"experiment-item pt-1 pb-1 " + (props.experimentActive ? "active" : "")}>
             <div className="d-flex align-items-center justify-content-between">

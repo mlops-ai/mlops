@@ -338,17 +338,20 @@ function Projects(props) {
 
     // REST API do BACK-ENDU
     useEffect(() => {
-        fetch('http://localhost:8000/projects')
+        fetch('http://localhost:8000/projects/base')
             .then(response => {
                 if (response.ok) {
                     return response.json()
                 }
                 return Promise.reject(response);
             })
-            .then(data => setAllProjects({
-                projects: data
-            }
-            ))
+            .then(data => setAllProjects(() => {
+                console.log(data)
+                return {
+                    projects: data
+                }
+
+            }))
             .catch((response) => {
             response.json().then((json: any) => {
                 toast.error(json.detail, {

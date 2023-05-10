@@ -8,6 +8,7 @@ import { ModuleRegistry } from "ag-grid-community";
 import { ClientSideRowModelModule } from 'ag-grid-community';
 import {toast} from "react-toastify";
 import {TreeSelect} from "primereact/treeselect";
+import moment from "moment/moment";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -16,36 +17,71 @@ ModuleRegistry.registerModules([ClientSideRowModelModule]);
  */
 function Iterations (props) {
 
-    console.log("[DEBUG] ITERATIONS !")
+    console.log("[FOR DEBUGGING PURPOSES]: ITERATIONS GRID !")
 
+    /**
+     * Import library for date manipulation.
+     */
+    let moment = require('moment');
+
+    /**
+     * React ref hooks for close modal buttons.
+     */
+    const closeDeleteModalRef = useRef();
+    const closeEditModalRef = useRef();
+
+    /**
+     * React ref hook for grid api.
+     */
+    const gridRef = useRef();
+
+    /**
+     * States used for storing tree-select columns data.
+     */
     const [nodes, setNodes] = useState(null);
     const [cols, setCols] = useState(null);
     const [selectedNodeKey, setSelectedNodeKey] = useState(null);
+
+    /**
+     * States used for storing tree-select date filter data.
+     */
     const [selectedDateFilter, setSelectedDateFilter] = useState('allTime');
     let dateFilter = 'allTime';
+
+    /**
+     * States used for storing tree-select data.
+     */
     const [expandedKeys, setExpandedKeys] = useState({});
 
-    // Stan zawierający dane aktualnego projektu (np. edytowanego, usuwanego itd.)
+    /**
+     * States used for storing ag-grid column definition data.
+     * */
+    const [columnDefs, setColumnDefs] = useState([]);
+
+    /**
+     * States used for storing current iteration data (edited, deleted ...).
+     */
     const [currentIterationData, setCurrentIterationData] = useState({
         experiment_id: "",
         id: "",
         iteration_name: ""
     });
 
-    // Stan zawierający edytowalne dane aktualnego projektu (edytowanego)
+    /**
+     * States used for storing current iteration editable data (edited).
+     */
     const [currentIterationDataEditable, setCurrentIterationDataEditable] = useState({
         experiment_id: "",
         id: "",
         iteration_name: ""
     });
 
-    const closeDeleteModalRef = useRef();
-    const closeEditModalRef = useRef();
-
-    let moment = require('moment');
-
-    const gridRef = useRef();
-
+    /**
+     * Prepare data to displayable form.
+     * @ rowData: array of iterations data
+     * @ numberOfExperiments: number of experiments
+     * UseMemo is used for optimization purposes.
+     * */
     const [rowData, numberOfExperiments] = useMemo(() => {
         let rowData
         let numberOfExperiments
@@ -67,14 +103,17 @@ function Iterations (props) {
         return [rowData, numberOfExperiments];
     }, [props.gridData])
 
-    // Definicje kolumn
-    const [columnDefs, setColumnDefs] = useState([]);
-
+    /**
+     * Function for converting date to humanize form.
+     * */
     function dateToHumanize(date) {
         const difference = new moment.duration(Date.now() - Date.parse(date))
         return difference.humanize() + " ago";
     }
 
+    /**
+     * Function handling editing iteration request.
+     * */
     function handleEditIteration(event) {
         event.preventDefault();
 
@@ -88,6 +127,7 @@ function Iterations (props) {
 
         fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + currentIterationDataEditable.iteration_name.trim(), requestOptions)
             .then((response) => {
+                console.log(response)
                 if (response.ok) {
                     return response.json()
                 }
@@ -123,6 +163,9 @@ function Iterations (props) {
         });
     }
 
+    /**
+     * Function handling deleting iterations request.
+     * */
     function handleDeleteIterations(event) {
         event.preventDefault();
 
@@ -197,8 +240,10 @@ function Iterations (props) {
         });
     }
 
-
-    // DefaultColDef sets props common to all Columns
+    /**
+     * Variable containing ag-grid default columns definitions.
+     * UseMemo is used for optimization purposes.
+     * */
     const defaultColDef = useMemo( ()=> {
         return {
             sortable: true,
@@ -213,6 +258,9 @@ function Iterations (props) {
         }
     });
 
+    /**
+     * Filter comparator for ag-grid date column.
+     * */
     var filterParams = {
         comparator: (filterDate, cellValue) => {
             let dateInCell = new Date(cellValue);
@@ -231,14 +279,29 @@ function Iterations (props) {
         inRangeFloatingFilterDateFormat: 'Do MMM YYYY',
     };
 
+    /**
+     * Helper function for expanding tree-select nodes.
+     * */
+    const expandNode = (node, _expandedKeys) => {
+        if (node.children && node.children.length) {
+            _expandedKeys[node.key] = true;
 
-    let columns_data_checked;
+            for (let child of node.children) {
+                expandNode(child, _expandedKeys);
+            }
+        }
+    };
+
+    /**
+     * ...
+     * */
     useEffect(() => {
 
+        /**
+         * Disable delete and rename button.
+         * */
         document.getElementById('delete-button').disabled = true
         document.getElementById('rename-button').disabled = true
-
-        // setNodes(data)
 
         let iteration_info
         let model_info
@@ -423,12 +486,13 @@ function Iterations (props) {
                     partialChecked: false,
                 },
             }
+
             columns_list = ['model_name', 'user_name']
         }
 
-        // setNodes(columns_data)
-
-        // Parsowanie parametrów z danych
+        /**
+         * Parse parameters data from iterations
+         * */
         let parameters_data = rowData.map(iteration => new Set(iteration.parameters !== null ? Object.getOwnPropertyNames(iteration.parameters) : ''))
 
         let parameters_names = new Set();
@@ -488,10 +552,10 @@ function Iterations (props) {
             )
         }
 
-        // Parsowanie metryk z danych
+        /**
+         * Parse metrics data from iterations
+         * */
         let metrics_data = rowData.map(iteration => new Set(iteration.metrics !== null ? Object.getOwnPropertyNames(iteration.metrics) : ''))
-
-        // console.log(metrics_data)
 
         let metrics_names = new Set();
 
@@ -550,33 +614,25 @@ function Iterations (props) {
             )
         }
 
-        //setNodes(columns_data)
-
-
-
-        // console.log(columns_list)
-
+        /**
+         * Set states data for tree-select columns filter.
+         * */
         setCols(columns_list)
         setNodes(columns_data)
         setSelectedNodeKey(columns_data_checked)
 
-        const expandNode = (node, _expandedKeys) => {
-            if (node.children && node.children.length) {
-                _expandedKeys[node.key] = true;
-
-                for (let child of node.children) {
-                    expandNode(child, _expandedKeys);
-                }
-            }
-        };
-
+        /**
+         * Set states data for tree-select expanded nodes.
+         * */
         let _expandedKeys = {};
         for (let node of columns_data) {
             expandNode(node, _expandedKeys);
         }
         setExpandedKeys(_expandedKeys);
 
-        // Definicje kolumn
+        /**
+         * AG-Grid columns definitions.
+         * */
         const columns = [
             {
                 field: 'id',
@@ -607,9 +663,15 @@ function Iterations (props) {
             }
         ]
 
+        /**
+         * Set AG-Grid columns definitions.
+         * */
         setColumnDefs(columns)
     }, [props.gridData, rowData])
 
+    /**
+     * Handle row seletion/deselection.
+     * */
     const onRowSelected = useCallback((event) => {
         let deleteButton = document.getElementById('delete-button')
         let deleteModal = document.getElementById('delete-value')
@@ -642,13 +704,9 @@ function Iterations (props) {
         deleteModal.innerHTML = selectedRowsNum
     }, []);
 
-    const onSelectionChanged = useCallback((event) => {
-        // console.log(event.api.getSelectedRows().length)
-        // console.log(event.api.getSelectedRows())
-    }, []);
-
-    // console.log(rowData)
-
+    /**
+     * Handle editable iteration data change.
+     * */
     function handleCurrentDataEditable(event) {
         setCurrentIterationDataEditable(prevCurrentIterationDataEditable => {
             return {
@@ -658,6 +716,9 @@ function Iterations (props) {
         })
     }
 
+    /**
+     * Clear filters.
+     * */
     const clearFilters = useCallback(() => {
         gridRef.current.api.setFilterModel(null);
         document.getElementById('filter-text-box').value = '';
@@ -669,120 +730,63 @@ function Iterations (props) {
         setSelectedDateFilter(dateFilter)
     }, []);
 
-    const updateColumnVisibility = useCallback((data) => {
-        let columns_active = Object.getOwnPropertyNames(data);
-        for (let col of cols) {
-            // console.log(col)
-            if (columns_active.includes(col)) {
-                gridRef.current.columnApi.setColumnVisible(col, true)
-            } else {
-                gridRef.current.columnApi.setColumnVisible(col, false)
-            }
-        }
-
-    });
-
-    const externalFilterChanged = useCallback((newValue) => {
-        dateFilter = newValue
-        gridRef.current.api.onFilterChanged();
-    }, []);
-
-    const isExternalFilterPresent = useCallback(() => {
-        return dateFilter !== 'allTime'
-    }, []);
-
-    const doesExternalFilterPass = useCallback(
-        (node) => {
-            if (node.data) {
-                switch (dateFilter) {
-                    case 'lastHour':
-                        return moment(node.data.created_at).isAfter(moment().subtract(1, 'hours'));
-                    case 'last3Hours':
-                        return moment(node.data.created_at).isAfter(moment().subtract(3, 'hours'));
-                    case 'last6Hours':
-                        return moment(node.data.created_at).isAfter(moment().subtract(6, 'hours'));
-                    case 'last12Hours':
-                        return moment(node.data.created_at).isAfter(moment().subtract(12, 'hours'));
-                    case 'last24Hours':
-                        return moment(node.data.created_at).isAfter(moment().subtract(24, 'hours'));
-                    case 'last7Days':
-                        return moment(node.data.created_at).isAfter(moment().subtract(7, 'days'));
-                    case 'last14Days':
-                        return moment(node.data.created_at).isAfter(moment().subtract(14, 'days'));
-                    case 'last30Days':
-                        return moment(node.data.created_at).isAfter(moment().subtract(30, 'days'));
-                    case 'last90Days':
-                        return moment(node.data.created_at).isAfter(moment().subtract(90, 'days'));
-                    case 'last180Days':
-                        return moment(node.data.created_at).isAfter(moment().subtract(180, 'days'));
-                    case 'lastYear':
-                        return moment(node.data.created_at).isAfter(moment().subtract(1, 'years'));
-                    default:
-                        return true;
-                }
-            }
-            return true;
-        },
-        [dateFilter]
-    );
-
-    const grid = useMemo(() => {
-        console.log("TEST")
-        dateFilter = 'allTime';
-        return <div className="ag-theme-alpine w-100">
-
-            <AgGridReact
-                // Referencja do AG-GRID'a
-                ref={gridRef}
-
-                // Dane iteracji
-                rowData={rowData}
-
-                // Domyślne ustawienia dla wszystkich kolumn
-                defaultColDef={defaultColDef}
-
-                // Definicja kolumn
-                columnDefs={columnDefs}
-
-                // Animowane wiersze przy sortowaniu
-                // animateRows={true}
-
-                // Zaznaczanie iteracji (wierszy)
-                rowSelection='multiple' // Options - allows click selection of rows
-                suppressRowClickSelection={true}
-                suppressDragLeaveHidesColumns={true}
-
-                // Stronicowanie
-                pagination={true}
-                paginationPageSize={20}
-                rowHeight={25}
-
-                // Ustawienia layoutu
-                domLayout={'autoHeight'}
-
-                // Eventy
-                //onCellClicked={cellClickedListener}
-                onRowSelected={onRowSelected}
-                onSelectionChanged={onSelectionChanged}
-                isExternalFilterPresent={isExternalFilterPresent}
-                doesExternalFilterPass={doesExternalFilterPass}
-            />
-
-        </div>
-    }, [columnDefs]);
-
+    /**
+     * Clear sorting.
+     * */
     const clearSort = useCallback(() => {
         gridRef.current.columnApi.applyColumnState({
             defaultState: { sort: null },
         });
     }, []);
 
+    /**
+     * Update column visibility.
+     * */
+    const updateColumnVisibility = useCallback((data) => {
+        let columns_active = Object.getOwnPropertyNames(data);
+        for (let col of cols) {
+            if (columns_active.includes(col)) {
+                gridRef.current.columnApi.setColumnVisible(col, true)
+            } else {
+                gridRef.current.columnApi.setColumnVisible(col, false)
+            }
+        }
+    });
+
+    /**
+     * Export grid data to .csv file
+     * */
+    const exportToCSV = useCallback(() => {
+        gridRef.current.api.exportDataAsCsv({
+            skipColumnGroupHeaders: true,
+            processCellCallback: ({column, value}) => {
+                if (column.getId() === 'created_at') {
+                    return moment(new Date(value)).format("DD-MM-YYYY, HH:mm:ss")
+                }
+                return value
+            }
+        });
+    }, []);
+
+    /**
+     * Refresh page.
+     * */
+    const refreshPage = useCallback(() => {
+        window.location.reload(false);
+    })
+
+    /**
+     * Handle text filter change.
+     * */
     const onFilterTextBoxChanged = useCallback(() => {
         gridRef.current.api.setQuickFilter(
             document.getElementById('filter-text-box').value
         );
     }, []);
 
+    /**
+     * Date filters labels.
+     * */
     let date_filters = [
         {
             key: 'allTime',
@@ -834,18 +838,119 @@ function Iterations (props) {
         }
     ]
 
-    const onBtnExport = useCallback(() => {
-        gridRef.current.api.exportDataAsCsv({
-            skipColumnGroupHeaders: true,
-            processCellCallback: ({column, value}) => {
-                if (column.getId() === 'created_at') {
-                    return moment(new Date(value)).format("DD-MM-YYYY, HH:mm:ss")
-                }
-                return value
-            }
-        });
+    /**
+     * External time period filter.
+     * */
+    const externalFilterChanged = useCallback((newValue) => {
+        dateFilter = newValue
+        gridRef.current.api.onFilterChanged();
     }, []);
 
+    const isExternalFilterPresent = useCallback(() => {
+        return dateFilter !== 'allTime'
+    }, []);
+
+    const doesExternalFilterPass = useCallback(
+        (node) => {
+            if (node.data) {
+                switch (dateFilter) {
+                    case 'lastHour':
+                        return moment(node.data.created_at).isAfter(moment().subtract(1, 'hours'));
+                    case 'last3Hours':
+                        return moment(node.data.created_at).isAfter(moment().subtract(3, 'hours'));
+                    case 'last6Hours':
+                        return moment(node.data.created_at).isAfter(moment().subtract(6, 'hours'));
+                    case 'last12Hours':
+                        return moment(node.data.created_at).isAfter(moment().subtract(12, 'hours'));
+                    case 'last24Hours':
+                        return moment(node.data.created_at).isAfter(moment().subtract(24, 'hours'));
+                    case 'last7Days':
+                        return moment(node.data.created_at).isAfter(moment().subtract(7, 'days'));
+                    case 'last14Days':
+                        return moment(node.data.created_at).isAfter(moment().subtract(14, 'days'));
+                    case 'last30Days':
+                        return moment(node.data.created_at).isAfter(moment().subtract(30, 'days'));
+                    case 'last90Days':
+                        return moment(node.data.created_at).isAfter(moment().subtract(90, 'days'));
+                    case 'last180Days':
+                        return moment(node.data.created_at).isAfter(moment().subtract(180, 'days'));
+                    case 'lastYear':
+                        return moment(node.data.created_at).isAfter(moment().subtract(1, 'years'));
+                    default:
+                        return true;
+                }
+            }
+            return true;
+        },
+        [dateFilter]
+    );
+
+    /**
+     * AG-Grid component.
+     * UseMemo is used for optimization purposes.
+     * */
+    const grid = useMemo(() => {
+        console.log("[FOR DEBUGGING PURPOSES]: GRID !")
+        dateFilter = 'allTime';
+        return <div className="ag-theme-alpine w-100">
+            <AgGridReact
+                /**
+                 * Reference for grid.
+                 * */
+                ref={gridRef}
+
+                /**
+                 * Iteration data.
+                 * */
+                rowData={rowData}
+
+                /**
+                 * Default columns definitions.
+                 * */
+                defaultColDef={defaultColDef}
+
+                /**
+                 * Columns definitions.
+                 * */
+                columnDefs={columnDefs}
+
+                /**
+                 * Animated rows.
+                 * */
+                // animateRows={true}
+
+                /**
+                 * Row selection settings.
+                 * */
+                rowSelection='multiple'
+                suppressRowClickSelection={true}
+                suppressDragLeaveHidesColumns={true}
+
+                /**
+                 * Pagination settings.
+                 * */
+                pagination={true}
+                paginationPageSize={20}
+                rowHeight={25}
+
+                /**
+                 * Layout settings.
+                 * */
+                domLayout={'autoHeight'}
+
+                /**
+                 * Event listeners.
+                 * */
+                onRowSelected={onRowSelected}
+                isExternalFilterPresent={isExternalFilterPresent}
+                doesExternalFilterPass={doesExternalFilterPass}
+            />
+        </div>
+    }, [columnDefs]);
+
+    /**
+     * Component rendering.
+     * */
     return (
         <div>
             <div className="d-flex align-items-center flex-wrap">
@@ -880,15 +985,53 @@ function Iterations (props) {
 
             <hr className="mt-0" />
 
-            <div className="d-flex align-items-center flex-wrap">
-                <button id="delete-button" className="btn btn-danger experiment-button mb-3" data-bs-toggle="modal"
-                        data-bs-target="#delete-iterations" disabled={true}>Delete</button>
-                <button id="rename-button" className="btn btn-primary experiment-button mb-3" data-bs-toggle="modal"
-                        data-bs-target="#edit-iteration" disabled={true}>Rename</button>
-                <button id="compare-button" className="btn btn-success experiment-button mb-3" disabled={true}>Compare</button>
-                <button id="clear-filters" onClick={clearFilters} className="btn btn-secondary experiment-button mb-3">Clear Filters</button>
-                <button id="clear-sort" onClick={clearSort} className="btn btn-secondary experiment-button mb-3">Clear Sort</button>
-                <button id="export-csv" onClick={onBtnExport} className="btn btn-primary experiment-button mb-3">Export to CSV</button>
+            <div className="d-flex align-items-center flex-wrap button-container">
+                <button id="delete-button" className="btn btn-danger iterations-button mb-3 d-flex align-items-center" title="Delete iterations" data-bs-toggle="modal"
+                        data-bs-target="#delete-iterations" disabled={true}>
+                    <span className="material-symbols-rounded">
+                        delete
+                    </span>
+                    Delete
+                </button>
+                <button id="rename-button" className="btn btn-primary iterations-button mb-3 d-flex align-items-center" title="Rename iteration" data-bs-toggle="modal"
+                        data-bs-target="#edit-iteration" disabled={true}>
+                    <span className="material-symbols-rounded">
+                        edit
+                    </span>
+                    Rename
+                </button>
+                <button id="compare-button" className="btn btn-success iterations-button mb-3 d-flex align-items-center" title="Compare iterations" disabled={true}>
+                    <span className="material-symbols-rounded">
+                        compare_arrows
+                    </span>
+                    Compare
+                </button>
+                <button id="clear-filters" onClick={clearFilters} className="btn btn-secondary iterations-button mb-3 d-flex align-items-center" title="Clear filters">
+                    <span className="material-symbols-rounded">
+                        filter_alt_off
+                    </span>
+                    Clear filters
+                </button>
+                <button id="clear-sort" onClick={clearSort} className="btn btn-secondary iterations-button mb-3 d-flex align-items-center" title="Clear sorting">
+                    <span className="material-symbols-rounded">
+                        filter_list_off
+                    </span>
+                    Clear sorting
+                </button>
+                <div className="ms-xxl-auto d-flex align-items-center">
+                    <button id="export-csv" onClick={exportToCSV} className="btn btn-primary iterations-button mb-3 d-flex align-items-center" title="Export to .csv file">
+                        <span className="material-symbols-rounded">
+                            download
+                        </span>
+                        Export to CSV
+                    </button>
+                    <button id="refresh-page" onClick={refreshPage} className="btn btn-primary iterations-button mb-3 d-flex align-items-center" title="Refresh page">
+                        <span className="material-symbols-rounded">
+                            cached
+                        </span>
+                        Refresh
+                    </button>
+                </div>
             </div>
 
             {grid}
