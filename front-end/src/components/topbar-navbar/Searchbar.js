@@ -1,10 +1,16 @@
 import React from "react";
 
+/**
+ * Searchbar component.
+ * */
 function Searchbar(props) {
 
+    /**
+     * Component rendering.
+     * */
     return (
         <div id="search-bar" className="search-bar">
-            <form className="search-form d-flex align-items-center" method="POST" action="#">
+            <form className="search-form d-flex align-items-center" action="#">
                 <input id="search-input" type="text" name="query"
                        placeholder="Search for experiments, models, teams or members ..."
                        title="Enter search keyword"/>

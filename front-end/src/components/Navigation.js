@@ -7,15 +7,29 @@ import Searchbar from "./topbar-navbar/Searchbar";
 import RightPanel from "./topbar-navbar/RightPanel";
 import NavItem from "./sidebar/NavItem";
 
+/**
+ * Navigation component.
+ * */
 function Navigation(props) {
     let path = useLocation().pathname;
+
+    /**
+     * Function for toggle sidebar.
+     * */
     function toggleSidebar(e) {
         document.body.classList.toggle('toggle-sidebar');
     }
+
+    /**
+     * Function for toggle searchbar.
+     * */
     function toggleSearchbar(e) {
         document.getElementById('search-bar').classList.toggle('search-bar-show');
     }
 
+    /**
+     * Component rendering.
+     * */
     return (
         <React.Fragment>
             <header id="topbar-navbar" className="topbar-navbar sticky-top d-flex align-items-center">
