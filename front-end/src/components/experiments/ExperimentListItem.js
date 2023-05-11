@@ -1,12 +1,18 @@
 import React from "react";
 
+/**
+ * Experiment list item component.
+ * */
 function ExperimentListItem(props) {
+    /**
+     * Component rendering.
+     * */
     return (
         <div className={"experiment-item pt-1 pb-1 " + (props.experimentActive ? "active" : "")}>
             <div className="d-flex align-items-center justify-content-between">
 
                 <div className="d-flex align-items-center">
-                    <input className="form-check-input m-0 me-1 shadow-none" type="checkbox" checked={props.experimentActive} name={props.experimentID}
+                    <input className="form-check-input m-0 me-1 shadow-none" style={{flexShrink: 0}} type="checkbox" checked={props.experimentActive} name={props.experimentID}
                     onChange={props.handleChange}/>
                     <span style={{cursor: "pointer"}} experiment-id={props.experimentID} onClick={props.handleChangeSingle}>{props.experimentName}</span>
                 </div>

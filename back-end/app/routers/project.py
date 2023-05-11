@@ -1,14 +1,14 @@
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
-from typing import List
+from typing import List, Dict
 
-from app.models.project import Project, UpdateProject
+from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
-    project_has_remaining_experiments_exception
 )
 
 router = APIRouter()
@@ -16,24 +16,129 @@ router = APIRouter()
 
 @router.get("/", response_model=List[Project], status_code=status.HTTP_200_OK)
 async def get_all_projects() -> List[Project]:
+    """
+    Get all projects.
+
+    Args:
+    - **None**
+
+    Returns:
+    - **List[Project]**: List of all projects.
+    """
     projects = await Project.find_all().to_list()
     return projects
 
 
+@router.get("/base", response_model=List[DisplayProject], status_code=status.HTTP_200_OK)
+async def get_all_projects_base() -> List[DisplayProject]:
+    """
+    Get base information about all projects.
+
+    Args:
+    - **None**
+
+    Returns:
+    - **List[DisplayProject]**: List of base information about all projects.
+    """
+
+    projects = await Project.find_all().to_list()
+    display_projects = []
+
+    for project in projects:
+        display_project = DisplayProject(
+            id=project.id,
+            title=project.title,
+            description=project.description,
+            status=project.status,
+            archived=project.archived,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+            experiments=[]
+        )
+
+        experiments_names = [experiment.name for experiment in project.experiments]
+
+        display_project.experiments = experiments_names
+
+        display_projects.append(display_project)
+
+    return display_projects
+
+
+@router.get("/{id}/base", response_model=DisplayProject, status_code=status.HTTP_200_OK)
+async def get_project_base(id: PydanticObjectId) -> DisplayProject:
+    """
+    Get base information about project by id.
+
+    Args:
+    - **id** (PydanticObjectId): Project id.
+
+    Returns:
+    - **DisplayProject**: Base information about project.
+    """
+    project = await Project.get(id)
+    if not project:
+        raise project_not_found_exception()
+
+    display_project = DisplayProject(
+        id=project.id,
+        title=project.title,
+        description=project.description,
+        status=project.status,
+        archived=project.archived,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        experiments=[]
+    )
+
+    experiments_names = [experiment.name for experiment in project.experiments]
+
+    display_project.experiments = experiments_names
+
+    return display_project
+
+
 @router.get("/non-archived", response_model=List[Project], status_code=status.HTTP_200_OK)
 async def get_non_archived_projects() -> List[Project]:
+    """
+    Get all non-archived projects.
+
+    Args:
+    - **None**
+
+    Returns:
+    - **List[Project]**: List of all non-archived projects.
+    """
     projects = await Project.find(Project.archived == False).to_list()
     return projects
 
 
 @router.get("/archived", response_model=List[Project], status_code=status.HTTP_200_OK)
 async def get_archived_projects() -> List[Project]:
+    """
+    Get all archived projects.
+
+    Args:
+    - **None**
+
+    Returns:
+    - **List[Project]**: List of all archived projects.
+    """
     projects = await Project.find(Project.archived == True).to_list()
     return projects
 
 
 @router.get("/{id}", response_model=Project, status_code=status.HTTP_200_OK)
 async def get_project(id: PydanticObjectId) -> Project:
+    """
+    Get project by id.
+
+    Args:
+    - **id** (PydanticObjectId): Project id.
+
+    Returns:
+    - **Project**: Project with given id.
+    """
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
@@ -43,6 +148,15 @@ async def get_project(id: PydanticObjectId) -> Project:
 
 @router.post("/", response_model=Project, status_code=status.HTTP_201_CREATED)
 async def add_project(project: Project) -> Project:
+    """
+    Add new project.
+
+    Args:
+    - **project** (Project): Project to add.
+
+    Returns:
+    - **Project**: Added project.
+    """
     title_unique = await is_title_unique(project.title)
     if not title_unique:
         raise project_title_not_unique_exception()
@@ -53,6 +167,15 @@ async def add_project(project: Project) -> Project:
 
 @router.put("/{id}", response_model=Project, status_code=status.HTTP_200_OK)
 async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -> Project:
+    """
+    Update project.
+
+    Args:
+    - **id** (PydanticObjectId): Project id.
+
+    Returns:
+    - **Project**: Updated project.
+    """
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
@@ -70,13 +193,18 @@ async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(id: PydanticObjectId):
+    """
+    Delete project.
+
+    Args:
+    - **id** (PydanticObjectId): Project id.
+
+    Returns:
+    - **None**
+    """
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
-
-    # let's not allow deleting if project has remaining experiments
-    if project.experiments:
-        raise project_has_remaining_experiments_exception()
 
     await project.delete()
     return None
@@ -84,6 +212,15 @@ async def delete_project(id: PydanticObjectId):
 
 @router.get("/title/{title}", response_model=Project, status_code=status.HTTP_200_OK)
 async def get_project_by_title(title: str) -> Project:
+    """
+    Get project by title.
+
+    Args:
+    - **title** (str): Project title.
+
+    Returns:
+    - **Project**: Project with given title.
+    """
     project = await Project.find_one(Project.title == title)
     if not project:
         raise project_not_found_exception()
