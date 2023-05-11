@@ -142,7 +142,6 @@ def create_experiment(name: str, description: str = None,
         raise request_failed_execption(app_response)
 
 
-# TODO: write function for setting active experiment same as set_active_project()
 def set_active_experiment(experiment_id: str) -> str:
     """
     Function for setting active experiment
@@ -179,9 +178,6 @@ def start_iteration(iteration_name: str, project_id: str = None,
 
     project_id = settings.active_project_id if not project_id else project_id
     experiment_id = settings.active_experiment_id if not experiment_id else experiment_id
-    # TODO: add exceptions when one of id = None or id does not exists
-    # In general, we can create separate folder exceptions, same as it's done in back-end routers,
-    # because we need to also add some exceptions for further functions
 
     if project_id is None:
         raise project_id_is_none_exception()
