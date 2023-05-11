@@ -38,10 +38,6 @@ class Iteration:
         Args:
             path_to_model: input path to model
         """
-        # TODO: we need to take as an input path with single backslashes (e.g. "C:\mlops-inzynierka\LICENSE") and
-        # use some regex to parse it to double backslashes, because JSON doesn't accept single ones
-        # add universal path support :)
-        # raise NotImplementedError
 
         self.path_to_model = path_to_model
 
@@ -101,9 +97,6 @@ class Iteration:
             "path_to_model": self.path_to_model,
             "model_name": self.model_name
         }
-
-        print(data)
-        # TODO: send data to API here
 
         app_response = requests.post(
             f'{settings.url}/projects/{self.project_id}/experiments/{self.experiment_id}/iterations/', json=data)
