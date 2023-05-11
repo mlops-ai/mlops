@@ -106,8 +106,72 @@ async def test_start_iteration(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_active_project(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    mlops.tracking.set_active_project(project_id=project['_id'])
+
+    with mlops.tracking.start_iteration('test_iteration', experiment_id=experiment['id']) as iteration:
         pass
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
+    assert lib_settings.active_project_id == project['_id']
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_active_experiment(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    mlops.tracking.set_active_project(project_id=project['_id'])
+    mlops.tracking.set_active_experiment(experiment['id'])
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id']) as iteration:
+        pass
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert lib_settings.active_experiment_id == experiment['id']
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_multiple_params_and_metrics(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    params = {'param1': 10, 'param2': 20, 'param3': 30}
+    metrics = {'metric1': 0.90, 'metric2': 1.3, 'metric3': 1000}
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameters(params)
+        iteration.log_metrics(metrics)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == params
+    assert result['metrics'] == metrics
+
