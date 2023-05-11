@@ -4,6 +4,7 @@ from mlops.config.config import settings
 from mlops.src.iteration import Iteration
 from mlops.exceptions.tracking import project_id_is_none_exception, experiment_id_is_none_exception, \
     failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_execption
+from typing import ContextManager
 
 
 def get_project(project_id: str = None) -> dict:
@@ -162,7 +163,8 @@ def set_active_experiment(experiment_id: str) -> str:
 
 
 @contextmanager
-def start_iteration(iteration_name: str, project_id: str = None, experiment_id: str = None):
+def start_iteration(iteration_name: str, project_id: str = None,
+                    experiment_id: str = None) -> ContextManager[Iteration]:
     """
     Function for creating mlops iteration
 
