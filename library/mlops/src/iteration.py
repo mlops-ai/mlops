@@ -19,8 +19,8 @@ class Iteration:
         self.metrics: dict = {}
 
     def format_path(self):
-        self.path_to_model = self.path_to_model.replace('/', '\\').replace('\f', '\\f').replace('\t', '\\t').replace(
-            '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('\\', '\\\\')
+        self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
+            '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('/', '\\')
 
     def log_model_name(self, model_name: str):
         """
