@@ -7,3 +7,8 @@ front-end/node_modules
 front-end/coverage
 front-end/build
 front-end/package-lock.json
+
+# Docker
+/data
+**/*.env
+back-end/*.env
