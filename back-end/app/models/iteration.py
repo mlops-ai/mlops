@@ -3,7 +3,8 @@ import getpass
 from pydantic import Field, BaseModel, validator
 from datetime import datetime
 from typing import Optional
-from beanie import PydanticObjectId
+from beanie import PydanticObjectId, Link
+from app.models.dataset import Dataset
 
 
 class Iteration(BaseModel):
@@ -19,6 +20,7 @@ class Iteration(BaseModel):
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
     model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
+    dataset: Optional[Link[Dataset]] = Field(default=None, description="Dataset")
 
     @validator('path_to_model')
     def path_to_model_exists(cls, path):
@@ -67,6 +69,7 @@ class Iteration(BaseModel):
 
 class UpdateIteration(Iteration):
     iteration_name: Optional[str]
+    dataset: Optional[Link[Dataset]]
 
     class Config:
         schema_extra = {
