@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  fastapi:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    volumes:
+      - ./back-end:/app
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URL=${MONGODB_URL_DEPLOY}
+    ports:
+      - ${FASTAPI_PORT}:${FASTAPI_PORT}
+
+  react:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    volumes:
+      - ./front-end:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    ports:
+      - ${REACT_PORT}:${REACT_PORT}
+
+  mongo:
+    image: mongo
+    volumes:
+      - ./data:/data/db
+    env_file:
+      - ./back-end/.env
+    ports:
+      - ${MONGODB_PORT}:${MONGODB_PORT}
