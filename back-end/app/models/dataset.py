@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, Dict
 from pathlib import Path
 from beanie import Document, Replace, Insert, before_event
 from pydantic import Field, HttpUrl, validator
@@ -15,6 +15,7 @@ class Dataset(Document):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
     version: Optional[str] = Field(default='', description="Dataset version")
+    linked_iterations: Optional[Dict] = Field(default_factory=dict, description="Linked iterations")
 
     @validator('path_to_dataset')
     def validate_path(cls, value):

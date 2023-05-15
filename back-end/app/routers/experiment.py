@@ -4,8 +4,10 @@ from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List, Dict
 
+from app.models.dataset import Dataset
 from app.models.experiment import Experiment, UpdateExperiment
 from app.models.project import Project
+from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_name_not_unique_exception, experiment_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
@@ -197,6 +199,15 @@ async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[
             iteration = next((iter for iter in experiment.iterations if iter.id == iteration_id), None)
             if not iteration:
                 raise iteration_not_found_exception()
+
+            if iteration.dataset:
+                resolved_dataset = iteration.dataset.to_dict()
+                dataset = await Dataset.get(resolved_dataset["id"])
+                if not dataset:
+                    raise dataset_not_found_exception()
+
+                del dataset.linked_iterations[str(iteration.id)]
+                await dataset.save()
 
             experiment.iterations.remove(iteration)
 

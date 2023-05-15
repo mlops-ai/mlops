@@ -8,6 +8,9 @@ from app.models.dataset import Dataset, UpdateDataset
 from app.models.project import Project
 
 from app.routers.exceptions.dataset import dataset_not_found_exception
+from app.routers.exceptions.experiment import experiment_not_found_exception
+from app.routers.exceptions.iteration import iteration_not_found_exception
+from app.routers.exceptions.project import project_not_found_exception
 
 dataset_router = APIRouter()
 
@@ -127,15 +130,24 @@ async def delete_dataset(id: PydanticObjectId):
     if not dataset:
         raise dataset_not_found_exception()
 
-    # target_projects = await Project.find_all("experiments.iterations.dataset" == dataset.id).to_list()
-    #
-    # for project in target_projects:
-    #     for experiment in project.experiments:
-    #         for iteration in experiment.iterations:
-    #             if iteration.dataset == dataset:
-    #                 iteration.dataset = None
-    #
-    #     await project.save()
+    if dataset.linked_iterations:
+        for iteration, value in dataset.linked_iterations.items():
+            project_id = value[0]
+            experiment_id = value[1]
+
+            project = await Project.get(project_id)
+            if not project:
+                raise project_not_found_exception()
+            experiment = next((exp for exp in project.experiments if exp.id == experiment_id), None)
+            if not experiment:
+                raise experiment_not_found_exception()
+            iteration = next((iter for iter in experiment.iterations if iter.id == PydanticObjectId(iteration)), None)
+            if not iteration:
+                raise iteration_not_found_exception()
+
+            iteration.dataset = None
+
+            await project.save()
 
     await dataset.delete()
 

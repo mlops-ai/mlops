@@ -74,6 +74,7 @@ class UpdateIteration(Iteration):
     class Config:
         schema_extra = {
                     "example": {
-                        "iteration_name": "New name"
+                        "iteration_name": "New name",
+                        "dataset": "5f9b3b3e9c9d6c0b3c9d6c0b"
                     }
                 }
