@@ -67,7 +67,6 @@ async def test_add_iteration(client: AsyncClient):
 
     iteration = {
         "iteration_name": "Test iteration",
-        "description": "Test iteration description",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
         "model_name": "Test model name"
@@ -103,7 +102,6 @@ async def test_add_iteration2(client: AsyncClient):
 
     iteration = {
         "iteration_name": "Test iteration 2",
-        "description": "Test iteration description",
         "metrics": {"accuracy": 0.9, "precision": 0.8, "recall": 0.7, "f1": 0.6},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.001},
         "path_to_model": test_file_path,
@@ -193,7 +191,6 @@ async def test_change_iteration_name(client: AsyncClient):
 
     iteration = {
         "iteration_name": "Test iteration to change",
-        "description": "Test iteration description to change",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
         "model_name": "Test model name to change"
@@ -237,3 +234,56 @@ async def test_delete_iteration_by_id(client: AsyncClient):
 
     response = await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
     assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_delete_iteration_with_dataset(client: AsyncClient):
+    """
+    Test delete iteration with dataset.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    dataset = {
+        "dataset_name": "Test dataset in iteration",
+        "dataset_description": "Test dataset description",
+        "dataset_type": "Test dataset type",
+        "version": "0.0.0",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/data",
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    dataset_id = response.json()["_id"]
+
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "dataset": {
+            "id": dataset_id,
+            "name": "Test dataset in iteration"}
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    response = await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    response = await client.get(f"/datasets/{dataset_id}")
+
+    assert response.json()["linked_iterations"] == {}
+

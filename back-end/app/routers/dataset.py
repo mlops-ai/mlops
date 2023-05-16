@@ -28,7 +28,6 @@ async def get_datasets() -> List[Dataset]:
     """
 
     datasets = await Dataset.find_all().to_list()
-    print(datasets)
 
     return datasets
 

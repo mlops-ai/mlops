@@ -132,11 +132,11 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     iteration.created_at = datetime.now()
 
     if iteration.dataset:
-        resolved_dataset = iteration.dataset.to_dict()
-        dataset = await Dataset.get(resolved_dataset["id"])
+        dataset = await Dataset.get(iteration.dataset.id)
         if not dataset:
             raise dataset_not_found_exception()
 
+        iteration.dataset.name = dataset.dataset_name
         dataset.linked_iterations[str(iteration.id)] = (iteration.project_id, iteration.experiment_id)
         await dataset.save()
 
@@ -176,41 +176,6 @@ async def update_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
 
     iteration.iteration_name = updated_iteration.iteration_name or iteration.iteration_name
 
-    if updated_iteration.dataset:
-        if iteration.dataset:
-            resolved_old_dataset = iteration.dataset.to_dict()
-            old_dataset = await Dataset.get(resolved_old_dataset['id'])
-
-            resolved_new_dataset = updated_iteration.dataset.to_dict()
-            new_dataset = await Dataset.get(resolved_new_dataset['id'])
-
-            if not old_dataset:
-                raise dataset_not_found_exception()
-            if not new_dataset:
-                raise dataset_not_found_exception()
-
-            del old_dataset.linked_iterations[str(iteration.id)]
-
-            new_dataset.linked_iterations[str(iteration.id)] = (iteration.project_id, iteration.experiment_id)
-
-            iteration.dataset = updated_iteration.dataset
-
-            await old_dataset.save()
-            await new_dataset.save()
-
-        elif not iteration.dataset:
-            resolved_new_dataset = updated_iteration.dataset.to_dict()
-            new_dataset = await Dataset.get(resolved_new_dataset['id'])
-
-            if not new_dataset:
-                raise dataset_not_found_exception()
-
-            new_dataset.linked_iterations[str(iteration.id)] = (iteration.project_id, iteration.experiment_id)
-
-            iteration.dataset = updated_iteration.dataset
-
-            await new_dataset.save()
-
     await project.save()
 
     return iteration
@@ -243,8 +208,7 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
         raise iteration_not_found_exception()
 
     if iteration.dataset:
-        resolved_dataset = iteration.dataset.to_dict()
-        dataset = await Dataset.get(resolved_dataset["id"])
+        dataset = await Dataset.get(iteration.dataset.id)
         if not dataset:
             raise dataset_not_found_exception()
 

@@ -2,9 +2,14 @@ import os
 import getpass
 from pydantic import Field, BaseModel, validator
 from datetime import datetime
-from typing import Optional
-from beanie import PydanticObjectId, Link
+from typing import Optional, Dict
+from beanie import PydanticObjectId
 from app.models.dataset import Dataset
+
+
+class DatasetInIteration(BaseModel):
+    id: PydanticObjectId
+    name: Optional[str] = None
 
 
 class Iteration(BaseModel):
@@ -20,7 +25,7 @@ class Iteration(BaseModel):
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
     model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
-    dataset: Optional[Link[Dataset]] = Field(default=None, description="Dataset")
+    dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
 
     @validator('path_to_model')
     def path_to_model_exists(cls, path):
@@ -62,19 +67,21 @@ class Iteration(BaseModel):
                 "metrics": {"accuracy": 0.9},
                 "parameters": {"batch_size": 32},
                 "path_to_model": "model.pkl",
-                "model_name": "model"
+                "model_name": "model",
+                "dataset": {
+                    "id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+                    "name": "Dataset Titanic"
+                }
             }
         }
 
 
 class UpdateIteration(Iteration):
     iteration_name: Optional[str]
-    dataset: Optional[Link[Dataset]]
 
     class Config:
         schema_extra = {
                     "example": {
-                        "iteration_name": "New name",
-                        "dataset": "5f9b3b3e9c9d6c0b3c9d6c0b"
+                        "iteration_name": "New name"
                     }
                 }

@@ -8,6 +8,29 @@ import requests
 
 
 class Dataset(Document):
+    """
+    Dataset model
+
+    Attributes:
+    -----------
+    dataset_name: str
+        Dataset name
+    path_to_dataset: str
+        Path to dataset
+    dataset_description: str
+        Dataset description
+    dataset_problem_type: str
+        Dataset problem type
+    created_at: datetime
+        Date and time of dataset creation
+    updated_at: datetime
+        Date and time of dataset update
+    version: str
+        Dataset version
+    linked_iterations: dict
+        Linked iterations (key: iteration id, value: (project id, experiment id)
+    """
+
     dataset_name: str = Field(..., description="Dataset name", min_length=1, max_length=40)
     path_to_dataset: str = Field(default='', description="Path to dataset")
     dataset_description: Optional[str] = Field(default='', description="Dataset description", max_length=150)
@@ -25,7 +48,7 @@ class Dataset(Document):
             if os.path.isfile(r'{}'.format(value)):
                 return value
             else:
-                os.chdir('/')
+                os.chdir('/')             # Change the current working directory to the root directory
                 if os.path.isfile(r'{}'.format(value)):
                     return value
             try:

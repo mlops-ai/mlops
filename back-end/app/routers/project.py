@@ -1,11 +1,12 @@
-import json
 from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List, Dict
 
+from app.models.dataset import Dataset
 from app.models.project import Project, UpdateProject, DisplayProject
+from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
@@ -205,6 +206,19 @@ async def delete_project(id: PydanticObjectId):
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
+
+    experiments = project.experiments
+
+    for experiment in experiments:
+        iterations = experiment.iterations
+        for iteration in iterations:
+            if iteration.dataset:
+                dataset = await Dataset.get(iteration.dataset.id)
+                if not dataset:
+                    raise dataset_not_found_exception()
+
+                del dataset.linked_iterations[str(iteration.id)]
+                await dataset.save()
 
     await project.delete()
     return None

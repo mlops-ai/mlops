@@ -165,6 +165,16 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
     if not experiment:
         raise experiment_not_found_exception()
 
+    iterations = experiment.iterations
+    for iteration in iterations:
+        if iteration.dataset:
+            dataset = await Dataset.get(iteration.dataset.id)
+            if not dataset:
+                raise dataset_not_found_exception()
+
+            del dataset.linked_iterations[str(iteration.id)]
+            await dataset.save()
+
     project.experiments.remove(experiment)
     await project.save()
 
@@ -201,8 +211,7 @@ async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[
                 raise iteration_not_found_exception()
 
             if iteration.dataset:
-                resolved_dataset = iteration.dataset.to_dict()
-                dataset = await Dataset.get(resolved_dataset["id"])
+                dataset = await Dataset.get(iteration.dataset.id)
                 if not dataset:
                     raise dataset_not_found_exception()
 
