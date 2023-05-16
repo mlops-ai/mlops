@@ -167,6 +167,7 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
         raise experiment_not_found_exception()
 
     iterations = experiment.iterations
+    await delete_iteration_from_dataset_deleting_experiment(iterations)
 
     project.experiments.remove(experiment)
     await project.save()
