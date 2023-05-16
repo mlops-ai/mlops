@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import ProjectCard from "../components/projects/ProjectCard";
 import LoadingData from "../components/LoadingData";
+import moment from "moment/moment";
 
 function Projects(props) {
     console.log("PROJEKTY")
@@ -399,6 +400,7 @@ function Projects(props) {
                     projectDescription={project.description}
                     projectIsArchived={project.archived}
                     projectCreationDate={moment(new Date(project.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                    projectModifyDate={moment(new Date(project.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
                     projectExperiments={project.experiments}
                     setCurrentProject={setCurrentProjectData}
                     setCurrentProjectEditable={setCurrentProjectDataEditable}
@@ -431,6 +433,7 @@ function Projects(props) {
                     projectDescription={project.description}
                     projectIsArchived={project.archived}
                     projectCreationDate={moment(new Date(project.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                    projectModifyDate={moment(new Date(project.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
                     projectExperiments={project.experiments}
                     setCurrentProject={setCurrentProjectData}
                     setCurrentProjectEditable={setCurrentProjectDataEditable}

@@ -115,6 +115,7 @@ function Iteration(props) {
 
                         series: series
                     };
+                    console.log(metrics_chart_options)
                 }
             }
             return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options]

@@ -5,7 +5,7 @@ function ProfileNav(props) {
     return (
         <li className="dropdown pe-3">
 
-            <a className="nav-link user-profile d-flex align-items-center pe-0" href="#"
+            <a className="nav-link user-profile d-flex align-items-center" href="#"
                data-bs-toggle="dropdown">
                 <img src={photo4} alt="User profile image"
                      className="rounded-circle"/>

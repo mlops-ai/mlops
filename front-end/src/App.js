@@ -12,6 +12,7 @@ import Navigation from "./components/Navigation";
 import Projects from "./pages/Projects";
 import Experiments from "./pages/Experiments";
 import Iteration from "./pages/Iteration";
+import Project from "./pages/Project";
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
                 <Route exact path='/' element={<Navigate replace={true} to="/projects" />} />
                 <Route path='/projects' exact element={<Projects />} />
                 <Route path='/projects/:project_id/experiments' exact element={<Experiments />} />
+                <Route path='/project' exact element={<Project />} />
                 <Route path='/projects/:project_id/experiments/:experiment_id/iterations/:iteration_id' exact element={<Iteration />} />
             </Routes>
         </BrowserRouter>

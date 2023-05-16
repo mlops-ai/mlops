@@ -58,6 +58,18 @@ function Navigation(props) {
                             </span>
                         }/>
 
+                    <li className="nav-section">Datasets</li>
+
+                    <NavItem
+                        location={path}
+                        href={'/datasets'}
+                        name={'Datasets'}
+                        icon={
+                            <span className="material-symbols-rounded">
+                                dataset
+                            </span>
+                        }/>
+
                     <li className="nav-section">Help</li>
 
                     <NavItem

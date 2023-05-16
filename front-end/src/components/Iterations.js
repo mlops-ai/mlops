@@ -8,7 +8,8 @@ import { ModuleRegistry } from "ag-grid-community";
 import { ClientSideRowModelModule } from 'ag-grid-community';
 import {toast} from "react-toastify";
 import {TreeSelect} from "primereact/treeselect";
-import moment from "moment/moment";
+import {columns_data_multiple, columns_data_checked_multiple, columns_list_multiple} from "./iterations/columns_multiple";
+import {columns_data_single, columns_data_checked_single, columns_list_single} from "./iterations/columns_single";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -117,6 +118,16 @@ function Iterations (props) {
     function handleEditIteration(event) {
         event.preventDefault();
 
+        if (gridRef.current.api.getSelectedRows().length === 0) {
+            return
+        }
+
+        let edit_spinner = document.getElementById('edit-iteration-spinner')
+        let edit_button = document.getElementById('edit-iteration-action')
+
+        edit_button.disabled = true
+        edit_spinner.style.display = "inline"
+
         let body = { iteration_name: currentIterationDataEditable.iteration_name.trim() };
 
         const requestOptions = {
@@ -127,29 +138,31 @@ function Iterations (props) {
 
         fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + currentIterationDataEditable.iteration_name.trim(), requestOptions)
             .then((response) => {
-                console.log(response)
                 if (response.ok) {
                     return response.json()
                 }
                 return Promise.reject(response);
             }).then((json) => {
-            toast.success('Iteration updated successfully!', {
-                position: "bottom-center",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: false,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-            });
-            props.refresher(prevRefresh => {
-                return prevRefresh+1
-            })
-            closeEditModalRef.current.click();
-        }).catch((response) => {
-            response.json().then((json: any) => {
-                toast.error(json.detail, {
+
+                edit_spinner.style.display = "none"
+                edit_button.disabled = false
+
+                props.setProjectData(prevProjectData => {
+                    return {
+                        ...prevProjectData,
+                        experiments: prevProjectData.experiments.map((experiment) => {
+                            if (experiment.id == currentIterationData.experiment_id) {
+                                let foundIndex = experiment.iterations.findIndex(iteration => iteration.id == currentIterationData.id);
+                                let copy_experiment = experiment
+                                copy_experiment.iterations[foundIndex] = json
+                                return copy_experiment
+                            }
+                            return experiment
+                        })
+                    }
+                })
+
+                toast.success('Iteration updated successfully!', {
                     position: "bottom-center",
                     autoClose: 3000,
                     hideProgressBar: false,
@@ -159,8 +172,25 @@ function Iterations (props) {
                     progress: undefined,
                     theme: "light",
                 });
-            })
-        });
+
+                closeEditModalRef.current.click();
+
+            }).catch((response) => {
+                edit_spinner.style.display = "none"
+                edit_button.disabled = false
+                response.json().then((json: any) => {
+                    toast.error(json.detail, {
+                        position: "bottom-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                    });
+                })
+            });
     }
 
     /**
@@ -172,6 +202,12 @@ function Iterations (props) {
         if (gridRef.current.api.getSelectedRows().length === 0) {
             return
         }
+
+        let delete_spinner = document.getElementById('delete-iterations-spinner')
+        let delete_button = document.getElementById('delete-iterations-action')
+
+        delete_button.disabled = true
+        delete_spinner.style.display = "inline"
 
         gridRef.current.api.getSelectedRows().map((iteration) => {
             return {
@@ -207,6 +243,22 @@ function Iterations (props) {
                 }
                 return Promise.reject(response);
             }).then((response) => {
+
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+
+            props.setProjectData(prevProjectData => {
+                return {
+                    ...prevProjectData,
+                    experiments: prevProjectData.experiments.map((experiment) => {
+                        return {
+                            ...experiment,
+                            iterations: experiment.iterations.filter(iteration => (body.hasOwnProperty(experiment.id) && !body[experiment.id].includes(iteration.id)) || !body.hasOwnProperty(experiment.id))
+                        }
+                    })
+                }
+            })
+
             toast.success('Iteration/s deleted successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -218,13 +270,11 @@ function Iterations (props) {
                 theme: "light",
             });
 
-            props.refresher(prevRefresh => {
-                return prevRefresh+1
-            })
-
             closeDeleteModalRef.current.click();
 
         }).catch((response) => {
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
             response.body && response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -293,7 +343,7 @@ function Iterations (props) {
     };
 
     /**
-     * ...
+     * React hook for executing code after component mounting (after rendering).
      * */
     useEffect(() => {
 
@@ -350,60 +400,10 @@ function Iterations (props) {
                 }
             ]
 
-            columns_data = [
-                {
-                    key: 'iteration',
-                    label: 'Iteration info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'experiment_name',
-                            label: 'Experiment Name'
-                        },
-                        {
-                            key: 'user_name',
-                            label: 'User'
-                        }
-                    ]
-                },
-                {
-                    key: 'model',
-                    label: 'Model info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'model_name',
-                            label: 'Model'
-                        }
-                    ]
-                }
-            ]
+            columns_data = columns_data_multiple
+            columns_data_checked = columns_data_checked_multiple
+            columns_list = columns_list_multiple
 
-            columns_data_checked = {
-                iteration: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                experiment_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                user_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                model: {
-                    checked: true,
-                    partialChecked: false,
-                },
-
-                model_name: {
-                    checked: true,
-                    partialChecked: false,
-                }
-            }
-
-            columns_list = ['experiment_name', 'model_name', 'user_name']
         } else {
             iteration_info = [
                 {
@@ -443,51 +443,9 @@ function Iterations (props) {
                 }
             ]
 
-            columns_data = [
-                {
-                    key: 'iteration',
-                    label: 'Iteration info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'user_name',
-                            label: 'User'
-                        }
-                    ]
-                },
-                {
-                    key: 'model',
-                    label: 'Model info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'model_name',
-                            label: 'Model'
-                        }
-                    ]
-                }
-            ]
-
-            columns_data_checked = {
-                iteration: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                user_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                model: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                model_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-            }
-
-            columns_list = ['model_name', 'user_name']
+            columns_data = columns_data_single
+            columns_data_checked = columns_data_checked_single
+            columns_list = columns_list_single
         }
 
         /**
@@ -1065,11 +1023,22 @@ function Iterations (props) {
                             </div>
                             <div className="modal-footer">
                                 {currentIterationDataEditable.iteration_name !== currentIterationData.iteration_name ?
-                                    <button className="btn btn-primary float-end">Rename</button>
+                                    <button id="edit-iteration-action" className="btn btn-primary float-end">
+                                        <span className="d-flex align-items-center">
+                                            <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                            Rename
+                                        </span>
+                                    </button>
 
                                     :
 
-                                    <button className="btn btn-primary float-end" disabled={true}>Rename</button>
+                                    <button id="edit-iteration-action" className="btn btn-primary float-end" disabled={true}>
+                                        <span className="d-flex align-items-center">
+                                            <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                            Rename
+                                        </span>
+                                    </button>
+
                                 }
                             </div>
                         </form>
@@ -1093,7 +1062,12 @@ function Iterations (props) {
                         </div>
                         <div className="modal-footer">
                             <form onSubmit={handleDeleteIterations}>
-                                <button className="btn btn-danger float-end">Delete iterations</button>
+                                <button className="btn btn-danger float-end" id="delete-iterations-action">
+                                    <span className="d-flex align-items-center">
+                                        <i id="delete-iterations-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                        Delete iterations
+                                    </span>
+                                </button>
                             </form>
                         </div>
                     </div>
