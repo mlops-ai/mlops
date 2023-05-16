@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId, Link
@@ -107,6 +107,9 @@ async def update_dataset(id: PydanticObjectId, updated_dataset: UpdateDataset) -
 
     updated_dataset.updated_at = datetime.now()
 
+    if updated_dataset.dataset_name and updated_dataset.dataset_name != dataset.dataset_name:
+        await update_linked_iterations(dataset, updated_dataset)
+
     await dataset.update({"$set": updated_dataset.dict(exclude_unset=True)})
     await dataset.save()
 
@@ -129,6 +132,24 @@ async def delete_dataset(id: PydanticObjectId):
     if not dataset:
         raise dataset_not_found_exception()
 
+    await update_linked_iterations(dataset)
+
+    await dataset.delete()
+
+    return None
+
+
+async def update_linked_iterations(dataset: Dataset, updated_dataset: Optional[Dataset] = None) -> None:
+    """
+    Util function to update linked iterations when dataset is deleted or when dataset name is updated.
+
+    Args:
+    - **dataset (Dataset)**: Dataset
+    - **updated_dataset (Optional[Dataset])**: Updated dataset (optional, used when updating dataset name)
+
+    Returns:
+    - **None**
+    """
     if dataset.linked_iterations:
         for iteration, value in dataset.linked_iterations.items():
             project_id = value[0]
@@ -144,10 +165,9 @@ async def delete_dataset(id: PydanticObjectId):
             if not iteration:
                 raise iteration_not_found_exception()
 
-            iteration.dataset = None
+            if updated_dataset:
+                iteration.dataset.name = updated_dataset.dataset_name
+            else:
+                iteration.dataset = None
 
             await project.save()
-
-    await dataset.delete()
-
-    return None

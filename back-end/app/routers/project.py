@@ -5,6 +5,7 @@ from beanie import PydanticObjectId
 from typing import List, Dict
 
 from app.models.dataset import Dataset
+from app.models.experiment import Experiment
 from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.project import (
@@ -209,16 +210,7 @@ async def delete_project(id: PydanticObjectId):
 
     experiments = project.experiments
 
-    for experiment in experiments:
-        iterations = experiment.iterations
-        for iteration in iterations:
-            if iteration.dataset:
-                dataset = await Dataset.get(iteration.dataset.id)
-                if not dataset:
-                    raise dataset_not_found_exception()
-
-                del dataset.linked_iterations[str(iteration.id)]
-                await dataset.save()
+    await delete_iterations_from_dataset(experiments)
 
     await project.delete()
     return None
@@ -258,3 +250,27 @@ async def is_title_unique(title: str) -> bool:
     if project:
         return False
     return True
+
+
+async def delete_iterations_from_dataset_deleting_project(experiments: List[Experiment]) -> None:
+    """
+    Util function for deleting iterations from dataset when deleting project.
+
+    Args:
+        experiments: List of experiments.
+
+    Returns:
+        None
+    """
+    for experiment in experiments:
+        iterations = experiment.iterations
+        for iteration in iterations:
+            if iteration.dataset:
+                dataset = await Dataset.get(iteration.dataset.id)
+                if not dataset:
+                    raise dataset_not_found_exception()
+
+                del dataset.linked_iterations[str(iteration.id)]
+                await dataset.save()
+
+    return None

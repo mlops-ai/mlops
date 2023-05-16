@@ -208,14 +208,29 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
         raise iteration_not_found_exception()
 
     if iteration.dataset:
-        dataset = await Dataset.get(iteration.dataset.id)
-        if not dataset:
-            raise dataset_not_found_exception()
-
-        del dataset.linked_iterations[str(iteration.id)]
-        await dataset.save()
+        await delete_iteration_from_dataset_deleting_iteration(iteration)
 
     experiment.iterations.remove(iteration)
     await project.save()
+
+    return None
+
+
+async def delete_iteration_from_dataset_deleting_iteration(iteration: Iteration) -> None:
+    """
+    Util function for deleting iteration from dataset when iteration is deleted.
+
+    Args:
+    - **iteration (Iteration)**: Iteration
+
+    Returns:
+    - **None**: None
+    """
+    dataset = await Dataset.get(iteration.dataset.id)
+    if not dataset:
+        raise dataset_not_found_exception()
+
+    del dataset.linked_iterations[str(iteration.id)]
+    await dataset.save()
 
     return None

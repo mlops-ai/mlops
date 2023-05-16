@@ -6,6 +6,7 @@ from typing import List, Dict
 
 from app.models.dataset import Dataset
 from app.models.experiment import Experiment, UpdateExperiment
+from app.models.iteration import Iteration
 from app.models.project import Project
 from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_name_not_unique_exception, experiment_not_found_exception
@@ -166,14 +167,6 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
         raise experiment_not_found_exception()
 
     iterations = experiment.iterations
-    for iteration in iterations:
-        if iteration.dataset:
-            dataset = await Dataset.get(iteration.dataset.id)
-            if not dataset:
-                raise dataset_not_found_exception()
-
-            del dataset.linked_iterations[str(iteration.id)]
-            await dataset.save()
 
     project.experiments.remove(experiment)
     await project.save()
@@ -183,7 +176,7 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
 
 @experiment_router.post("/delete_iterations", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[PydanticObjectId,
-    List[PydanticObjectId]]) -> None:
+List[PydanticObjectId]]) -> None:
     """
     Delete iterations by ids.
 
@@ -211,12 +204,7 @@ async def delete_iterations(project_id: PydanticObjectId, experiment_dict: Dict[
                 raise iteration_not_found_exception()
 
             if iteration.dataset:
-                dataset = await Dataset.get(iteration.dataset.id)
-                if not dataset:
-                    raise dataset_not_found_exception()
-
-                del dataset.linked_iterations[str(iteration.id)]
-                await dataset.save()
+                await delete_iteration_from_dataset_deleting_iterations(iteration)
 
             experiment.iterations.remove(iteration)
 
@@ -240,3 +228,46 @@ async def is_name_unique(experiments: List[Experiment], name: str) -> bool:
         if exp.name == name:
             return False
     return True
+
+
+async def delete_iteration_from_dataset_deleting_experiment(iterations: List[Iteration]) -> None:
+    """
+    Util function for deleting iteration from dataset when experiment is deleted.
+
+    Args:
+    - **iterations (List[Iteration])**: List of iterations
+
+    Returns:
+    - **None**
+    """
+
+    for iteration in iterations:
+        if iteration.dataset:
+            dataset = await Dataset.get(iteration.dataset.id)
+            if not dataset:
+                raise dataset_not_found_exception()
+
+            del dataset.linked_iterations[str(iteration.id)]
+            await dataset.save()
+
+    return None
+
+
+async def delete_iteration_from_dataset_deleting_iterations(iteration: Iteration) -> None:
+    """
+    Util function for deleting iteration from dataset when iterations are deleted.
+
+    Args:
+    - **iteration (Iteration)**: Iteration
+
+    Returns:
+    - **None**
+    """
+    dataset = await Dataset.get(iteration.dataset.id)
+    if not dataset:
+        raise dataset_not_found_exception()
+
+    del dataset.linked_iterations[str(iteration.id)]
+    await dataset.save()
+
+    return None
