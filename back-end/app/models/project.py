@@ -40,9 +40,6 @@ class Project(Document):
             return self.id == other.id
         return False
 
-    @before_event([Insert, Replace])
-    def update_updated_at(self):
-        self.updated_at = datetime.now()
 
     class Settings:
         name = "project"
