@@ -210,7 +210,7 @@ async def delete_project(id: PydanticObjectId):
 
     experiments = project.experiments
 
-    await delete_iterations_from_dataset(experiments)
+    await delete_iterations_from_dataset_deleting_project(experiments)
 
     await project.delete()
     return None
