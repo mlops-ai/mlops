@@ -4,8 +4,10 @@ from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List, Dict
 
+from app.models.dataset import Dataset
 from app.models.iteration import Iteration, UpdateIteration
 from app.models.project import Project
+from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
@@ -129,6 +131,15 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     iteration.project_title = project.title
     iteration.created_at = datetime.now()
 
+    if iteration.dataset:
+        dataset = await Dataset.get(iteration.dataset.id)
+        if not dataset:
+            raise dataset_not_found_exception()
+
+        iteration.dataset.name = dataset.dataset_name
+        dataset.linked_iterations[str(iteration.id)] = (iteration.project_id, iteration.experiment_id)
+        await dataset.save()
+
     experiment.iterations.append(iteration)
     await project.save()
 
@@ -196,7 +207,30 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     if not iteration:
         raise iteration_not_found_exception()
 
+    if iteration.dataset:
+        await delete_iteration_from_dataset_deleting_iteration(iteration)
+
     experiment.iterations.remove(iteration)
     await project.save()
+
+    return None
+
+
+async def delete_iteration_from_dataset_deleting_iteration(iteration: Iteration) -> None:
+    """
+    Util function for deleting iteration from dataset when iteration is deleted.
+
+    Args:
+    - **iteration (Iteration)**: Iteration
+
+    Returns:
+    - **None**: None
+    """
+    dataset = await Dataset.get(iteration.dataset.id)
+    if not dataset:
+        raise dataset_not_found_exception()
+
+    del dataset.linked_iterations[str(iteration.id)]
+    await dataset.save()
 
     return None

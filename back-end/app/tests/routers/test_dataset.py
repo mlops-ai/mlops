@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -195,3 +196,58 @@ async def test_delete_dataset(client: AsyncClient):
     response = await client.delete(f"/datasets/{dataset_id}")
 
     assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_delete_dataset_with_linked_iteration(client: AsyncClient):
+    """
+    Test delete dataset with linked iteration.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    dataset_name = "Test dataset 3"
+    response = await client.get(f"/datasets/name/{dataset_name}")
+    dataset_id = response.json()["_id"]
+
+    project = {
+        "title": "Test project version 1",
+        "description": "Test project description"
+    }
+    response = await client.post("/projects/", json=project)
+    project_id = response.json()["_id"]
+
+    experiment = {
+        "name": "Test experiment version 1",
+        "description": "Test experiment description"
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/", json=experiment)
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration version 1",
+        "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
+        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
+        "model_name": "Test model name",
+        "dataset": {
+            "id": dataset_id,
+            "name": dataset_name
+        }
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    assert response.status_code == 201
+
+    response = await client.delete(f"/datasets/{dataset_id}")
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    assert response.status_code == 200
+    assert response.json()["dataset"] is None

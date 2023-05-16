@@ -201,7 +201,6 @@ async def test_get_experiment_by_name(client: AsyncClient):
     experiment_name = "Test experiment 1"
 
     response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
-    print(response.json())
     assert response.status_code == 200
     assert response.json()['name'] == experiment_name
 

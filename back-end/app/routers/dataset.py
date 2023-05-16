@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId, Link
@@ -8,6 +8,9 @@ from app.models.dataset import Dataset, UpdateDataset
 from app.models.project import Project
 
 from app.routers.exceptions.dataset import dataset_not_found_exception
+from app.routers.exceptions.experiment import experiment_not_found_exception
+from app.routers.exceptions.iteration import iteration_not_found_exception
+from app.routers.exceptions.project import project_not_found_exception
 
 dataset_router = APIRouter()
 
@@ -25,7 +28,6 @@ async def get_datasets() -> List[Dataset]:
     """
 
     datasets = await Dataset.find_all().to_list()
-    print(datasets)
 
     return datasets
 
@@ -105,6 +107,9 @@ async def update_dataset(id: PydanticObjectId, updated_dataset: UpdateDataset) -
 
     updated_dataset.updated_at = datetime.now()
 
+    if updated_dataset.dataset_name and updated_dataset.dataset_name != dataset.dataset_name:
+        await update_linked_iterations(dataset, updated_dataset)
+
     await dataset.update({"$set": updated_dataset.dict(exclude_unset=True)})
     await dataset.save()
 
@@ -127,16 +132,42 @@ async def delete_dataset(id: PydanticObjectId):
     if not dataset:
         raise dataset_not_found_exception()
 
-    # target_projects = await Project.find_all("experiments.iterations.dataset" == dataset.id).to_list()
-    #
-    # for project in target_projects:
-    #     for experiment in project.experiments:
-    #         for iteration in experiment.iterations:
-    #             if iteration.dataset == dataset:
-    #                 iteration.dataset = None
-    #
-    #     await project.save()
+    await update_linked_iterations(dataset)
 
     await dataset.delete()
 
     return None
+
+
+async def update_linked_iterations(dataset: Dataset, updated_dataset: Optional[Dataset] = None) -> None:
+    """
+    Util function to update linked iterations when dataset is deleted or when dataset name is updated.
+
+    Args:
+    - **dataset (Dataset)**: Dataset
+    - **updated_dataset (Optional[Dataset])**: Updated dataset (optional, used when updating dataset name)
+
+    Returns:
+    - **None**
+    """
+    if dataset.linked_iterations:
+        for iteration, value in dataset.linked_iterations.items():
+            project_id = value[0]
+            experiment_id = value[1]
+
+            project = await Project.get(project_id)
+            if not project:
+                raise project_not_found_exception()
+            experiment = next((exp for exp in project.experiments if exp.id == experiment_id), None)
+            if not experiment:
+                raise experiment_not_found_exception()
+            iteration = next((iter for iter in experiment.iterations if iter.id == PydanticObjectId(iteration)), None)
+            if not iteration:
+                raise iteration_not_found_exception()
+
+            if updated_dataset:
+                iteration.dataset.name = updated_dataset.dataset_name
+            else:
+                iteration.dataset = None
+
+            await project.save()

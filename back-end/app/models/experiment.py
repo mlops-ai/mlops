@@ -35,8 +35,7 @@ class Experiment(BaseModel):
         schema_extra = {
             "example": {
                 "name": "Is the passenger survived?",
-                "description": "Predicting if the passenger survived the Titanic disaster.",
-                "created_at": datetime.now()
+                "description": "Predicting if the passenger survived the Titanic disaster."
             }
         }
 
