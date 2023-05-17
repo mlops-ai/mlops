@@ -8,11 +8,38 @@ from app.models.dataset import Dataset
 
 
 class DatasetInIteration(BaseModel):
+    """
+    Dataset in iteration model.
+
+    Attributes:
+    - **id (PydanticObjectId)**: Dataset id.
+    - **name (Optional[str])**: Dataset name.
+    """
+
     id: PydanticObjectId
     name: Optional[str] = None
 
 
 class Iteration(BaseModel):
+    """
+    Iteration model.
+
+    Attributes:
+    - **id (PydanticObjectId)**: Iteration id.
+    - **experiment_id (PydanticObjectId)**: Experiment id.
+    - **project_id (PydanticObjectId)**: Project id.
+    - **experiment_name (str)**: Experiment name.
+    - **project_title (str)**: Project title.
+    - **user_name (str)**: User name.
+    - **iteration_name (str)**: Iteration title.
+    - **created_at (datetime)**: Iteration creation date.
+    - **metrics (Optional[dict])**: Iteration metrics.
+    - **parameters (Optional[dict])**: Iteration parameters.
+    - **path_to_model (Optional[str])**: Path to model.
+    - **model_name (Optional[str])**: Model name.
+    - **dataset (Optional[DatasetInIteration])**: Dataset.
+    """
+
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     experiment_id: PydanticObjectId = Field(default=None,  alias="experiment_id")
     project_id: PydanticObjectId = Field(default=None, alias="project_id")
@@ -77,6 +104,13 @@ class Iteration(BaseModel):
 
 
 class UpdateIteration(Iteration):
+    """
+    Update iteration model.
+
+    Attributes:
+    - **iteration_name (str)**: Iteration title.
+    """
+
     iteration_name: Optional[str]
 
     class Config:

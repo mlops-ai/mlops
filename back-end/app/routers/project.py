@@ -90,12 +90,8 @@ async def get_project_base(id: PydanticObjectId) -> DisplayProject:
         archived=project.archived,
         created_at=project.created_at,
         updated_at=project.updated_at,
-        experiments=[]
+        experiments=[experiment.name for experiment in project.experiments]
     )
-
-    experiments_names = [experiment.name for experiment in project.experiments]
-
-    display_project.experiments = experiments_names
 
     return display_project
 
@@ -167,13 +163,13 @@ async def add_project(project: Project) -> Project:
     return project
 
 
-@router.put("/{id}", response_model=Project, status_code=status.HTTP_200_OK)
-async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -> Project:
+@router.put("/{id}", response_model=DisplayProject, status_code=status.HTTP_200_OK)
+async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -> DisplayProject:
     """
     Update project.
 
     Args:
-    - **id** (PydanticObjectId): Project id.
+    - **id** (PydanticObjectId)**: Project id.
 
     Returns:
     - **Project**: Updated project.
@@ -190,7 +186,18 @@ async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -
     await project.update({"$set": updated_project.dict(exclude_unset=True)})
     await project.save()
 
-    return project
+    display_project = DisplayProject(
+        id=project.id,
+        title=project.title,
+        description=project.description,
+        status=project.status,
+        archived=project.archived,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        experiments=[experiment.name for experiment in project.experiments]
+    )
+
+    return display_project
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
