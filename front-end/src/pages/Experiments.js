@@ -40,17 +40,13 @@ function Experiments(props) {
      * React hook for search params.
      * */
     const [searchParams, setSearchParams] = useSearchParams();
+    console.log(searchParams.get("experiments"))
 
     /**
      * URL params ???
      * */
-    const url = new URL(window.location);
-    let active_tab = searchParams.get("active_tab")
-    if (active_tab === null || (active_tab!== 'project_info' && active_tab !== 'experiments_and_iterations')) {
-        url.searchParams.set("active_tab", "project_info");
-        active_tab = 'project_info';
-        window.history.pushState({}, "", url);
-    }
+    // const url = new URL(window.location);
+    // console.log(url)
 
     /**
      * Import library for date manipulation.
@@ -104,7 +100,7 @@ function Experiments(props) {
     });
 
     /**
-     * State used for storing current experiment editable data (edited, deleted ...).
+     * State used for storing current experiment editable data (edited).
      */
     const [currentExperimentDataEditable, setCurrentExperimentDataEditable] = useState({
         id: "",
@@ -169,18 +165,27 @@ function Experiments(props) {
                 return Promise.reject(response);
             })
             .then(data => {
-                const ids = data.experiments.map(experiment => experiment.id);
-                let active_ids
-                let filtered_ids
-
-                if (active_experiments) {
-                    active_ids = active_experiments.map(experiment => experiment.id)
-                    filtered_ids = ids.filter(value => active_ids.includes(value));
+                let active_tab = searchParams.get("active_tab")
+                if (active_tab === null || (active_tab !== 'project_info' && active_tab !== 'experiments_and_iterations')) {
+                    active_tab = 'project_info'
                 }
 
-                if (filtered_ids && filtered_ids.length !== 0) {
+                const ids = data.experiments.map(experiment => experiment.id);
+                let experiments = searchParams.get("experiments")
+                console.log(experiments)
+                console.log("xd")
+
+                let intersection
+                if (experiments !== null) {
+                    experiments = experiments.split(',')
+                    intersection = ids.filter(id => experiments.includes(id));
+                }
+
+                let active_ids = []
+
+                if (intersection) {
                     data.experiments = data.experiments.map((experiment, index) => {
-                        if (filtered_ids.includes(experiment.id)) {
+                        if (intersection.includes(experiment.id)) {
                             return {
                                 ...experiment,
                                 checked: true
@@ -191,9 +196,13 @@ function Experiments(props) {
                             checked: false
                         }
                     });
+                    console.log("intersection")
+                    console.log({experiments: intersection, active_tab: active_tab})
+                    setSearchParams({experiments: intersection.join(','), active_tab: active_tab}, {replace: true})
                 } else {
                     data.experiments = data.experiments.map((experiment, index) => {
                         if (index === 0) {
+                            active_ids.push(experiment.id)
                             return {
                                 ...experiment,
                                 checked: true
@@ -204,17 +213,24 @@ function Experiments(props) {
                             checked: false
                         }
                     });
+                    console.log("nie")
+                    setSearchParams({experiments: active_ids[0], active_tab: active_tab}, {replace: true});
                 }
-
                 setProjectData(data)
             })
             .catch((response) => {
+                console.log(response)
                 navigate('/projects')
             });
-    }, [refresh]);
+    }, []);
 
+    // useEffect(() => {
+    //
+    // }, [projectData])
 
-    // Obsługa listy eksperymentów - checkboxy (możliwość wyświetlenia kilku eksperymentów)
+    /**
+     * Handle multiple experiment display on checkbox click action.
+     * */
     function handleCheckbox(event) {
         if (active_experiments.length === 1) {
             if (active_experiments[0].id === event.target.name) {
@@ -222,8 +238,14 @@ function Experiments(props) {
             }
         }
 
+        let experiments_ids = []
+
         let experiments = projectData.experiments.map((experiment) => {
+            if (experiment.checked) {
+                experiments_ids.push(experiment.id)
+            }
             if (experiment.id === event.target.name) {
+                experiments_ids.push(experiment.id)
                 return {
                     ...experiment,
                     checked: !experiment.checked
@@ -231,6 +253,14 @@ function Experiments(props) {
             }
             return experiment
         })
+
+        setSearchParams((prevParams) => {
+            return new URLSearchParams({
+                ...Object.fromEntries(prevParams.entries()),
+                active_tab: 'experiments_and_iterations',
+                experiments: experiments_ids.join(',')
+            });
+        }, {replace: true});
 
         setProjectData(prevProjectData => {
             return {
@@ -257,6 +287,14 @@ function Experiments(props) {
                 checked: false
             }
         })
+
+        setSearchParams((prevParams) => {
+            return new URLSearchParams({
+                ...Object.fromEntries(prevParams.entries()),
+                active_tab: 'experiments_and_iterations',
+                experiments: event.target.getAttribute("experiment-id")
+            });
+        }, {replace: true});
 
         setProjectData(prevProjectData => {
             return {
@@ -287,10 +325,70 @@ function Experiments(props) {
         add_button.disabled = true
         add_spinner.style.display = "inline"
 
+        /**
+         * Validate data.
+         * */
+        let name = formData.experimentName.trim()
+        let description = formData.experimentDescription.trim()
+
+        if (name.length === 0) {
+            toast.error("Experiment name cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            return
+        }
+
+        if (!(name.length > 0 && name.length <= 40)) {
+            toast.error("Experiment name cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            return
+        }
+
+        if (!(description.length <= 150)) {
+            toast.error("Experiment description cannot be longer than 150 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            return
+        }
+
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: formData.experimentName.trim(), description: formData.experimentDescription.trim()})
+            body: JSON.stringify({ name: name, description: description})
         };
 
         fetch('http://localhost:8000/projects/' + projectData._id + '/experiments', requestOptions)
@@ -359,11 +457,71 @@ function Experiments(props) {
         edit_button.disabled = true
         edit_spinner.style.display = "inline"
 
+        /**
+         * Validate data.
+         * */
+        let name = currentExperimentDataEditable.name.trim()
+        let description = currentExperimentDataEditable.description.trim()
+
+        if (name.length === 0) {
+            toast.error("Experiment name cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(name.length > 0 && name.length <= 40)) {
+            toast.error("Experiment name cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(description.length <= 150)) {
+            toast.error("Experiment description cannot be longer than 150 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
         let body;
-        if (currentExperimentDataEditable.name.trim() !== currentExperimentData.name.trim()) {
-            body = { name: currentExperimentDataEditable.name.trim(), description: currentExperimentDataEditable.description.trim()};
+        if (name !== currentExperimentData.name.trim()) {
+            body = { name: name, description: description};
         } else {
-            body = { description: currentExperimentDataEditable.description.trim()};
+            body = { description: description};
         }
 
         const requestOptions = {
@@ -371,6 +529,7 @@ function Experiments(props) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         };
+
         fetch('http://localhost:8000/projects/' + projectData._id + '/experiments/' + currentExperimentDataEditable.id, requestOptions)
             .then((response) => {
                 if (response.ok) {
@@ -379,12 +538,9 @@ function Experiments(props) {
                 return Promise.reject(response);
             }).then((json) => {
 
-            edit_spinner.style.display = "none"
-            edit_button.disabled = false
-
             setProjectData(prevProjectData => {
                 let experiments = prevProjectData.experiments
-                let foundIndex = experiments.findIndex(experiment => experiment.id == currentExperimentDataEditable.id);
+                let foundIndex = experiments.findIndex(experiment => experiment.id === currentExperimentDataEditable.id);
                 experiments[foundIndex] = json
                 return {
                     ...prevProjectData,
@@ -589,7 +745,7 @@ function Experiments(props) {
             return experiments
         }
         return null
-    }, [projectData, searchData, refresh])
+    }, [projectData, searchData])
 
     /**
      * Variable containing all active experiments.
@@ -600,7 +756,7 @@ function Experiments(props) {
             return projectData.experiments.filter((experiment) => experiment.checked)
         }
         return
-    }, [projectData, refresh]);
+    }, [projectData]);
 
     /**
      * Variable containing iterations grid component.
@@ -646,12 +802,15 @@ function Experiments(props) {
                         <ul className="nav nav-tabs nav-tabs-bordered">
 
                             <li className="nav-item">
-                                <button className={"nav-link " + (active_tab === 'project_info' ? "active" : "") } data-bs-toggle="tab"
+                                <button className={"nav-link " + (searchParams.get("active_tab") && searchParams.get("active_tab") === 'project_info' ? "active" : "") } data-bs-toggle="tab"
                                         data-bs-target="#project-info" onClick={
                                     () => {
-                                        url.searchParams.set("active_tab", "project_info");
-                                        active_tab = 'project_info';
-                                        window.history.pushState({}, "", url);
+                                        setSearchParams((prevParams) => {
+                                            return new URLSearchParams({
+                                                ...Object.fromEntries(prevParams.entries()),
+                                                active_tab: "project_info"
+                                            });
+                                        }, {replace: true});
                                     }
                                 }>
                                     Project Information
@@ -659,12 +818,15 @@ function Experiments(props) {
                             </li>
 
                             <li className="nav-item">
-                                <button className={"nav-link " + (active_tab === 'experiments_and_iterations' ? "active" : "") } data-bs-toggle="tab"
+                                <button className={"nav-link " + (searchParams.get("active_tab") && searchParams.get("active_tab")  === 'experiments_and_iterations' ? "active" : "") } data-bs-toggle="tab"
                                         data-bs-target="#experiments-and-iterations" onClick={
                                     () => {
-                                        url.searchParams.set("active_tab", "experiments_and_iterations");
-                                        active_tab = 'project_info';
-                                        window.history.pushState({}, "", url);
+                                        setSearchParams((prevParams) => {
+                                            return new URLSearchParams({
+                                                ...Object.fromEntries(prevParams.entries()),
+                                                active_tab: "experiments_and_iterations"
+                                            });
+                                        }, {replace: true});
                                     }
                                 }>
                                     Experiments & Iterations
@@ -676,7 +838,7 @@ function Experiments(props) {
 
                     <div className="tab-content pt-2">
 
-                        <div className={"tab-pane fade show " + (active_tab === 'project_info' ? "active" : "") } id="project-info">
+                        <div className={"tab-pane fade show " + (searchParams.get("active_tab") && searchParams.get("active_tab")  === 'project_info' ? "active" : "") } id="project-info">
                             <h4 className="d-flex align-items-center">
                                 <span className="fw-semibold">
                                     {projectData.title}
@@ -749,7 +911,7 @@ function Experiments(props) {
                             }
                         </div>
 
-                        <div className={"tab-pane fade show " + (active_tab === 'experiments_and_iterations' ? "active" : "") } id="experiments-and-iterations">
+                        <div className={"tab-pane fade show " + (searchParams.get("active_tab") && searchParams.get("active_tab")  === 'experiments_and_iterations' ? "active" : "") } id="experiments-and-iterations">
 
                             <div className="row">
 
@@ -1012,7 +1174,7 @@ function Experiments(props) {
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        {currentExperimentDataEditable.name !== currentExperimentData.name || currentExperimentDataEditable.description !== currentExperimentData.description ?
+                                        {(currentExperimentDataEditable.name !== currentExperimentData.name && currentExperimentDataEditable.name !== "") || currentExperimentDataEditable.description !== currentExperimentData.description ?
 
                                             <button id="edit-experiment-action" className="btn btn-primary float-end">
                                                 <span className="d-flex align-items-center">
@@ -1097,8 +1259,7 @@ function Experiments(props) {
                     <nav>
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item">Projects</li>
-                            <li className="breadcrumb-item">...</li>
-                            <li className="breadcrumb-item active">Experiments & Models</li>
+                            <li className="breadcrumb-item active">...</li>
                         </ol>
                     </nav>
                 </div>
@@ -1111,7 +1272,7 @@ function Experiments(props) {
 
                     <LoadingData
                         icon={"science"}
-                        dataSection={"experiments"}
+                        dataSection={"project, experiments & iterations"}
                     />
 
                 </section>

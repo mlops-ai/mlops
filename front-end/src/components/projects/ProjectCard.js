@@ -1,4 +1,5 @@
 import {ThreeDots} from "react-bootstrap-icons";
+import React from "react";
 
 /**
  * Project card component.
@@ -21,7 +22,7 @@ function ProjectCard(props) {
     /**
      * Variable containing the number of experiments in project.
      * */
-    const experimentsNumber = props.projectExperiments.length
+    let experimentsNumber = props.projectExperiments.length
 
     /**
      * Generating experiments list.
@@ -39,9 +40,9 @@ function ProjectCard(props) {
         });
 
         if (experimentsNumber <= displayMaxExperiments) {
-            experiments = <ul>{experimentsList.slice(0, displayMaxExperiments)}</ul>
+            experiments = <ul key={"experiments"}>{experimentsList.slice(0, displayMaxExperiments)}</ul>
         } else {
-            experiments = <ul>{experimentsList.slice(0, displayMaxExperiments)}<span
+            experiments = <ul key={"experiments"}>{experimentsList.slice(0, displayMaxExperiments)}<span
                 style={{fontSize: 13 + "px"}}>and {experimentsNumber - displayMaxExperiments} more ...</span></ul>
         }
 
@@ -223,6 +224,8 @@ function ProjectCard(props) {
 
                             <span className={"badge " + props.projectStatus.replace('_', '-')}>{capitalizeFirstLetter(props.projectStatus.replace(/_/g, ' '))}</span>
                         }
+
+                        { props.projectIsArchived && <span className="badge archived" style={{marginLeft: 4 + "px"}}>Archived</span>}
 
                         <p className="card-text mb-0">
                             {props.projectDescription}

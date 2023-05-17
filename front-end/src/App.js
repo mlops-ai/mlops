@@ -13,8 +13,15 @@ import Projects from "./pages/Projects";
 import Experiments from "./pages/Experiments";
 import Iteration from "./pages/Iteration";
 import Project from "./pages/Project";
+import {useEffect} from "react";
 
 function App() {
+
+    let perfEntries = performance.getEntriesByType("navigation");
+
+    if (perfEntries[0].type === "back_forward") {
+        window.location.reload();
+    }
 
     return (
         <BrowserRouter>

@@ -8,40 +8,54 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import ProjectCard from "../components/projects/ProjectCard";
 import LoadingData from "../components/LoadingData";
-import moment from "moment/moment";
+import Toast from "../components/Toast";
+
+/**
+ * Project page component for displaying projects.
+ * */
 
 function Projects(props) {
-    console.log("PROJEKTY")
 
-    // Referencje do zamykania modali
+    console.log("[FOR DEBUGGING PURPOSES]: PROJECTS !")
+
+    /**
+     * React ref hooks for close modal buttons.
+     */
     const closeModalRef = useRef();
     const closeDeleteModalRef = useRef();
     const closeArchiveModalRef = useRef();
     const closeRestoreModalRef = useRef();
     const closeEditModalRef = useRef();
 
-    // Biblioteka do konwersji daty
+    /**
+     * Import library for date manipulation.
+     */
     let moment = require('moment');
 
-    // Stan do przechowywania danych dotyczących projektów (lista wszystkich projektów)
+    /**
+     * State used for storing information about all projects.
+     * */
     const [allProjects, setAllProjects] = useState();
 
-    // Stan do przechowywania aktualnej frazy wyszukiwania projektów
+    /**
+     * State used for storing current projects (active and archived) filter query.
+     * */
     const [searchData, setSearchData] = useState({
         searchActive: "",
         searchArchived: ""
     });
 
-    // Stan do przechowywania danych formularza dodawania projektu
+    /**
+     * State used for storing data from project add form.
+     */
     const [formData, setFormData] = useState({
         projectTitle: "",
         projectDescription: ""
     });
 
-    // Stan służący do odświeżania zawartości strony
-    const [refresh, setRefresh] = useState(0);
-
-    // Stan zawierający dane aktualnego projektu (np. edytowanego, usuwanego itd.)
+    /**
+     * State used for storing current project data (edited, deleted ...).
+     */
     const [currentProjectData, setCurrentProjectData] = useState({
         _id: "",
         title: "",
@@ -50,7 +64,9 @@ function Projects(props) {
         archived: ""
     });
 
-    // Stan zawierający edytowalne dane aktualnego projektu (edytowanego)
+    /**
+     * State used for storing current project editable data (edited).
+     */
     const [currentProjectDataEditable, setCurrentProjectDataEditable] = useState({
         _id: "",
         title: "",
@@ -59,7 +75,9 @@ function Projects(props) {
         archived: ""
     });
 
-    // Obsługa zmiennych do edycji projektu
+    /**
+     * Handle editable project data change.
+     * */
     function handleCurrentDataEditable(event) {
         setCurrentProjectDataEditable(prevCurrentProjectDataEditable => {
             return {
@@ -69,7 +87,9 @@ function Projects(props) {
         })
     }
 
-    // Obsługa zmiennych do wyszukiwania
+    /**
+     * Handle project (active and archived) filter query change.
+     * */
     function handleSearch(event) {
         setSearchData(prevSearchData => {
             return {
@@ -79,7 +99,9 @@ function Projects(props) {
         })
     }
 
-    // Obsługa danych z formularza dodawania projektu
+    /**
+     * Handle project add form data change.
+     * */
     function handleFormData(event) {
         setFormData(prevFormData => {
             return {
@@ -89,14 +111,82 @@ function Projects(props) {
         })
     }
 
-    // Dodawanie projektu
+    /**
+     * Function handling adding project request.
+     * */
     function handleAddProject(event) {
         event.preventDefault()
+
+        let add_spinner = document.getElementById('add-project-spinner')
+        let add_button = document.getElementById('add-project-action')
+
+        add_button.disabled = true
+        add_spinner.style.display = "inline"
+
+        /**
+         * Validate data.
+         * */
+        let title = formData.projectTitle.trim()
+        let description = formData.projectDescription.trim()
+
+        if (title.length === 0) {
+            toast.error("Project title cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            return
+        }
+
+        if (!(title.length > 0 && title.length <= 40)) {
+            toast.error("Project title cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            return
+        }
+
+        if (!(description.length <= 150)) {
+            toast.error("Project description cannot be longer than 150 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            return
+        }
 
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: formData.projectTitle.trim(), description: formData.projectDescription.trim() })
+            body: JSON.stringify({ title: title, description: description })
         };
 
         fetch('http://localhost:8000/projects', requestOptions)
@@ -106,29 +196,37 @@ function Projects(props) {
                 }
                 return Promise.reject(response);
             }).then((json) => {
-                toast.success('Project created successfully!', {
-                    position: "bottom-center",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
 
-                closeModalRef.current.click();
+            setFormData({
+                projectTitle: "",
+                projectDescription: ""
+            });
 
-                setRefresh(prevRefresh => {
-                    return prevRefresh+1
-                });
+            setAllProjects(prevAllProjectData => {
+                return [...prevAllProjectData, json]
+            })
 
-                setFormData({
-                    projectTitle: "",
-                    projectDescription: ""
-                });
+            toast.success('Project created successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
+            closeModalRef.current.click();
 
             }).catch((response) => {
+
+            add_spinner.style.display = "none"
+            add_button.disabled = false
+
             response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -144,20 +242,92 @@ function Projects(props) {
         });
     }
 
-    // Edycja projektu
+    /**
+     * Function handling editing project request.
+     * */
     function handleEditProject(event) {
         event.preventDefault();
-        let body;
-        if (currentProjectDataEditable.title.trim() !== currentProjectData.title.trim()) {
-            body = { title: currentProjectDataEditable.title.trim(), description: currentProjectDataEditable.description.trim(), status: currentProjectDataEditable.status };
-        } else {
-            body = { description: currentProjectDataEditable.description.trim(), status: currentProjectDataEditable.status };
+
+        let edit_spinner = document.getElementById('edit-project-spinner')
+        let edit_button = document.getElementById('edit-project-action')
+
+        edit_button.disabled = true
+        edit_spinner.style.display = "inline"
+
+        /**
+         * Validate data.
+         * */
+        let title = currentProjectDataEditable.title.trim()
+        let description = currentProjectDataEditable.description.trim()
+
+        if (title.length === 0) {
+            toast.error("Project title cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
         }
+
+        if (!(title.length > 0 && title.length <= 40)) {
+            toast.error("Project title cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(description.length <= 150)) {
+            toast.error("Project description cannot be longer than 150 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        let body;
+
+        if (title !== currentProjectData.title.trim()) {
+            body = { title: title, description: description, status: currentProjectDataEditable.status };
+        } else {
+            body = { description: description, status: currentProjectDataEditable.status };
+        }
+
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         };
+
         fetch('http://localhost:8000/projects/' + currentProjectDataEditable._id, requestOptions)
             .then((response) => {
                 if (response.ok) {
@@ -165,6 +335,17 @@ function Projects(props) {
                 }
                 return Promise.reject(response);
             }).then((json) => {
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            setAllProjects(prevState => {
+                let projects_copy = [...prevState];
+                let foundIndex = projects_copy.findIndex(project => project._id === currentProjectDataEditable._id);
+                projects_copy[foundIndex] = json;
+                return projects_copy
+            })
+
             toast.success('Project updated successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -175,11 +356,14 @@ function Projects(props) {
                 progress: undefined,
                 theme: "light",
             });
-            setRefresh(prevRefresh => {
-                return prevRefresh+1
-            })
+
             closeEditModalRef.current.click();
+
         }).catch((response) => {
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
             response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -195,20 +379,37 @@ function Projects(props) {
         });
     }
 
-    // Usuwanie projektu
+    /**
+     * Function handling deleting project request.
+     * */
     function handleDeleteProject(event) {
         event.preventDefault();
+
+        let delete_spinner = document.getElementById('delete-project-spinner')
+        let delete_button = document.getElementById('delete-project-action')
+
+        delete_button.disabled = true
+        delete_spinner.style.display = "inline"
+
         const requestOptions = {
             method: 'DELETE'
         };
+
         fetch('http://localhost:8000/projects/' + currentProjectData._id, requestOptions)
             .then((response) => {
-                console.log(response.ok)
                 if (response.ok) {
                     return response
                 }
                 return Promise.reject(response);
             }).then((response) => {
+
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+
+            setAllProjects(prevState => {
+                return prevState.filter(project => project._id !== currentProjectData._id)
+            })
+
             toast.success('Project deleted successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -219,11 +420,12 @@ function Projects(props) {
                 progress: undefined,
                 theme: "light",
             });
-            setRefresh(prevRefresh => {
-                return prevRefresh+1
-            })
+
             closeDeleteModalRef.current.click();
+
         }).catch((response) => {
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
             response.body && response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -239,14 +441,24 @@ function Projects(props) {
         });
     }
 
-    // Archiwizacja projektu
+    /**
+     * Function handling archiving project request.
+     * */
     function handleArchiveProject(event) {
         event.preventDefault();
+
+        let archive_spinner = document.getElementById('archive-project-spinner')
+        let archive_button = document.getElementById('archive-project-action')
+
+        archive_button.disabled = true
+        archive_spinner.style.display = "inline"
+
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ archived: true })
         };
+
         fetch('http://localhost:8000/projects/' + currentProjectData._id, requestOptions)
             .then((response) => {
                 if (response.ok) {
@@ -254,6 +466,14 @@ function Projects(props) {
                 }
                 return Promise.reject(response);
             }).then((json) => {
+
+            setAllProjects(prevState => {
+                let projects_copy = [...prevState];
+                let foundIndex = projects_copy.findIndex(project => project._id === currentProjectData._id);
+                projects_copy[foundIndex] = json;
+                return projects_copy
+            })
+
             toast.success('Project archived successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -264,11 +484,16 @@ function Projects(props) {
                 progress: undefined,
                 theme: "light",
             });
-            setRefresh(prevRefresh => {
-                return prevRefresh+1
-            })
+
+            archive_spinner.style.display = "none"
+            archive_button.disabled = false
+
             closeArchiveModalRef.current.click();
         }).catch((response) => {
+
+            archive_spinner.style.display = "none"
+            archive_button.disabled = false
+
             response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -284,14 +509,24 @@ function Projects(props) {
         });
     }
 
-    // Przywrócenie projektu
+    /**
+     * Function handling restoring project request.
+     * */
     function handleRestoreProject(event) {
         event.preventDefault();
+
+        let restore_spinner = document.getElementById('restore-project-spinner')
+        let restore_button = document.getElementById('restore-project-action')
+
+        restore_button.disabled = true
+        restore_spinner.style.display = "inline"
+
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ archived: false })
         };
+
         fetch('http://localhost:8000/projects/' + currentProjectData._id, requestOptions)
             .then((response) => {
                 if (response.ok) {
@@ -299,6 +534,14 @@ function Projects(props) {
                 }
                 return Promise.reject(response);
             }).then((json) => {
+
+            setAllProjects(prevState => {
+                let projects_copy = [...prevState];
+                let foundIndex = projects_copy.findIndex(project => project._id === currentProjectData._id);
+                projects_copy[foundIndex] = json;
+                return projects_copy
+            })
+
             toast.success('Project restored successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -309,11 +552,14 @@ function Projects(props) {
                 progress: undefined,
                 theme: "light",
             });
-            setRefresh(prevRefresh => {
-                return prevRefresh+1
-            })
+
+            restore_spinner.style.display = "none"
+            restore_button.disabled = false
+
             closeRestoreModalRef.current.click();
         }).catch((response) => {
+            restore_spinner.style.display = "none"
+            restore_button.disabled = false
             response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -329,15 +575,22 @@ function Projects(props) {
         });
     }
 
-    // Breakpointy do grida
-    const breakpointColumnsObj = {
-        default: 4,
-        1199: 3,
-        767: 2,
-        575: 1
-    }
+    /**
+     * Masonry Grid breakpoints definitions.
+     * UseMemo is used for optimization purposes.
+     * */
+    const breakpointColumnsObj = useMemo(() => {
+        return {
+            default: 4,
+            1199: 3,
+            767: 2,
+            575: 1
+        }
+    })
 
-    // REST API do BACK-ENDU
+    /**
+     * React hook for executing code after component mounting (after rendering).
+     * */
     useEffect(() => {
         fetch('http://localhost:8000/projects/base')
             .then(response => {
@@ -347,10 +600,7 @@ function Projects(props) {
                 return Promise.reject(response);
             })
             .then(data => setAllProjects(() => {
-                console.log(data)
-                return {
-                    projects: data
-                }
+                return data
 
             }))
             .catch((response) => {
@@ -367,87 +617,110 @@ function Projects(props) {
                 });
             })
         });
-    }, [refresh]);
+    }, []);
 
-    // Zmienne pomocnicze
-    let active_projects;
-    let activeProjectsNumber;
-    let active_projects_filtered;
-    let activeProjectsFilteredNumber;
+    /**
+     * Prepare data from REST API request to displayable form.
+     * @ active_projects: array of active projects
+     * @ activeProjectsNumber: number of active projects
+     * @ archived_projects: array of archived projects
+     * @ archivedProjectsNumber: number of archived projects
+     * UseMemo is used for optimization purposes.
+     * */
+    const [active_projects, activeProjectsNumber, archived_projects, archivedProjectsNumber] = useMemo(() => {
+        let active_projects;
+        let activeProjectsNumber;
+        let archived_projects;
+        let archivedProjectsNumber;
 
-    let archived_projects;
-    let archivedProjectsNumber;
-    let archived_projects_filtered;
-    let archivedProjectsFilteredNumber;
-
-    if (allProjects) {
-        // Aktywne projekty
-        active_projects = allProjects.projects.filter((project) => !project.archived)
-
-        activeProjectsNumber = active_projects.length
-
-        active_projects_filtered = active_projects.filter((project) => project.title.toLowerCase().includes(searchData.searchActive.toLowerCase().trim()))
-
-        activeProjectsFilteredNumber = active_projects_filtered.length
-
-        if (activeProjectsFilteredNumber > 0) {
-            active_projects_filtered = active_projects_filtered.map(project => {
-                return <ProjectCard
-                    key={project._id}
-                    projectId={project._id}
-                    projectName={project.title}
-                    projectStatus={project.status}
-                    projectDescription={project.description}
-                    projectIsArchived={project.archived}
-                    projectCreationDate={moment(new Date(project.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
-                    projectModifyDate={moment(new Date(project.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
-                    projectExperiments={project.experiments}
-                    setCurrentProject={setCurrentProjectData}
-                    setCurrentProjectEditable={setCurrentProjectDataEditable}
-                />
-            });
+        if (allProjects) {
+            active_projects = [...allProjects].filter((project) => !project.archived)
+            activeProjectsNumber = active_projects.length
+            archived_projects = [...allProjects].filter((project) => project.archived)
+            archivedProjectsNumber = archived_projects.length
+            return [active_projects, activeProjectsNumber, archived_projects, archivedProjectsNumber]
         }
+        return [null, null, null, null]
+    }, [allProjects])
 
-        if (activeProjectsFilteredNumber < 4) {
-            for (let i=1; i <= 4 - activeProjectsFilteredNumber; i++) {
-                active_projects_filtered.push(<div key={i}></div>);
+    /**
+     * Prepare data from REST API request to displayable form.
+     * @ active_projects_filtered: array of active projects filtered based on search query
+     * @ activeProjectsFilteredNumber: number of active projects filtered based on search query
+     * @ archived_projects_filtered: array of archived projects filtered based on search query
+     * @ archivedProjectsFilteredNumber: number of archived projects filtered based on search query
+     * UseMemo is used for optimization purposes.
+     * */
+    const [active_projects_filtered, activeProjectsFilteredNumber, archived_projects_filtered, archivedProjectsFilteredNumber] = useMemo(() => {
+        let active_projects_filtered;
+        let activeProjectsFilteredNumber;
+        let archived_projects_filtered;
+        let archivedProjectsFilteredNumber;
+
+        if (allProjects) {
+            active_projects_filtered = active_projects.filter((project) => project.title.toLowerCase().includes(searchData.searchActive.toLowerCase().trim()))
+
+            activeProjectsFilteredNumber = active_projects_filtered.length
+
+            if (activeProjectsFilteredNumber > 0) {
+                active_projects_filtered = active_projects_filtered.map(project => {
+                    return <ProjectCard
+                        key={project._id}
+                        projectId={project._id}
+                        projectName={project.title}
+                        projectStatus={project.status}
+                        projectDescription={project.description}
+                        projectIsArchived={project.archived}
+                        projectCreationDate={moment(new Date(project.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                        projectModifyDate={moment(new Date(project.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                        projectExperiments={project.experiments}
+                        setCurrentProject={setCurrentProjectData}
+                        setCurrentProjectEditable={setCurrentProjectDataEditable}
+                    />
+                });
             }
-        }
 
-        // Zarchiwizowane projekty
-        archived_projects = allProjects.projects.filter((project) => project.archived)
-
-        archivedProjectsNumber = archived_projects.length
-
-        archived_projects_filtered = archived_projects.filter((project) => project.title.toLowerCase().includes(searchData.searchArchived.toLowerCase().trim()))
-
-        archivedProjectsFilteredNumber = archived_projects_filtered.length
-
-        if (archivedProjectsFilteredNumber > 0) {
-            archived_projects_filtered = archived_projects_filtered.map(project => {
-                return <ProjectCard
-                    key={project._id}
-                    projectId={project._id}
-                    projectName={project.title}
-                    projectStatus={project.status}
-                    projectDescription={project.description}
-                    projectIsArchived={project.archived}
-                    projectCreationDate={moment(new Date(project.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
-                    projectModifyDate={moment(new Date(project.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
-                    projectExperiments={project.experiments}
-                    setCurrentProject={setCurrentProjectData}
-                    setCurrentProjectEditable={setCurrentProjectDataEditable}
-                />
-            });
-        }
-
-        if (archivedProjectsFilteredNumber < 4) {
-            for (let i=1; i <= 4 - archivedProjectsFilteredNumber; i++) {
-                archived_projects_filtered.push(<div key={i}></div>);
+            if (activeProjectsFilteredNumber < 4) {
+                for (let i=1; i <= 4 - activeProjectsFilteredNumber; i++) {
+                    active_projects_filtered.push(<div key={i}></div>);
+                }
             }
-        }
-    }
 
+            archived_projects_filtered = archived_projects.filter((project) => project.title.toLowerCase().includes(searchData.searchArchived.toLowerCase().trim()))
+
+            archivedProjectsFilteredNumber = archived_projects_filtered.length
+
+            if (archivedProjectsFilteredNumber > 0) {
+                archived_projects_filtered = archived_projects_filtered.map(project => {
+                    return <ProjectCard
+                        key={project._id}
+                        projectId={project._id}
+                        projectName={project.title}
+                        projectStatus={project.status}
+                        projectDescription={project.description}
+                        projectIsArchived={project.archived}
+                        projectCreationDate={moment(new Date(project.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                        projectModifyDate={moment(new Date(project.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                        projectExperiments={project.experiments}
+                        setCurrentProject={setCurrentProjectData}
+                        setCurrentProjectEditable={setCurrentProjectDataEditable}
+                    />
+                });
+            }
+
+            if (archivedProjectsFilteredNumber < 4) {
+                for (let i=1; i <= 4 - archivedProjectsFilteredNumber; i++) {
+                    archived_projects_filtered.push(<div key={i}></div>);
+                }
+            }
+            return [active_projects_filtered, activeProjectsFilteredNumber, archived_projects_filtered, archivedProjectsFilteredNumber]
+        }
+        return [null, null, null, null]
+    }, [allProjects, searchData])
+
+    /**
+     * Component rendering.
+     * */
     if (allProjects) {
         return (
             <main id="content">
@@ -658,11 +931,21 @@ function Projects(props) {
                                     <div className="modal-footer">
                                         {formData.projectTitle !== "" ?
 
-                                            <button className="btn btn-primary float-end">Add project</button>
+                                            <button id="add-project-action" className="btn btn-primary float-end">
+                                                <span className="d-flex align-items-center">
+                                                    <i id="add-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    Add project
+                                                </span>
+                                            </button>
 
                                             :
 
-                                            <button className="btn btn-primary float-end" disabled={true}>Add project</button>
+                                            <button id="add-project-action" className="btn btn-primary float-end" disabled={true}>
+                                                <span className="d-flex align-items-center">
+                                                    <i id="add-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    Add project
+                                                </span>
+                                            </button>
                                         }
                                     </div>
                                 </form>
@@ -728,12 +1011,22 @@ function Projects(props) {
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        {currentProjectDataEditable.title !== currentProjectData.title || currentProjectDataEditable.description !== currentProjectData.description || currentProjectDataEditable.status !== currentProjectData.status ?
-                                            <button className="btn btn-primary float-end">Update project</button>
+                                        {(currentProjectDataEditable.title !== currentProjectData.title && currentProjectDataEditable.title !== "") || currentProjectDataEditable.description !== currentProjectData.description || currentProjectDataEditable.status !== currentProjectData.status ?
+                                            <button id="edit-project-action" className="btn btn-primary float-end">
+                                                <span className="d-flex align-items-center">
+                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    Update project
+                                                </span>
+                                            </button>
 
                                             :
 
-                                            <button className="btn btn-primary float-end" disabled={true}>Update project</button>
+                                            <button id="edit-project-action" className="btn btn-primary float-end" disabled={true}>
+                                                <span className="d-flex align-items-center">
+                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    Update project
+                                                </span>
+                                            </button>
                                         }
                                     </div>
                                 </form>
@@ -761,7 +1054,12 @@ function Projects(props) {
                                 </div>
                                 <div className="modal-footer">
                                     <form onSubmit={handleDeleteProject}>
-                                        <button className="btn btn-danger float-end">Delete project</button>
+                                        <button id="delete-project-action" className="btn btn-danger float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="delete-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                Delete project
+                                            </span>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -788,7 +1086,12 @@ function Projects(props) {
                                 </div>
                                 <div className="modal-footer">
                                     <form onSubmit={handleArchiveProject}>
-                                        <button className="btn btn-secondary float-end">Archive project</button>
+                                        <button id="archive-project-action" className="btn btn-secondary float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="archive-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                Archive project
+                                            </span>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -815,7 +1118,12 @@ function Projects(props) {
                                 </div>
                                 <div className="modal-footer">
                                     <form onSubmit={handleRestoreProject}>
-                                        <button className="btn btn-secondary float-end">Restore project</button>
+                                        <button id="restore-project-action" className="btn btn-secondary float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="restore-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                Restore project
+                                            </span>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -826,18 +1134,7 @@ function Projects(props) {
                         TOAST - KONTENER DLA POWIADOMIEŃ
                     */}
 
-                    <ToastContainer
-                        position="bottom-center"
-                        autoClose={5000}
-                        hideProgressBar={false}
-                        newestOnTop={false}
-                        closeOnClick
-                        rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover={false}
-                        theme="light"
-                    />
+                    <Toast />
 
                 </section>
             </main>

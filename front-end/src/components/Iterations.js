@@ -44,23 +44,23 @@ function Iterations (props) {
     const [selectedNodeKey, setSelectedNodeKey] = useState(null);
 
     /**
-     * States used for storing tree-select date filter data.
+     * State used for storing tree-select date filter data.
      */
     const [selectedDateFilter, setSelectedDateFilter] = useState('allTime');
     let dateFilter = 'allTime';
 
     /**
-     * States used for storing tree-select data.
+     * State used for storing tree-select data.
      */
     const [expandedKeys, setExpandedKeys] = useState({});
 
     /**
-     * States used for storing ag-grid column definition data.
+     * State used for storing ag-grid column definition data.
      * */
     const [columnDefs, setColumnDefs] = useState([]);
 
     /**
-     * States used for storing current iteration data (edited, deleted ...).
+     * State used for storing current iteration data (edited, deleted ...).
      */
     const [currentIterationData, setCurrentIterationData] = useState({
         experiment_id: "",
@@ -69,7 +69,7 @@ function Iterations (props) {
     });
 
     /**
-     * States used for storing current iteration editable data (edited).
+     * State used for storing current iteration editable data (edited).
      */
     const [currentIterationDataEditable, setCurrentIterationDataEditable] = useState({
         experiment_id: "",
@@ -128,7 +128,48 @@ function Iterations (props) {
         edit_button.disabled = true
         edit_spinner.style.display = "inline"
 
-        let body = { iteration_name: currentIterationDataEditable.iteration_name.trim() };
+        /**
+         * Validate data.
+         * */
+        let name = currentIterationDataEditable.iteration_name.trim()
+
+        if (name.length === 0) {
+            toast.error("Iteration name cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(name.length > 0 && name.length <= 40)) {
+            toast.error("Iteration name cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        let body = { iteration_name: name };
 
         const requestOptions = {
             method: 'PUT',
@@ -136,7 +177,7 @@ function Iterations (props) {
             body: JSON.stringify(body)
         };
 
-        fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + currentIterationDataEditable.iteration_name.trim(), requestOptions)
+        fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + name, requestOptions)
             .then((response) => {
                 if (response.ok) {
                     return response.json()
@@ -1022,7 +1063,7 @@ function Iterations (props) {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                {currentIterationDataEditable.iteration_name !== currentIterationData.iteration_name ?
+                                {currentIterationDataEditable.iteration_name !== currentIterationData.iteration_name && currentIterationDataEditable.iteration_name !== "" ?
                                     <button id="edit-iteration-action" className="btn btn-primary float-end">
                                         <span className="d-flex align-items-center">
                                             <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>

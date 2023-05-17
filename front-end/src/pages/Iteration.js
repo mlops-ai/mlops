@@ -35,7 +35,7 @@ function Iteration(props) {
     const {project_id, experiment_id, iteration_id} = useParams();
 
     /**
-     * States used for storing information about iteration.
+     * State used for storing information about iteration.
      * */
     const [iterationData, setIterationData] = useState();
 

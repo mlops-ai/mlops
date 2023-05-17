@@ -1094,3 +1094,12 @@ button.p-tree-toggler:has(+.p-treenode-label) {
 .project-info-id .material-symbols-rounded:hover {
     color: var(--color-primary);
 }
+
+button[data-bs-dismiss="modal"] {
+    shadow: none;
+}
+
+button[data-bs-dismiss="modal"]:hover {
+    background-color: var(--action-hover);
+    color: var(--color-primary);
+}
