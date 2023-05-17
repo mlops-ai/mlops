@@ -13,22 +13,14 @@ class Dataset(Document):
 
     Attributes:
     -----------
-    dataset_name: str
-        Dataset name
-    path_to_dataset: str
-        Path to dataset
-    dataset_description: str
-        Dataset description
-    dataset_problem_type: str
-        Dataset problem type
-    created_at: datetime
-        Date and time of dataset creation
-    updated_at: datetime
-        Date and time of dataset update
-    version: str
-        Dataset version
-    linked_iterations: dict
-        Linked iterations (key: iteration id, value: (project id, experiment id)
+    - **id** dataset_name (str): Dataset name
+    - **path_to_dataset** (str): Path to dataset
+    - **dataset_description** (str): Dataset description
+    - **dataset_problem_type** (str): Dataset problem type
+    - **created_at** (datetime): Date and time of dataset creation
+    - **updated_at** (datetime): Date and time of dataset update
+    - **version** (str): Dataset version
+    - **linked_iterations** (Dict): Linked iterations (key - iteration id, value - (project_id, experiment_id)
     """
 
     dataset_name: str = Field(..., description="Dataset name", min_length=1, max_length=40)
@@ -95,6 +87,18 @@ class Dataset(Document):
 
 
 class UpdateDataset(Dataset):
+    """
+    Dataset model for update
+
+    Attributes:
+    - **dataset_name (str)**: Dataset name
+    - **path_to_dataset (str)**: Path to dataset
+    - **dataset_description (str)**: Dataset description
+    - **dataset_problem_type (str)**: Dataset problem type
+    - **version (str)**: Dataset version
+    - **updated_at (datetime)**: Date and time of dataset update
+    """
+
     dataset_name: Optional[str]
     path_to_dataset: Optional[Union[str, HttpUrl, Path]]
     dataset_description: Optional[str]

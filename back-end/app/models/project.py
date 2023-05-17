@@ -8,6 +8,20 @@ from app.models.experiment import Experiment
 
 
 class Project(Document):
+    """
+    Project model.
+
+    Attributes:
+    - **id (str)**: Project ID.
+    - **title (str)**: Project title.
+    - **description (str)**: Project description.
+    - **status (str)**: Project status.
+    - **archived (bool)**: Project archived status.
+    - **created_at (datetime)**: Project creation date.
+    - **updated_at (datetime)**: Project last update date.
+    - **experiments (List[Experiment])**: List of experiments in the project.
+    """
+
     title: str = Field(description="Project title", min_length=1, max_length=40)
     description: Optional[str] = Field(default="", description="Project description", max_length=150)
     status: str = Field(default='not_started', description="Project status")
@@ -54,6 +68,17 @@ class Project(Document):
 
 
 class UpdateProject(Project):
+    """
+    Update project model.
+
+    Attributes:
+    - **title (str)**: Project title.
+    - **description (str)**: Project description.
+    - **status (str)**: Project status.
+    - **archived (bool)**: Project archived status.
+    - **updated_at (datetime)**: Project last update date.
+    """
+
     title: Optional[str]
     description: Optional[str]
     status: Optional[str]
@@ -72,6 +97,20 @@ class UpdateProject(Project):
 
 
 class DisplayProject(Project):
+    """
+    Display project model.
+
+    Attributes:
+    - **id (str)**: Project ID.
+    - **title (str)**: Project title.
+    - **description (str)**: Project description.
+    - **status (str)**: Project status.
+    - **archived (bool)**: Project archived status.
+    - **created_at (datetime)**: Project creation date.
+    - **updated_at (datetime)**: Project last update date.
+    - **experiments (List[str])**: List of experiments in the project.
+    """
+
     experiments: List[str] = []
 
     class Config:
