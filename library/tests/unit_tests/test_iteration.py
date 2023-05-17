@@ -1,10 +1,7 @@
 import pytest
 
-import mlops.tracking
 from app.config.config import settings as app_settings
-from mlops.config.config import settings as lib_settings
 from app.database.init_mongo_db import drop_database
-from mlops.exceptions.tracking import project_id_is_none_exception
 from mlops.src.iteration import Iteration
 
 

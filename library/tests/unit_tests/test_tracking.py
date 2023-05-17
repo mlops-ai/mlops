@@ -4,7 +4,6 @@ import mlops.tracking
 from app.config.config import settings as app_settings
 from mlops.config.config import settings as lib_settings
 from app.database.init_mongo_db import drop_database
-from mlops.src.iteration import Iteration
 
 
 # Fixture to set up test environment
@@ -39,12 +38,25 @@ async def test_create_project_failure(setup):
     assert str(exc_info.value) == "Request failed with status code 400: Project with that title already exists."
 
 
-def test_get_project(setup):
+@pytest.mark.asyncio
+async def test_get_project(setup):
     with pytest.raises(Exception) as exc_info:
         response = mlops.tracking.get_project('wrong_project_id_that_should_never_pass')
 
     assert str(exc_info.value) == "Request failed with status code 422: [{'loc': ['path', 'id'], 'msg': 'Id " "must " \
                                   "be of type PydanticObjectId', 'type': 'type_error'}]"
+
+
+async def test_get_project_by_name(setup):
+    # Test for project that does not exist
+    with pytest.raises(Exception) as exc_info:
+        raise mlops.tracking.get_project_by_name('wrong_project_name_that_should_never_pass')
+
+    assert str(exc_info.value) == "Request failed with status code 404: Project not found."
+
+    # Test for project that exists
+    response_success = mlops.tracking.get_project_by_name('test project')
+    assert response_success['title'] == 'test project'
 
 
 # Test for set_active_project function
@@ -69,6 +81,22 @@ async def test_get_experiment(setup):
     response = mlops.tracking.get_experiment(experiment_id=experiment['id'], project_id=project['_id'])
 
     assert response['name'] == 'test_experiment'
+
+
+@pytest.mark.asyncio
+async def test_get_experiment_by_name(setup):
+    project = mlops.tracking.get_project_by_name('test_project')
+    assert project['title'] == 'test_project'
+
+    # test for experiment that does not exist
+    with pytest.raises(Exception) as exc_info:
+        raise mlops.tracking.get_experiment_by_name('wrong_experiment_name', project['_id'])
+
+    assert str(exc_info.value) == "Request failed with status code 404: Experiment not found."
+
+    # test for experiment that exists
+    experiment = mlops.tracking.get_experiment_by_name('test_experiment', project['_id'])
+    assert experiment['name'] == 'test_experiment'
 
 
 # Test for create_experiment function
