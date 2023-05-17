@@ -17,6 +17,6 @@ def failed_to_set_active_experiment_exception(e):
     return Exception(f"Failed to set active experiment: {e}")
 
 
-def request_failed_execption(response: Response):
+def request_failed_exception(response: Response):
     detail = response.json()['detail']
     return Exception(f"Request failed with status code {response.status_code}: {detail}")

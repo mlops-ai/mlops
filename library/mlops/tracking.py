@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from mlops.config.config import settings
 from mlops.src.iteration import Iteration
 from mlops.exceptions.tracking import project_id_is_none_exception, experiment_id_is_none_exception, \
-    failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_execption
+    failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_exception
 from typing import ContextManager
 
 
@@ -28,7 +28,26 @@ def get_project(project_id: str = None) -> dict:
     if app_response.status_code == 200:
         return response_json
     else:
-        raise request_failed_execption(app_response)
+        raise request_failed_exception(app_response)
+
+
+def get_project_by_name(project_title: str) -> dict:
+    """
+    Function for getting projects from mlops server by name
+
+    Args:
+        project_title: name od the desired project, that will be retrieved from mlops app
+
+    Returns:
+        project: json data of the project
+    """
+    app_response = requests.get(f"{settings.url}/projects/title/{project_title}")
+    response_json = app_response.json()
+
+    if app_response.status_code == 200:
+        return response_json
+    else:
+        raise request_failed_exception(app_response)
 
 
 def create_project(title: str, description: str = None,
@@ -58,7 +77,7 @@ def create_project(title: str, description: str = None,
     if app_response.status_code == 201:
         return response_json
     else:
-        raise request_failed_execption(app_response)
+        raise request_failed_exception(app_response)
 
 
 def set_active_project(project_id: str) -> str:
@@ -101,13 +120,37 @@ def get_experiment(experiment_id: str = None, project_id: str = None) -> dict:
         raise experiment_id_is_none_exception()
 
     app_response = requests.get(f"{settings.url}/projects/{project_id}/experiments/{experiment_id}")
-    response_json = app_response.json()
 
     if app_response.status_code == 200:
         experiment = app_response.json()
         return experiment
     else:
-        raise request_failed_execption(app_response)
+        raise request_failed_exception(app_response)
+
+
+def get_experiment_by_name(experiment_name: str, project_id: str = None) -> dict:
+    """
+    Function for getting projects from mlops server by name
+
+    Args:
+        experiment_name: Name of the experiment, that will be retrieved from mlops app
+        project_id: Id of the project, that the experiment comes from (optional)
+
+    Returns:
+        experiment: json data of the experiment
+    """
+    project_id = settings.active_project_id if not project_id else project_id
+
+    if project_id is None:
+        raise project_id_is_none_exception()
+
+    app_response = requests.get(f"{settings.url}/projects/{project_id}/experiments/name/{experiment_name}")
+
+    if app_response.status_code == 200:
+        experiment = app_response.json()
+        return experiment
+    else:
+        raise request_failed_exception(app_response)
 
 
 def create_experiment(name: str, description: str = None,
@@ -139,7 +182,7 @@ def create_experiment(name: str, description: str = None,
     if app_response.status_code == 201:
         return response_json
     else:
-        raise request_failed_execption(app_response)
+        raise request_failed_exception(app_response)
 
 
 def set_active_experiment(experiment_id: str) -> str:
