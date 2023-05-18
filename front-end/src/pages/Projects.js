@@ -185,8 +185,8 @@ function Projects(props) {
 
         const requestOptions = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title, description: description })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title: title, description: description})
         };
 
         fetch('http://localhost:8000/projects', requestOptions)
@@ -222,7 +222,7 @@ function Projects(props) {
 
             closeModalRef.current.click();
 
-            }).catch((response) => {
+        }).catch((response) => {
 
             add_spinner.style.display = "none"
             add_button.disabled = false
@@ -317,14 +317,14 @@ function Projects(props) {
         let body;
 
         if (title !== currentProjectData.title.trim()) {
-            body = { title: title, description: description, status: currentProjectDataEditable.status };
+            body = {title: title, description: description, status: currentProjectDataEditable.status};
         } else {
-            body = { description: description, status: currentProjectDataEditable.status };
+            body = {description: description, status: currentProjectDataEditable.status};
         }
 
         const requestOptions = {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         };
 
@@ -455,8 +455,8 @@ function Projects(props) {
 
         const requestOptions = {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ archived: true })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({archived: true})
         };
 
         fetch('http://localhost:8000/projects/' + currentProjectData._id, requestOptions)
@@ -523,8 +523,8 @@ function Projects(props) {
 
         const requestOptions = {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ archived: false })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({archived: false})
         };
 
         fetch('http://localhost:8000/projects/' + currentProjectData._id, requestOptions)
@@ -604,19 +604,19 @@ function Projects(props) {
 
             }))
             .catch((response) => {
-            response.json().then((json: any) => {
-                toast.error(json.detail, {
-                    position: "bottom-center",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-            })
-        });
+                response.json().then((json: any) => {
+                    toast.error(json.detail, {
+                        position: "bottom-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                    });
+                })
+            });
     }, []);
 
     /**
@@ -681,7 +681,7 @@ function Projects(props) {
             }
 
             if (activeProjectsFilteredNumber < 4) {
-                for (let i=1; i <= 4 - activeProjectsFilteredNumber; i++) {
+                for (let i = 1; i <= 4 - activeProjectsFilteredNumber; i++) {
                     active_projects_filtered.push(<div key={i}></div>);
                 }
             }
@@ -709,7 +709,7 @@ function Projects(props) {
             }
 
             if (archivedProjectsFilteredNumber < 4) {
-                for (let i=1; i <= 4 - archivedProjectsFilteredNumber; i++) {
+                for (let i = 1; i <= 4 - archivedProjectsFilteredNumber; i++) {
                     archived_projects_filtered.push(<div key={i}></div>);
                 }
             }
@@ -767,16 +767,20 @@ function Projects(props) {
                     <div className="tab-content pt-2">
                         <div className="tab-pane fade show active" id="active-projects">
 
-                            { activeProjectsNumber === 0 ?
+                            {activeProjectsNumber === 0 ?
 
-                                <div className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
+                                <div
+                                    className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
                                     <div className="d-flex flex-column align-items-center" style={{maxWidth: 50 + "%"}}>
-                                    <span className="material-symbols-rounded project-icon" style={{fontSize: 64 + "px"}}>
+                                    <span className="material-symbols-rounded project-icon"
+                                          style={{fontSize: 64 + "px"}}>
                                         dashboard
                                     </span>
                                         <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No active projects</p>
-                                        <p className="mb-3">There are no active projects in the database. Create new project for tracking experiments.</p>
-                                        <button type="button" className="btn btn-primary" style={{width: "auto"}} name="add-project" data-bs-toggle="modal"
+                                        <p className="mb-3">There are no active projects in the database. Create new
+                                            project for tracking experiments.</p>
+                                        <button type="button" className="btn btn-primary" style={{width: "auto"}}
+                                                name="add-project" data-bs-toggle="modal"
                                                 data-bs-target="#add-project">
                                             Create Project
                                         </button>
@@ -786,7 +790,8 @@ function Projects(props) {
                                 :
 
                                 <div className="d-flex mt-2 mb-3 align-items-center">
-                                    <button type="button" className="btn btn-primary d-flex add-button" style={{width: "auto"}} name="add-project" data-bs-toggle="modal"
+                                    <button type="button" className="btn btn-primary d-flex add-button"
+                                            style={{width: "auto"}} name="add-project" data-bs-toggle="modal"
                                             data-bs-target="#add-project">
                                          <span className="material-symbols-rounded">
                                             add
@@ -806,19 +811,24 @@ function Projects(props) {
 
                             }
 
-                            { activeProjectsNumber !== 0 && activeProjectsFilteredNumber === 0 &&
-                                <div className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
-                                    <div className="d-flex flex-column align-items-center width-resize" style={{maxWidth: 50 + "%"}}>
-                                        <span className="material-symbols-rounded project-icon" style={{fontSize: 64 + "px"}}>
+                            {activeProjectsNumber !== 0 && activeProjectsFilteredNumber === 0 &&
+                                <div
+                                    className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
+                                    <div className="d-flex flex-column align-items-center width-resize"
+                                         style={{maxWidth: 50 + "%"}}>
+                                        <span className="material-symbols-rounded project-icon"
+                                              style={{fontSize: 64 + "px"}}>
                                             dashboard
                                         </span>
-                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No active projects based on query</p>
-                                        <p className="mb-3">All active projects are filtered out. Check the validity of the query.</p>
+                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No active projects
+                                            based on query</p>
+                                        <p className="mb-3">All active projects are filtered out. Check the validity of
+                                            the query.</p>
                                     </div>
                                 </div>
                             }
 
-                            { activeProjectsFilteredNumber > 0 &&
+                            {activeProjectsFilteredNumber > 0 &&
                                 <Masonry
                                     breakpointCols={breakpointColumnsObj}
                                     className="my-masonry-grid"
@@ -829,14 +839,17 @@ function Projects(props) {
 
                         </div>
                         <div className="tab-pane fade show" id="archived-projects">
-                            { archivedProjectsNumber === 0 ?
+                            {archivedProjectsNumber === 0 ?
 
-                                <div className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
+                                <div
+                                    className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
                                     <div className="d-flex flex-column align-items-center" style={{maxWidth: 50 + "%"}}>
-                                    <span className="material-symbols-rounded project-icon" style={{fontSize: 64 + "px"}}>
+                                    <span className="material-symbols-rounded project-icon"
+                                          style={{fontSize: 64 + "px"}}>
                                         dashboard
                                     </span>
-                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No archived projects</p>
+                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No archived
+                                            projects</p>
                                         <p className="mb-3">There are no archived projects in the database.</p>
                                     </div>
                                 </div>
@@ -857,19 +870,23 @@ function Projects(props) {
 
                             }
 
-                            { archivedProjectsNumber !== 0 && archivedProjectsFilteredNumber === 0 &&
-                                <div className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
+                            {archivedProjectsNumber !== 0 && archivedProjectsFilteredNumber === 0 &&
+                                <div
+                                    className="w-100 d-flex align-items-center justify-content-center text-center no-projects">
                                     <div className="d-flex flex-column align-items-center" style={{maxWidth: 50 + "%"}}>
-                                        <span className="material-symbols-rounded project-icon" style={{fontSize: 64 + "px"}}>
+                                        <span className="material-symbols-rounded project-icon"
+                                              style={{fontSize: 64 + "px"}}>
                                             dashboard
                                         </span>
-                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No archived projects based on query</p>
-                                        <p className="mb-3">All archived projects are filtered out. Check the validity of the query.</p>
+                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No archived projects
+                                            based on query</p>
+                                        <p className="mb-3">All archived projects are filtered out. Check the validity
+                                            of the query.</p>
                                     </div>
                                 </div>
                             }
 
-                            { archivedProjectsFilteredNumber > 0 &&
+                            {archivedProjectsFilteredNumber > 0 &&
 
                                 <Masonry
                                     breakpointCols={breakpointColumnsObj}
@@ -892,7 +909,8 @@ function Projects(props) {
                                 <form onSubmit={handleAddProject}>
                                     <div className="modal-header">
                                         <h5 className="modal-title">Create Project</h5>
-                                        <button ref={closeModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                        <button ref={closeModalRef} type="button" className="btn-close"
+                                                data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                     </div>
                                     <div className="modal-body">
@@ -917,11 +935,11 @@ function Projects(props) {
                                                 Project description
                                             </label>
                                             <textarea className="form-control shadow-none" id="project-description"
-                                              name="projectDescription"
-                                              rows="3" placeholder="Project description ..."
-                                              style={{resize: "none"}} maxLength="150"
-                                              value={formData.projectDescription}
-                                              onChange={handleFormData}>
+                                                      name="projectDescription"
+                                                      rows="3" placeholder="Project description ..."
+                                                      style={{resize: "none"}} maxLength="150"
+                                                      value={formData.projectDescription}
+                                                      onChange={handleFormData}>
                                             </textarea>
                                             <small className="form-text text-muted" style={{fontSize: 13 + "px"}}>
                                                 Optional (max. 150 characters)
@@ -933,16 +951,19 @@ function Projects(props) {
 
                                             <button id="add-project-action" className="btn btn-primary float-end">
                                                 <span className="d-flex align-items-center">
-                                                    <i id="add-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="add-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Add project
                                                 </span>
                                             </button>
 
                                             :
 
-                                            <button id="add-project-action" className="btn btn-primary float-end" disabled={true}>
+                                            <button id="add-project-action" className="btn btn-primary float-end"
+                                                    disabled={true}>
                                                 <span className="d-flex align-items-center">
-                                                    <i id="add-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="add-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Add project
                                                 </span>
                                             </button>
@@ -963,7 +984,8 @@ function Projects(props) {
                                 <form onSubmit={handleEditProject}>
                                     <div className="modal-header">
                                         <h5 className="modal-title">Edit project</h5>
-                                        <button ref={closeEditModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                        <button ref={closeEditModalRef} type="button" className="btn-close"
+                                                data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                     </div>
                                     <div className="modal-body">
@@ -1002,8 +1024,10 @@ function Projects(props) {
                                             <label htmlFor="project-status" className="form-label">
                                                 Project status
                                             </label>
-                                            <select className="form-select shadow-none" aria-label="Default select example" id="project-status" name="status" onChange={handleCurrentDataEditable}
-                                            value={currentProjectDataEditable.status}>
+                                            <select className="form-select shadow-none"
+                                                    aria-label="Default select example" id="project-status"
+                                                    name="status" onChange={handleCurrentDataEditable}
+                                                    value={currentProjectDataEditable.status}>
                                                 <option value="not_started">Not Started</option>
                                                 <option value="in_progress">In Progress</option>
                                                 <option value="completed">Finished</option>
@@ -1014,16 +1038,19 @@ function Projects(props) {
                                         {(currentProjectDataEditable.title !== currentProjectData.title && currentProjectDataEditable.title !== "") || currentProjectDataEditable.description !== currentProjectData.description || currentProjectDataEditable.status !== currentProjectData.status ?
                                             <button id="edit-project-action" className="btn btn-primary float-end">
                                                 <span className="d-flex align-items-center">
-                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Update project
                                                 </span>
                                             </button>
 
                                             :
 
-                                            <button id="edit-project-action" className="btn btn-primary float-end" disabled={true}>
+                                            <button id="edit-project-action" className="btn btn-primary float-end"
+                                                    disabled={true}>
                                                 <span className="d-flex align-items-center">
-                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Update project
                                                 </span>
                                             </button>
@@ -1042,12 +1069,15 @@ function Projects(props) {
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">Delete Project <span className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
-                                    <button ref={closeDeleteModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                    <h5 className="modal-title">Delete Project <span
+                                        className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
+                                    <button ref={closeDeleteModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                 </div>
                                 <div className="modal-body d-flex align-items-center justify-content-between">
-                                    <span className="material-symbols-rounded text-danger" style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                    <span className="material-symbols-rounded text-danger"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
                                         warning
                                     </span>
                                     <span>Deleting a project involves deleting all the experiments and&nbsp;models in it permanently. Are you sure you want to continue?</span>
@@ -1056,7 +1086,8 @@ function Projects(props) {
                                     <form onSubmit={handleDeleteProject}>
                                         <button id="delete-project-action" className="btn btn-danger float-end">
                                             <span className="d-flex align-items-center">
-                                                <i id="delete-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                <i id="delete-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
                                                 Delete project
                                             </span>
                                         </button>
@@ -1074,12 +1105,15 @@ function Projects(props) {
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">Archive Project <span className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
-                                    <button ref={closeArchiveModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                    <h5 className="modal-title">Archive Project <span
+                                        className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
+                                    <button ref={closeArchiveModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                 </div>
                                 <div className="modal-body d-flex align-items-center justify-content-between">
-                                    <span className="material-symbols-rounded text-secondary" style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                    <span className="material-symbols-rounded text-secondary"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
                                         archive
                                     </span>
                                     <span>Archiving a project will move it to the archive tab. You will not be able to edit or refer to it, but you can restore it at any time. Do you want to continue?</span>
@@ -1088,7 +1122,8 @@ function Projects(props) {
                                     <form onSubmit={handleArchiveProject}>
                                         <button id="archive-project-action" className="btn btn-secondary float-end">
                                             <span className="d-flex align-items-center">
-                                                <i id="archive-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                <i id="archive-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
                                                 Archive project
                                             </span>
                                         </button>
@@ -1106,12 +1141,15 @@ function Projects(props) {
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">Restore Project <span className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
-                                    <button ref={closeRestoreModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                    <h5 className="modal-title">Restore Project <span
+                                        className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
+                                    <button ref={closeRestoreModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                 </div>
                                 <div className="modal-body d-flex align-items-center justify-content-between">
-                                    <span className="material-symbols-rounded text-secondary" style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                    <span className="material-symbols-rounded text-secondary"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
                                         unarchive
                                     </span>
                                     <span>Restoring a project will bring it back to the active projects tab. Do you want to continue?</span>
@@ -1120,7 +1158,8 @@ function Projects(props) {
                                     <form onSubmit={handleRestoreProject}>
                                         <button id="restore-project-action" className="btn btn-secondary float-end">
                                             <span className="d-flex align-items-center">
-                                                <i id="restore-project-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                <i id="restore-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
                                                 Restore project
                                             </span>
                                         </button>
@@ -1134,7 +1173,7 @@ function Projects(props) {
                         TOAST - KONTENER DLA POWIADOMIEŃ
                     */}
 
-                    <Toast />
+                    <Toast/>
 
                 </section>
             </main>

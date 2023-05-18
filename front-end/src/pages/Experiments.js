@@ -6,11 +6,18 @@ import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingData from "../components/LoadingData";
 import * as echarts from 'echarts';
-import { TooltipComponent, GridComponent, LegendComponent, LegendScrollComponent, LegendPlainComponent} from 'echarts/components';
-import { BarChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
+import {
+    TooltipComponent,
+    GridComponent,
+    LegendComponent,
+    LegendScrollComponent,
+    LegendPlainComponent
+} from 'echarts/components';
+import {BarChart} from 'echarts/charts';
+import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
 import custom_theme from "../js/customed.json";
+import moment from "moment/moment";
 
 
 /**
@@ -40,13 +47,6 @@ function Experiments(props) {
      * React hook for search params.
      * */
     const [searchParams, setSearchParams] = useSearchParams();
-    console.log(searchParams.get("experiments"))
-
-    /**
-     * URL params ???
-     * */
-    // const url = new URL(window.location);
-    // console.log(url)
 
     /**
      * Import library for date manipulation.
@@ -86,9 +86,6 @@ function Experiments(props) {
     const [searchData, setSearchData] = useState({
         searchExperiments: ""
     });
-
-    // Stan służący do odświeżania zawartości strony - DO USUNIĘCIA
-    const [refresh, setRefresh] = useState(0);
 
     /**
      * State used for storing current experiment data (edited, deleted ...).
@@ -165,15 +162,8 @@ function Experiments(props) {
                 return Promise.reject(response);
             })
             .then(data => {
-                let active_tab = searchParams.get("active_tab")
-                if (active_tab === null || (active_tab !== 'project_info' && active_tab !== 'experiments_and_iterations')) {
-                    active_tab = 'project_info'
-                }
-
                 const ids = data.experiments.map(experiment => experiment.id);
                 let experiments = searchParams.get("experiments")
-                console.log(experiments)
-                console.log("xd")
 
                 let intersection
                 if (experiments !== null) {
@@ -196,9 +186,7 @@ function Experiments(props) {
                             checked: false
                         }
                     });
-                    console.log("intersection")
-                    console.log({experiments: intersection, active_tab: active_tab})
-                    setSearchParams({experiments: intersection.join(','), active_tab: active_tab}, {replace: true})
+                    setSearchParams({experiments: intersection.join(',')}, {replace: true})
                 } else {
                     data.experiments = data.experiments.map((experiment, index) => {
                         if (index === 0) {
@@ -213,8 +201,7 @@ function Experiments(props) {
                             checked: false
                         }
                     });
-                    console.log("nie")
-                    setSearchParams({experiments: active_ids[0], active_tab: active_tab}, {replace: true});
+                    setSearchParams({experiments: active_ids[0]}, {replace: true});
                 }
                 setProjectData(data)
             })
@@ -223,10 +210,6 @@ function Experiments(props) {
                 navigate('/projects')
             });
     }, []);
-
-    // useEffect(() => {
-    //
-    // }, [projectData])
 
     /**
      * Handle multiple experiment display on checkbox click action.
@@ -257,7 +240,6 @@ function Experiments(props) {
         setSearchParams((prevParams) => {
             return new URLSearchParams({
                 ...Object.fromEntries(prevParams.entries()),
-                active_tab: 'experiments_and_iterations',
                 experiments: experiments_ids.join(',')
             });
         }, {replace: true});
@@ -291,7 +273,6 @@ function Experiments(props) {
         setSearchParams((prevParams) => {
             return new URLSearchParams({
                 ...Object.fromEntries(prevParams.entries()),
-                active_tab: 'experiments_and_iterations',
                 experiments: event.target.getAttribute("experiment-id")
             });
         }, {replace: true});
@@ -387,8 +368,8 @@ function Experiments(props) {
 
         const requestOptions = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, description: description})
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name: name, description: description})
         };
 
         fetch('http://localhost:8000/projects/' + projectData._id + '/experiments', requestOptions)
@@ -519,14 +500,14 @@ function Experiments(props) {
 
         let body;
         if (name !== currentExperimentData.name.trim()) {
-            body = { name: name, description: description};
+            body = {name: name, description: description};
         } else {
-            body = { description: description};
+            body = {description: description};
         }
 
         const requestOptions = {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         };
 
@@ -650,73 +631,73 @@ function Experiments(props) {
         });
     }
 
-    /**
-     * Variable containing number of iterations in experiments chart data.
-     * UseMemo is used for optimization purposes.
-     * */
-    const chart_data = useMemo(() => {
-        let chart_data;
-        let counts;
-
-        if (projectData) {
-            counts = projectData.experiments.map((experiment) => {
-                return {
-                    experiment_name: experiment.name,
-                    iterations: experiment.iterations.length
-                }
-            })
-
-            let experiments_names = counts.map((experiment) => experiment.experiment_name);
-            let experiments_values = counts.map((experiment) => experiment.iterations);
-
-            let series = experiments_names.map((name, index) => {
-                let data = Array(experiments_names.length).fill(0)
-                data[index] = experiments_values[index]
-                return {
-                    name: name,
-                    data: data,
-                    type: 'bar',
-                    stack: 'stack',
-                }
-            })
-
-            if (experiments_names.length > 0) {
-                chart_data = {
-                    toolbox: {
-                        show: true,
-                        feature: {
-                            saveAsImage: {
-                                type: 'png'
-                            },
-                        },
-                    },
-                    title: {
-                        text: "Number of iterations in experiments",
-                        left: 'center',
-                    },
-                    xAxis: {
-                        type: "category",
-                        data: experiments_names,
-                    },
-                    "yAxis": {
-                        "type": "value"
-                    },
-                    tooltip: {},
-                    legend: {
-                        data: experiments_names,
-                        orient: 'horizontal',
-                        left: 'center',
-                        top: 30,
-                    },
-                    series: series
-                }
-            } else {
-                return null
-            }
-            return chart_data
-        }
-        return null
-    })
+    // /**
+    //  * Variable containing number of iterations in experiments chart data.
+    //  * UseMemo is used for optimization purposes.
+    //  * */
+    // const chart_data = useMemo(() => {
+    //     let chart_data;
+    //     let counts;
+    //
+    //     if (projectData) {
+    //         counts = projectData.experiments.map((experiment) => {
+    //             return {
+    //                 experiment_name: experiment.name,
+    //                 iterations: experiment.iterations.length
+    //             }
+    //         })
+    //
+    //         let experiments_names = counts.map((experiment) => experiment.experiment_name);
+    //         let experiments_values = counts.map((experiment) => experiment.iterations);
+    //
+    //         let series = experiments_names.map((name, index) => {
+    //             let data = Array(experiments_names.length).fill(0)
+    //             data[index] = experiments_values[index]
+    //             return {
+    //                 name: name,
+    //                 data: data,
+    //                 type: 'bar',
+    //                 stack: 'stack',
+    //             }
+    //         })
+    //
+    //         if (experiments_names.length > 0) {
+    //             chart_data = {
+    //                 toolbox: {
+    //                     show: true,
+    //                     feature: {
+    //                         saveAsImage: {
+    //                             type: 'png'
+    //                         },
+    //                     },
+    //                 },
+    //                 title: {
+    //                     text: "Number of iterations in experiments",
+    //                     left: 'center',
+    //                 },
+    //                 xAxis: {
+    //                     type: "category",
+    //                     data: experiments_names,
+    //                 },
+    //                 "yAxis": {
+    //                     "type": "value"
+    //                 },
+    //                 tooltip: {},
+    //                 legend: {
+    //                     data: experiments_names,
+    //                     orient: 'horizontal',
+    //                     left: 'center',
+    //                     top: 30,
+    //                 },
+    //                 series: series
+    //             }
+    //         } else {
+    //             return null
+    //         }
+    //         return chart_data
+    //     }
+    //     return null
+    // })
 
     /**
      * Variable containing all experiments.
@@ -767,12 +748,11 @@ function Experiments(props) {
             <Iterations
                 gridData={active_experiments}
                 projectID={project_id}
-                refresher={setRefresh}
                 projectData={projectData}
                 setProjectData={setProjectData}
             />
         );
-    }, [active_experiments, refresh])
+    }, [active_experiments])
 
     /**
      * Component rendering.
@@ -782,11 +762,35 @@ function Experiments(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1>Project</h1>
+                    <h1 className="d-flex align-items-center">
+                        <span className="fw-semibold">
+                            {projectData.title}
+                        </span>
+                        <span className="project-info-id d-flex align-items-center" style={{fontWeight: "normal"}}>
+                            @{project_id}
+                            <span className="material-symbols-rounded" title="Copy project id" onClick={
+                                () => {
+                                    toast.success('Copied to clipboard!', {
+                                        position: "bottom-center",
+                                        autoClose: 1000,
+                                        hideProgressBar: true,
+                                        closeOnClick: true,
+                                        pauseOnHover: false,
+                                        draggable: true,
+                                        progress: undefined,
+                                        theme: "light",
+                                    });
+                                    navigator.clipboard.writeText(project_id)
+                                }
+                            }>
+                                content_copy
+                            </span>
+                        </span>
+                    </h1>
                     <nav>
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href="/projects">Projects</a></li>
-                            <li className="breadcrumb-item active">{ projectData.title }</li>
+                            <li className="breadcrumb-item active">{projectData.title}</li>
                         </ol>
                     </nav>
                 </div>
@@ -798,261 +802,174 @@ function Experiments(props) {
 
                 <section className="experiments section content-data">
 
-                    <div>
-                        <ul className="nav nav-tabs nav-tabs-bordered">
+                    <div className="row">
 
-                            <li className="nav-item">
-                                <button className={"nav-link " + (searchParams.get("active_tab") && searchParams.get("active_tab") === 'project_info' ? "active" : "") } data-bs-toggle="tab"
-                                        data-bs-target="#project-info" onClick={
-                                    () => {
-                                        setSearchParams((prevParams) => {
-                                            return new URLSearchParams({
-                                                ...Object.fromEntries(prevParams.entries()),
-                                                active_tab: "project_info"
-                                            });
-                                        }, {replace: true});
-                                    }
-                                }>
-                                    Project Information
-                                </button>
-                            </li>
-
-                            <li className="nav-item">
-                                <button className={"nav-link " + (searchParams.get("active_tab") && searchParams.get("active_tab")  === 'experiments_and_iterations' ? "active" : "") } data-bs-toggle="tab"
-                                        data-bs-target="#experiments-and-iterations" onClick={
-                                    () => {
-                                        setSearchParams((prevParams) => {
-                                            return new URLSearchParams({
-                                                ...Object.fromEntries(prevParams.entries()),
-                                                active_tab: "experiments_and_iterations"
-                                            });
-                                        }, {replace: true});
-                                    }
-                                }>
-                                    Experiments & Iterations
-                                </button>
-                            </li>
-
-                        </ul>
-                    </div>
-
-                    <div className="tab-content pt-2">
-
-                        <div className={"tab-pane fade show " + (searchParams.get("active_tab") && searchParams.get("active_tab")  === 'project_info' ? "active" : "") } id="project-info">
-                            <h4 className="d-flex align-items-center">
-                                <span className="fw-semibold">
-                                    {projectData.title}
-                                </span>
-                                <span className="project-info-id d-flex align-items-center">
-                                    @{project_id}
-
-                                    <span className="material-symbols-rounded" title="Copy project id" onClick={
-                                        () => {
-                                            toast.success('Copied to clipboard!', {
-                                                position: "bottom-center",
-                                                autoClose: 1000,
-                                                hideProgressBar: true,
-                                                closeOnClick: true,
-                                                pauseOnHover: false,
-                                                draggable: true,
-                                                progress: undefined,
-                                                theme: "light",
-                                            });
-                                            navigator.clipboard.writeText(project_id)
-                                        }
-                                    }>
-                                        content_copy
-                                    </span>
-
-                                </span>
-                            </h4>
-                            <p><span className="fst-italic">{projectData.description}</span></p>
-
-                            <h5><span className="fw-semibold">General informations</span></h5>
-
-                            <div className="row mb-3">
-                                <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2 d-flex align-items-center">
-                                    <span className="material-symbols-rounded pe-1">
-                                        label
-                                    </span>
-                                    Status:
-                                    { projectData.status === 'completed' ?
-                                        <span className={"badge finished"}>Finished</span>
-
-                                        :
-
-                                        <span className={"badge " + projectData.status.replace('_', '-')}>{capitalizeFirstLetter(projectData.status.replace(/_/g, ' '))}</span>
-                                    }
-
-                                    { projectData.archived && <span className="badge archived">Archived</span>}
-                                </div>
-                                <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2 d-flex align-items-center">
-                                    <span className="material-symbols-rounded pe-1">
-                                        calendar_month
-                                    </span>
-                                    Creation date: {moment(new Date(projectData.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
-                                </div>
-                                <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2 d-flex align-items-center">
-                                    <span className="material-symbols-rounded pe-1">
-                                        update
-                                    </span>
-                                    Last modification: {moment(new Date(projectData.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
-                                </div>
-                            </div>
-
-                            <h5><span className="fw-semibold">Statistics</span></h5>
-
-                            {chart_data === null ?
-                                <p><span className="fst-italic">No data to show!</span></p>
-                            :
-                                <div className="card p-2">
-                                    <ReactEcharts option={chart_data} theme="customed"/>
-                                </div>
-                            }
-                        </div>
-
-                        <div className={"tab-pane fade show " + (searchParams.get("active_tab") && searchParams.get("active_tab")  === 'experiments_and_iterations' ? "active" : "") } id="experiments-and-iterations">
-
-                            <div className="row">
-
-                                {/*
+                        {/*
                             LISTA EKSPERYMENTÓW
                         */}
 
-                                {experimentList ?
+                        {experimentList ?
 
-                                    <div id="exp" className="col-xl-3 col-lg-3 col-md-12 mb-3">
-                                        <h5 className="d-flex align-items-center justify-content-between">
-                                            <span className="fw-semibold">Experiments</span>
-                                            <div className="d-flex align-items-center">
-                                <span className="material-symbols-rounded icon-border" title="Add experiment" data-bs-toggle="modal"
+                            <div id="exp" className="col-xl-3 col-lg-3 col-md-12 mb-3">
+                                <h5 className="d-flex align-items-center justify-content-between">
+                                    <span className="fw-semibold">Experiments</span>
+                                    <div className="d-flex align-items-center">
+                                <span className="material-symbols-rounded icon-border" title="Add experiment"
+                                      data-bs-toggle="modal"
                                       data-bs-target="#add-experiment">
                                     add
                                 </span>
-                                                <span className="material-symbols-rounded icon-border" title="Hide experiments" onClick={handleHideExperiments}>
+                                        <span className="material-symbols-rounded icon-border" title="Hide experiments"
+                                              onClick={handleHideExperiments}>
                                     chevron_left
                                 </span>
-                                            </div>
-                                        </h5>
-                                        {projectData.experiments.length === 0 ?
-                                            <div className="d-flex flex-column align-items-center text-center">
-                                                <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No experiments</p>
-                                                <p className="mb-3">There are no experiments in this project. Create new experiment for tracking runs.</p>
-                                            </div>
-
-                                            :
-
-                                            <>
-                                                <input className="search w-100"
-                                                       type="text"
-                                                       name="searchExperiments"
-                                                       placeholder="Search in experiments ..."
-                                                       title="Enter search keyword"
-                                                       value={searchData.searchExperiments}
-                                                       onChange={handleSearch}
-                                                />
-                                                <div className="list-of-experiments">
-                                                    {experiments}
-                                                </div>
-                                            </>
-                                        }
-                                        { projectData.experiments.length !== 0 && experiments.length === 0 &&
-
-                                            <div className="d-flex flex-column align-items-center text-center">
-                                                <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No experiments based on query</p>
-                                                <p className="mb-3">All experiments are filtered out. Check the validity of the query.</p>
-                                            </div>
-
-                                        }
-
+                                    </div>
+                                </h5>
+                                {projectData.experiments.length === 0 ?
+                                    <div className="d-flex flex-column align-items-center text-center">
+                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No experiments</p>
+                                        <p className="mb-3">There are no experiments in this project. Create new
+                                            experiment for tracking runs.</p>
                                     </div>
 
                                     :
 
-                                    <div className="col-xl-1 col-lg-1 m-0">
-                                <span className="material-symbols-rounded icon-border ms-0" title="Show experiments" onClick={handleHideExperiments}>
-                                    chevron_right
-                                </span>
+                                    <>
+                                        <input className="search w-100"
+                                               type="text"
+                                               name="searchExperiments"
+                                               placeholder="Search in experiments ..."
+                                               title="Enter search keyword"
+                                               value={searchData.searchExperiments}
+                                               onChange={handleSearch}
+                                        />
+                                        <div className="list-of-experiments">
+                                            {experiments}
+                                        </div>
+                                    </>
+                                }
+                                {projectData.experiments.length !== 0 && experiments.length === 0 &&
+
+                                    <div className="d-flex flex-column align-items-center text-center">
+                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>No experiments based
+                                            on query</p>
+                                        <p className="mb-3">All experiments are filtered out. Check the validity of the
+                                            query.</p>
                                     </div>
+
                                 }
 
-                                {/*
-                                    MODELE - ITERACJE
-                                */}
+                            </div>
 
-                                <div className={experimentList ? "col-xl-9 col-lg-9 col-md-12" : "col-xl-12 col-lg-12 col-md-12"}>
-                                    {projectData.experiments.length !== 0 && active_experiments && active_experiments.length === 1 &&
-                                        <>
-                                            <h4 className="d-flex align-items-center">
+                            :
+
+                            <div className="col-xl-1 col-lg-1 m-0">
+                                <span className="material-symbols-rounded icon-border ms-0" title="Show experiments"
+                                      onClick={handleHideExperiments}>
+                                    chevron_right
+                                </span>
+                            </div>
+                        }
+
+                        {/*
+                            MODELE - ITERACJE
+                        */}
+
+                        <div
+                            className={experimentList ? "col-xl-9 col-lg-9 col-md-12" : "col-xl-12 col-lg-12 col-md-12"}>
+                            {projectData.experiments.length !== 0 && active_experiments && active_experiments.length === 1 &&
+                                <>
+                                    <h4 className="d-flex align-items-center">
                                                 <span className="fw-semibold">
                                                     {active_experiments[0].name}
                                                 </span>
-                                                    <span className="project-info-id d-flex align-items-center">
+                                        <span className="project-info-id d-flex align-items-center">
                                                         @{active_experiments[0].id}
 
-                                                        <span className="material-symbols-rounded" title="Copy experiment id" onClick={
-                                                            () => {
-                                                                toast.success('Copied to clipboard!', {
-                                                                    position: "bottom-center",
-                                                                    autoClose: 1000,
-                                                                    hideProgressBar: true,
-                                                                    closeOnClick: true,
-                                                                    pauseOnHover: false,
-                                                                    draggable: true,
-                                                                    progress: undefined,
-                                                                    theme: "light",
-                                                                });
-                                                                navigator.clipboard.writeText(active_experiments[0].id)
-                                                            }
-                                                        }>
+                                            <span className="material-symbols-rounded" title="Copy experiment id"
+                                                  onClick={
+                                                      () => {
+                                                          toast.success('Copied to clipboard!', {
+                                                              position: "bottom-center",
+                                                              autoClose: 1000,
+                                                              hideProgressBar: true,
+                                                              closeOnClick: true,
+                                                              pauseOnHover: false,
+                                                              draggable: true,
+                                                              progress: undefined,
+                                                              theme: "light",
+                                                          });
+                                                          navigator.clipboard.writeText(active_experiments[0].id)
+                                                      }
+                                                  }>
                                                         content_copy
                                                     </span>
 
                                                 </span>
-                                            </h4>
-                                            <p><span className="fst-italic">{active_experiments[0].description}</span></p>
-                                            <div className="d-flex align-items-center">
-                                                <p style={{fontSize: 13 + "px"}} className="pe-3">Experiment ID: {active_experiments[0].id}</p>
-                                                <p style={{fontSize: 13 + "px"}} className="pe-3">Creation Date: {moment(new Date(active_experiments[0].created_at)).format("DD-MM-YYYY, HH:mm:ss")}</p>
-                                            </div>
-                                        </>
-                                    }
+                                    </h4>
+                                    <p><span className="fst-italic">{active_experiments[0].description}</span></p>
+                                    <div className="row d-flex align-items-center" style={{fontSize: 14 + "px"}}>
+                                        <div
+                                            className="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-3 d-flex align-items-center">
+                                                    <span className="material-symbols-rounded pe-1"
+                                                          style={{fontSize: 18 + "px"}}>
+                                                        calendar_month
+                                                    </span>
+                                            Creation
+                                            date: {moment(new Date(active_experiments[0].created_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                                        </div>
+                                        <div
+                                            className="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-3 d-flex align-items-center">
+                                                    <span className="material-symbols-rounded pe-1"
+                                                          style={{fontSize: 18 + "px"}}>
+                                                        update
+                                                    </span>
+                                            Last
+                                            modification: {moment(new Date(active_experiments[0].updated_at)).format("DD-MM-YYYY, HH:mm:ss")}
+                                        </div>
+                                    </div>
+                                </>
+                            }
 
-                                    { projectData.experiments.length !== 0 && active_experiments && active_experiments.length > 1 &&
-                                        <>
-                                            <h4><span className="fw-semibold">Displaying runs from {active_experiments.length} experiments</span></h4>
-                                            <p><span className="fst-italic">{active_experiments.map(experiment => experiment.name).join(', ')}</span></p>
-                                        </>
+                            {projectData.experiments.length !== 0 && active_experiments && active_experiments.length > 1 &&
+                                <>
+                                    <h4><span
+                                        className="fw-semibold">Displaying runs from {active_experiments.length} experiments</span>
+                                    </h4>
+                                    <p><span
+                                        className="fst-italic">{active_experiments.map(experiment => experiment.name).join(', ')}</span>
+                                    </p>
+                                </>
 
-                                    }
+                            }
 
-                                    { projectData.experiments.length !== 0 && active_experiments && active_experiments.length >= 1 &&
-                                        <>
-                                            {iterations}
-                                        </>
-                                    }
+                            {projectData.experiments.length !== 0 && active_experiments && active_experiments.length >= 1 &&
+                                <>
+                                    {iterations}
+                                </>
+                            }
 
-                                    { projectData.experiments.length === 0 &&
-                                        <div className="w-100 d-flex align-items-center justify-content-center text-center" style={{padding: 128 + "px"}}>
-                                            <div className="d-flex flex-column align-items-center" style={{maxWidth: 50 + "%"}}>
-                                        <span className="material-symbols-rounded project-icon" style={{fontSize: 64 + "px"}}>
+                            {projectData.experiments.length === 0 &&
+                                <div className="w-100 d-flex align-items-center justify-content-center text-center"
+                                     style={{padding: 128 + "px"}}>
+                                    <div className="d-flex flex-column align-items-center" style={{maxWidth: 50 + "%"}}>
+                                        <span className="material-symbols-rounded project-icon"
+                                              style={{fontSize: 64 + "px"}}>
                                             science
                                         </span>
-                                                <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>Nothing to show.</p>
-                                                <p className="mb-3">There are no experiments in this project. Create new experiment for tracking models.</p>
-                                                <button type="button" className="btn btn-primary" style={{width: "auto"}} name="add-experiment" data-bs-toggle="modal"
-                                                        data-bs-target="#add-experiment">
-                                                    Create Experiment
-                                                </button>
-                                            </div>
-                                        </div>
-                                    }
-
+                                        <p className="fw-bold mb-0" style={{fontSize: 18 + "px"}}>Nothing to show.</p>
+                                        <p className="mb-3">There are no experiments in this project. Create new
+                                            experiment for tracking models.</p>
+                                        <button type="button" className="btn btn-primary" style={{width: "auto"}}
+                                                name="add-experiment" data-bs-toggle="modal"
+                                                data-bs-target="#add-experiment">
+                                            Create Experiment
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            }
 
                         </div>
-
                     </div>
 
                     {/*
@@ -1065,7 +982,8 @@ function Experiments(props) {
                                 <form onSubmit={handleAddExperiment}>
                                     <div className="modal-header">
                                         <h5 className="modal-title">Create Experiment</h5>
-                                        <button ref={closeModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                        <button ref={closeModalRef} type="button" className="btn-close"
+                                                data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                     </div>
                                     <div className="modal-body">
@@ -1106,16 +1024,21 @@ function Experiments(props) {
                                         {formData.experimentName !== "" ?
                                             <button id="add-experiment-action" className="btn btn-primary float-end">
                                                 <span className="d-flex align-items-center">
-                                                    <i id="add-experiment-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="add-experiment-spinner"
+                                                       className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Add experiment
                                                 </span>
                                             </button>
 
                                             :
 
-                                            <button id="add-experiment-action" className="btn btn-primary float-end" disabled={true}>
+                                            <button id="add-experiment-action" className="btn btn-primary float-end"
+                                                    disabled={true}>
                                                 <span className="d-flex align-items-center">
-                                                    <i id="add-experiment-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="add-experiment-spinner"
+                                                       className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Add experiment
                                                 </span>
                                             </button>
@@ -1136,7 +1059,8 @@ function Experiments(props) {
                                 <form onSubmit={handleEditExperiment}>
                                     <div className="modal-header">
                                         <h5 className="modal-title">Edit experiment</h5>
-                                        <button ref={closeEditModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                        <button ref={closeEditModalRef} type="button" className="btn-close"
+                                                data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                     </div>
                                     <div className="modal-body">
@@ -1178,16 +1102,21 @@ function Experiments(props) {
 
                                             <button id="edit-experiment-action" className="btn btn-primary float-end">
                                                 <span className="d-flex align-items-center">
-                                                    <i id="edit-experiment-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="edit-experiment-spinner"
+                                                       className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Update experiment
                                                 </span>
                                             </button>
 
                                             :
 
-                                            <button id="edit-experiment-action" className="btn btn-primary float-end" disabled={true}>
+                                            <button id="edit-experiment-action" className="btn btn-primary float-end"
+                                                    disabled={true}>
                                                 <span className="d-flex align-items-center">
-                                                    <i id="edit-experiment-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                    <i id="edit-experiment-spinner"
+                                                       className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
                                                     Update experiment
                                                 </span>
                                             </button>
@@ -1206,12 +1135,15 @@ function Experiments(props) {
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">Delete Experiment <span className="fst-italic fw-semibold">{currentExperimentData.name}</span></h5>
-                                    <button ref={closeDeleteModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                    <h5 className="modal-title">Delete Experiment <span
+                                        className="fst-italic fw-semibold">{currentExperimentData.name}</span></h5>
+                                    <button ref={closeDeleteModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                 </div>
                                 <div className="modal-body d-flex align-items-center justify-content-between">
-                                    <span className="material-symbols-rounded text-danger" style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                    <span className="material-symbols-rounded text-danger"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
                                         warning
                                     </span>
                                     <span>Deleting an experiment involves deleting all runs and models in it permanently. Are you sure you want to continue?</span>
@@ -1220,7 +1152,8 @@ function Experiments(props) {
                                     <form onSubmit={handleDeleteExperiment}>
                                         <button id="delete-experiment-action" className="btn btn-danger float-end">
                                             <span className="d-flex align-items-center">
-                                                <i id="delete-experiment-spinner" className="fa fa-spinner fa-spin me-1" style={{display: "none"}}></i>
+                                                <i id="delete-experiment-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
                                                 Delete experiment
                                             </span>
                                         </button>
