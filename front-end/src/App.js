@@ -12,8 +12,13 @@ import Navigation from "./components/Navigation";
 import Projects from "./pages/Projects";
 import Experiments from "./pages/Experiments";
 import Iteration from "./pages/Iteration";
-
 function App() {
+
+    let perfEntries = performance.getEntriesByType("navigation");
+
+    if (perfEntries[0].type === "back_forward") {
+        window.location.reload();
+    }
 
     return (
         <BrowserRouter>

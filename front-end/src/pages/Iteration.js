@@ -3,9 +3,15 @@ import {useNavigate, useParams} from "react-router-dom";
 import LoadingData from "../components/LoadingData";
 import moment from "moment/moment";
 import * as echarts from 'echarts';
-import { TooltipComponent, GridComponent, LegendComponent, LegendScrollComponent, LegendPlainComponent} from 'echarts/components';
-import { BarChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
+import {
+    TooltipComponent,
+    GridComponent,
+    LegendComponent,
+    LegendScrollComponent,
+    LegendPlainComponent
+} from 'echarts/components';
+import {BarChart} from 'echarts/charts';
+import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
 import custom_theme from "../js/customed.json";
 
@@ -35,7 +41,7 @@ function Iteration(props) {
     const {project_id, experiment_id, iteration_id} = useParams();
 
     /**
-     * States used for storing information about iteration.
+     * State used for storing information about iteration.
      * */
     const [iterationData, setIterationData] = useState();
 
@@ -115,6 +121,7 @@ function Iteration(props) {
 
                         series: series
                     };
+                    console.log(metrics_chart_options)
                 }
             }
             return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options]
@@ -137,7 +144,8 @@ function Iteration(props) {
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href="/projects">Projects</a></li>
                             <li className="breadcrumb-item">{iterationData.project_title}</li>
-                            <li className="breadcrumb-item"><a href={"/projects/" + project_id + "/experiments"}>Experiments</a></li>
+                            <li className="breadcrumb-item"><a
+                                href={"/projects/" + project_id + "/experiments"}>Experiments</a></li>
                             <li className="breadcrumb-item">{iterationData.experiment_name}</li>
                             <li className="breadcrumb-item">Iteration</li>
                             <li className="breadcrumb-item active">{iterationData.iteration_name}</li>
@@ -149,22 +157,28 @@ function Iteration(props) {
                     <h4><span className="fw-semibold">{iterationData.iteration_name}</span></h4>
                     <p><span className="fst-italic">Tu mógłby być opis iteracji!</span></p>
                     <div className="row mb-3">
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Iteration ID: {iterationData.id}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Creation date: {moment(new Date(iterationData.created_at)).format("DD-MM-YYYY, HH:mm:ss")}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">User name: {iterationData.user_name}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Model name: {iterationData.model_name}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Path to model: {iterationData.path_to_model !== "" ? iterationData.path_to_model : '-'}</div>
+                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Iteration
+                            ID: {iterationData.id}</div>
+                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Creation
+                            date: {moment(new Date(iterationData.created_at)).format("DD-MM-YYYY, HH:mm:ss")}</div>
+                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">User
+                            name: {iterationData.user_name}</div>
+                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Model
+                            name: {iterationData.model_name}</div>
+                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Path to
+                            model: {iterationData.path_to_model !== "" ? iterationData.path_to_model : '-'}</div>
                     </div>
 
                     <h5><span className="fw-semibold">Parameters</span></h5>
 
-                    { parameters_names && parameters_names.length > 0 ?
+                    {parameters_names && parameters_names.length > 0 ?
 
                         <div className="card p-2" style={{overflowX: "auto"}}>
                             <table className="table">
                                 <thead>
                                 <tr>
-                                    {parameters_names && parameters_names.map(param => <th key={param} scope="col">{param}</th>)}
+                                    {parameters_names && parameters_names.map(param => <th key={param}
+                                                                                           scope="col">{param}</th>)}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -182,7 +196,7 @@ function Iteration(props) {
 
                     <h5><span className="fw-semibold">Metrics</span></h5>
 
-                    { metrics_names && metrics_names.length > 0 ?
+                    {metrics_names && metrics_names.length > 0 ?
 
                         <div className="card p-2" style={{overflowX: "auto"}}>
                             <table className="table">

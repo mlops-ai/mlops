@@ -1,4 +1,5 @@
 import {ThreeDots} from "react-bootstrap-icons";
+import React from "react";
 
 /**
  * Project card component.
@@ -21,7 +22,7 @@ function ProjectCard(props) {
     /**
      * Variable containing the number of experiments in project.
      * */
-    const experimentsNumber = props.projectExperiments.length
+    let experimentsNumber = props.projectExperiments.length
 
     /**
      * Generating experiments list.
@@ -39,9 +40,9 @@ function ProjectCard(props) {
         });
 
         if (experimentsNumber <= displayMaxExperiments) {
-            experiments = <ul>{experimentsList.slice(0, displayMaxExperiments)}</ul>
+            experiments = <ul key={"experiments"}>{experimentsList.slice(0, displayMaxExperiments)}</ul>
         } else {
-            experiments = <ul>{experimentsList.slice(0, displayMaxExperiments)}<span
+            experiments = <ul key={"experiments"}>{experimentsList.slice(0, displayMaxExperiments)}<span
                 style={{fontSize: 13 + "px"}}>and {experimentsNumber - displayMaxExperiments} more ...</span></ul>
         }
 
@@ -57,12 +58,17 @@ function ProjectCard(props) {
 
                     <div className="card-body">
 
-                        <h5 className="card-title">
+                        <h5 className="card-title d-flex align-items-center justify-content-between">
 
-                            <div className="more-action float-end test ps-3">
-
-                                <ThreeDots size={20} data-bs-toggle="dropdown" title={"Project actions"}/>
-
+                            <div className="project-title">
+                                <a className="nav-link" href={'/projects/' + props.projectId + '/experiments'} title={props.projectName}>
+                                    {props.projectName}
+                                </a>
+                            </div>
+                            <div className="more-action ps-3">
+                                <span className="more-action-button material-symbols-rounded" data-bs-toggle="dropdown" title="Project actions">
+                                    more_horiz
+                                </span>
 
                                 {!props.projectIsArchived ?
 
@@ -171,7 +177,7 @@ function ProjectCard(props) {
                                                     })
                                                 }
                                             }  className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
-                                                data-bs-target="#restore-project">
+                                               data-bs-target="#restore-project">
                                                 <span className="material-symbols-rounded">
                                                     unarchive
                                                 </span>
@@ -206,12 +212,10 @@ function ProjectCard(props) {
                                 }
 
                             </div>
-                            <span className="project-title">
-                            <a className="nav-link" href={'/projects/' + props.projectId + '/experiments'} title={props.projectName}>
-                                {props.projectName}
-                            </a>
-                        </span>
+
                         </h5>
+
+
 
                         { props.projectStatus === 'completed' ?
                             <span className={"badge finished"}>Finished</span>
@@ -220,6 +224,8 @@ function ProjectCard(props) {
 
                             <span className={"badge " + props.projectStatus.replace('_', '-')}>{capitalizeFirstLetter(props.projectStatus.replace(/_/g, ' '))}</span>
                         }
+
+                        { props.projectIsArchived && <span className="badge archived" style={{marginLeft: 4 + "px"}}>Archived</span>}
 
                         <p className="card-text mb-0">
                             {props.projectDescription}
@@ -238,6 +244,21 @@ function ProjectCard(props) {
 
                         <div className="d-flex justify-content-start flex-wrap">
                             {props.projectCreationDate}
+                        </div>
+
+                        <div className="mb-1 fw-bold" style={{marginTop: 12 + "px"}}>
+
+                            <div className="d-flex align-items-center">
+                                <span className="material-symbols-rounded pe-1">
+                                    update
+                                </span>
+                                Last Modification
+                            </div>
+
+                        </div>
+
+                        <div className="d-flex justify-content-start flex-wrap">
+                            {props.projectModifyDate}
                         </div>
 
                         <div className="mb-1 fw-bold"  style={{marginTop: 12 + "px"}}>

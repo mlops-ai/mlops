@@ -16,6 +16,7 @@
     --color-primary: #012970;
     --color-secondary: #444444;
     --color-light: #899bbd;
+    --action-hover: #f2f4ff;
 
     /**
     * Secondary variables
@@ -123,15 +124,21 @@ a:hover {
 
 .topbar-navbar .toggle-sidebar-btn {
     font-size: 32px;
-    padding-left: 10px;
+    padding: 4px;
+    margin-left: 6px;
     cursor: pointer;
     color: var(--color-primary);
     user-select: none;
+    border-radius: 20px;
 }
 
-/**
-* Topbar Navbar => searchbar
-* */
+.topbar-navbar .toggle-sidebar-btn:hover {
+    background-color: var(--action-hover);
+}
+
+    /**
+    * Topbar Navbar => searchbar
+    * */
 
 .topbar-navbar .search-bar {
     min-width: 420px;
@@ -288,10 +295,16 @@ a:hover {
 
 .right-panel .user-profile {
     color: var(--color-primary);
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.right-panel .user-profile:hover {
+    background-color: var(--action-hover);
 }
 
 .right-panel .user-profile img {
-    max-height: 36px;
+    max-height: 32px;
 }
 
 
@@ -682,31 +695,42 @@ a:hover {
     padding-bottom: 4px;
 }
 
-.card-view .badge {
+.badge {
     color: #fff;
     background-color: #0a0a0a;
-    border-radius: 3px;
+    border-radius: 4px;
     padding: 3px 6px;
     font-family: var(--font-roboto);
     font-weight: 600;
-    margin-bottom: 16px;
     font-size: 12px;
 }
 
-.card-view .finished {
+.card-view .badge {
+    margin-bottom: 16px;
+}
+
+#project-info .badge {
+    margin-left: 4px;
+}
+
+.finished {
     background-color: #1cbb8c;
 }
 
-.card-view .in-progress {
+.in-progress {
     background-color: #fcb92c;
 }
 
-.card-view .on-hold {
+.on-hold {
     background-color: #dc3545;
 }
 
-.card-view .not-started {
+.not-started {
     background-color: #3b7ddd;
+}
+
+.archived {
+    background-color: #ced4da;
 }
 
 .card-view .project-progress {
@@ -716,6 +740,31 @@ a:hover {
 .project-card .experiments-list ul {
     margin: 0;
     padding-left: 24px;
+}
+
+.project-title a {
+    padding: 2px 4px;
+    margin-left: -2px;
+    border-radius: 4px;
+}
+
+.project-title a:hover {
+    background-color: var(--action-hover);
+}
+
+.more-action .more-action-button.material-symbols-rounded {
+    cursor: pointer;
+    font-weight: 700 !important;
+    font-size: 24px !important;
+    color: var(--color-gray-600);
+    margin: 0 -4px 0 0 !important;
+    padding: 4px;
+    border-radius: 20px;
+}
+
+.more-action .more-action-button.material-symbols-rounded:hover {
+    color: var(--color-primary);
+    background-color: var(--action-hover);
 }
 
 .no-projects {
@@ -884,8 +933,12 @@ input[type="checkbox"]:hover, input[type="checkbox"]:focus {
     border-radius: 3px !important;
 }
 
+.p-treeselect {
+    border: 1.5px solid rgba(1, 41, 112, 0.2);
+}
+
 :is(.p-treeselect:hover, .p-treeselect.p-focus) {
-    border: 1px solid var(--color-primary) !important;
+    border: 1.5px solid var(--color-primary) !important;
 }
 
 .p-treeselect-header {
@@ -933,6 +986,7 @@ button.p-tree-toggler:has(+.p-treenode-label) {
     font-size: 14px;
     padding: 4px !important;
     border-radius: 3px !important;
+    text-overflow: ellipsis !important;
 }
 
 /**
@@ -944,7 +998,7 @@ button.p-tree-toggler:has(+.p-treenode-label) {
 }
 
 .checkbox-select .tree-select {
-    width: 280px;
+    max-width: 420px;
 }
 
 .checkbox-select .p-treeselect-label {
@@ -1021,6 +1075,31 @@ button.p-tree-toggler:has(+.p-treenode-label) {
     margin-right: 0px;
 }
 
-button > span {
+.iterations-button > span {
     margin-right: 4px;
+}
+
+.project-info-id {
+    color: var(--color-gray-600);
+    font-size: 20px;
+    margin: 0 12px;
+}
+
+.project-info-id .material-symbols-rounded {
+    cursor: pointer;
+    margin-left: 8px;
+    padding: 6px;
+}
+
+.project-info-id .material-symbols-rounded:hover {
+    color: var(--color-primary);
+}
+
+button[data-bs-dismiss="modal"] {
+    shadow: none;
+}
+
+button[data-bs-dismiss="modal"]:hover {
+    background-color: var(--action-hover);
+    color: var(--color-primary);
 }

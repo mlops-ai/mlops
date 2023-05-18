@@ -1,21 +1,26 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback} from 'react';
-import { AgGridReact } from 'ag-grid-react';
+import React, {useState, useRef, useEffect, useMemo, useCallback} from 'react';
+import {AgGridReact} from 'ag-grid-react';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
-import { ModuleRegistry } from "ag-grid-community";
-import { ClientSideRowModelModule } from 'ag-grid-community';
+import {ModuleRegistry} from "ag-grid-community";
+import {ClientSideRowModelModule} from 'ag-grid-community';
 import {toast} from "react-toastify";
 import {TreeSelect} from "primereact/treeselect";
-import moment from "moment/moment";
+import {
+    columns_data_multiple,
+    columns_data_checked_multiple,
+    columns_list_multiple
+} from "./iterations/columns_multiple";
+import {columns_data_single, columns_data_checked_single, columns_list_single} from "./iterations/columns_single";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 /**
  * Iterations component for displaying grid containing information about runs and models in single or multiple experiments on experiments page.
  */
-function Iterations (props) {
+function Iterations(props) {
 
     console.log("[FOR DEBUGGING PURPOSES]: ITERATIONS GRID !")
 
@@ -43,23 +48,23 @@ function Iterations (props) {
     const [selectedNodeKey, setSelectedNodeKey] = useState(null);
 
     /**
-     * States used for storing tree-select date filter data.
+     * State used for storing tree-select date filter data.
      */
     const [selectedDateFilter, setSelectedDateFilter] = useState('allTime');
     let dateFilter = 'allTime';
 
     /**
-     * States used for storing tree-select data.
+     * State used for storing tree-select data.
      */
     const [expandedKeys, setExpandedKeys] = useState({});
 
     /**
-     * States used for storing ag-grid column definition data.
+     * State used for storing ag-grid column definition data.
      * */
     const [columnDefs, setColumnDefs] = useState([]);
 
     /**
-     * States used for storing current iteration data (edited, deleted ...).
+     * State used for storing current iteration data (edited, deleted ...).
      */
     const [currentIterationData, setCurrentIterationData] = useState({
         experiment_id: "",
@@ -68,7 +73,7 @@ function Iterations (props) {
     });
 
     /**
-     * States used for storing current iteration editable data (edited).
+     * State used for storing current iteration editable data (edited).
      */
     const [currentIterationDataEditable, setCurrentIterationDataEditable] = useState({
         experiment_id: "",
@@ -117,22 +122,91 @@ function Iterations (props) {
     function handleEditIteration(event) {
         event.preventDefault();
 
-        let body = { iteration_name: currentIterationDataEditable.iteration_name.trim() };
+        if (gridRef.current.api.getSelectedRows().length === 0) {
+            return
+        }
+
+        let edit_spinner = document.getElementById('edit-iteration-spinner')
+        let edit_button = document.getElementById('edit-iteration-action')
+
+        edit_button.disabled = true
+        edit_spinner.style.display = "inline"
+
+        /**
+         * Validate data.
+         * */
+        let name = currentIterationDataEditable.iteration_name.trim()
+
+        if (name.length === 0) {
+            toast.error("Iteration name cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(name.length > 0 && name.length <= 40)) {
+            toast.error("Iteration name cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        let body = {iteration_name: name};
 
         const requestOptions = {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         };
 
-        fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + currentIterationDataEditable.iteration_name.trim(), requestOptions)
+        fetch('http://localhost:8000/projects/' + props.projectID + '/experiments/' + currentIterationData.experiment_id + '/iterations/' + currentIterationData.id + '?iteration_name=' + name, requestOptions)
             .then((response) => {
-                console.log(response)
                 if (response.ok) {
                     return response.json()
                 }
                 return Promise.reject(response);
             }).then((json) => {
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            props.setProjectData(prevProjectData => {
+                return {
+                    ...prevProjectData,
+                    experiments: prevProjectData.experiments.map((experiment) => {
+                        if (experiment.id === currentIterationData.experiment_id) {
+                            let foundIndex = experiment.iterations.findIndex(iteration => iteration.id === currentIterationData.id);
+                            let copy_experiment = experiment
+                            copy_experiment.iterations[foundIndex] = json
+                            return copy_experiment
+                        }
+                        return experiment
+                    })
+                }
+            })
+
             toast.success('Iteration updated successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -143,11 +217,12 @@ function Iterations (props) {
                 progress: undefined,
                 theme: "light",
             });
-            props.refresher(prevRefresh => {
-                return prevRefresh+1
-            })
+
             closeEditModalRef.current.click();
+
         }).catch((response) => {
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
             response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -173,6 +248,12 @@ function Iterations (props) {
             return
         }
 
+        let delete_spinner = document.getElementById('delete-iterations-spinner')
+        let delete_button = document.getElementById('delete-iterations-action')
+
+        delete_button.disabled = true
+        delete_spinner.style.display = "inline"
+
         gridRef.current.api.getSelectedRows().map((iteration) => {
             return {
                 experiment_id: iteration.experiment_id,
@@ -196,7 +277,7 @@ function Iterations (props) {
 
         const requestOptions = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         };
 
@@ -207,6 +288,22 @@ function Iterations (props) {
                 }
                 return Promise.reject(response);
             }).then((response) => {
+
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+
+            props.setProjectData(prevProjectData => {
+                return {
+                    ...prevProjectData,
+                    experiments: prevProjectData.experiments.map((experiment) => {
+                        return {
+                            ...experiment,
+                            iterations: experiment.iterations.filter(iteration => (body.hasOwnProperty(experiment.id) && !body[experiment.id].includes(iteration.id)) || !body.hasOwnProperty(experiment.id))
+                        }
+                    })
+                }
+            })
+
             toast.success('Iteration/s deleted successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -218,13 +315,11 @@ function Iterations (props) {
                 theme: "light",
             });
 
-            props.refresher(prevRefresh => {
-                return prevRefresh+1
-            })
-
             closeDeleteModalRef.current.click();
 
         }).catch((response) => {
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
             response.body && response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
@@ -244,7 +339,7 @@ function Iterations (props) {
      * Variable containing ag-grid default columns definitions.
      * UseMemo is used for optimization purposes.
      * */
-    const defaultColDef = useMemo( ()=> {
+    const defaultColDef = useMemo(() => {
         return {
             sortable: true,
             filter: 'agTextColumnFilter',
@@ -293,7 +388,7 @@ function Iterations (props) {
     };
 
     /**
-     * ...
+     * React hook for executing code after component mounting (after rendering).
      * */
     useEffect(() => {
 
@@ -316,7 +411,8 @@ function Iterations (props) {
                     pinned: true,
                     filter: true,
                     cellRenderer: (val) => {
-                        return <a href={"/projects/" + props.projectID + "/experiments/" + val.data["experiment_id"] + "/iterations/" + val.data["id"]}>{val.data["iteration_name"]}</a>
+                        return <a
+                            href={"/projects/" + props.projectID + "/experiments/" + val.data["experiment_id"] + "/iterations/" + val.data["id"]}>{val.data["iteration_name"]}</a>
                     }
                 },
                 {
@@ -327,7 +423,8 @@ function Iterations (props) {
                     filter: 'agDateColumnFilter',
                     filterParams: filterParams,
                     cellRenderer: (props) => {
-                        return <span title={moment(new Date(props.data["created_at"])).format("DD-MM-YYYY, HH:mm:ss")}>{dateToHumanize(props.data["created_at"])}</span>;
+                        return <span
+                            title={moment(new Date(props.data["created_at"])).format("DD-MM-YYYY, HH:mm:ss")}>{dateToHumanize(props.data["created_at"])}</span>;
                     }
                 },
                 {
@@ -350,60 +447,11 @@ function Iterations (props) {
                 }
             ]
 
-            columns_data = [
-                {
-                    key: 'iteration',
-                    label: 'Iteration info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'experiment_name',
-                            label: 'Experiment Name'
-                        },
-                        {
-                            key: 'user_name',
-                            label: 'User'
-                        }
-                    ]
-                },
-                {
-                    key: 'model',
-                    label: 'Model info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'model_name',
-                            label: 'Model'
-                        }
-                    ]
-                }
-            ]
+            columns_data = JSON.parse(JSON.stringify(columns_data_multiple))
+            console.log(columns_data)
+            columns_data_checked = JSON.parse(JSON.stringify(columns_data_checked_multiple))
+            columns_list = JSON.parse(JSON.stringify(columns_list_multiple))
 
-            columns_data_checked = {
-                iteration: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                experiment_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                user_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                model: {
-                    checked: true,
-                    partialChecked: false,
-                },
-
-                model_name: {
-                    checked: true,
-                    partialChecked: false,
-                }
-            }
-
-            columns_list = ['experiment_name', 'model_name', 'user_name']
         } else {
             iteration_info = [
                 {
@@ -412,7 +460,8 @@ function Iterations (props) {
                     pinned: true,
                     filter: true,
                     cellRenderer: (val) => {
-                        return <a href={"/projects/" + props.projectID + "/experiments/" + val.data["experiment_id"] + "/iterations/" + val.data["id"]}>{val.data["iteration_name"]}</a>
+                        return <a
+                            href={"/projects/" + props.projectID + "/experiments/" + val.data["experiment_id"] + "/iterations/" + val.data["id"]}>{val.data["iteration_name"]}</a>
                     }
                 },
                 {
@@ -423,14 +472,15 @@ function Iterations (props) {
                     filter: 'agDateColumnFilter',
                     filterParams: filterParams,
                     cellRenderer: (props) => {
-                        return <span title={moment(new Date(props.data["created_at"])).format("DD-MM-YYYY, HH:mm:ss")}>{dateToHumanize(props.data["created_at"])}</span>;
+                        return <span
+                            title={moment(new Date(props.data["created_at"])).format("DD-MM-YYYY, HH:mm:ss")}>{dateToHumanize(props.data["created_at"])}</span>;
                     }
                 },
                 {
                     field: 'user_name',
                     headerName: "User",
                 },
-                
+
             ]
 
             model_info = [
@@ -443,51 +493,9 @@ function Iterations (props) {
                 }
             ]
 
-            columns_data = [
-                {
-                    key: 'iteration',
-                    label: 'Iteration info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'user_name',
-                            label: 'User'
-                        }
-                    ]
-                },
-                {
-                    key: 'model',
-                    label: 'Model info',
-                    leaf: true,
-                    children: [
-                        {
-                            key: 'model_name',
-                            label: 'Model'
-                        }
-                    ]
-                }
-            ]
-
-            columns_data_checked = {
-                iteration: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                user_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                model: {
-                    checked: true,
-                    partialChecked: false,
-                },
-                model_name: {
-                    checked: true,
-                    partialChecked: false,
-                },
-            }
-
-            columns_list = ['model_name', 'user_name']
+            columns_data = JSON.parse(JSON.stringify(columns_data_single))
+            columns_data_checked = JSON.parse(JSON.stringify(columns_data_checked_single))
+            columns_list = JSON.parse(JSON.stringify(columns_list_single))
         }
 
         /**
@@ -735,7 +743,7 @@ function Iterations (props) {
      * */
     const clearSort = useCallback(() => {
         gridRef.current.columnApi.applyColumnState({
-            defaultState: { sort: null },
+            defaultState: {sort: null},
         });
     }, []);
 
@@ -956,76 +964,88 @@ function Iterations (props) {
             <div className="d-flex align-items-center flex-wrap">
                 <div className="single-select mb-3">
                     <TreeSelect className="tree-select shadow-none single-select"
-                        value={selectedDateFilter}
-                        onChange={(e) => {
-                            externalFilterChanged(e.value);
-                            setSelectedDateFilter(e.value);
-                        }}
-                        options={date_filters}>
+                                value={selectedDateFilter}
+                                onChange={(e) => {
+                                    externalFilterChanged(e.value);
+                                    setSelectedDateFilter(e.value);
+                                }}
+                                options={date_filters}>
                     </TreeSelect>
                 </div>
-                <input type="text" className="search mb-3" id="filter-text-box" placeholder="Filter rows by text data columns ..." onChange={onFilterTextBoxChanged}/>
+                <input type="text" className="search mb-3" id="filter-text-box"
+                       placeholder="Filter rows by text data columns ..." onChange={onFilterTextBoxChanged}/>
                 <div className="checkbox-select mb-3">
                     <TreeSelect className="tree-select shadow-none checkbox-select"
-                        value={selectedNodeKey}
-                        onChange={(e) => {
-                            setSelectedNodeKey(e.value);
-                            updateColumnVisibility(e.value);
-                        }}
-                        onToggle={(e) => setExpandedKeys(e.value)}
-                        expandedKeys={expandedKeys}
-                        options={nodes}
-                        placeholder="Columns"
-                        selectionMode="checkbox"
-                        display="comma"
-                        metaKeySelection={false}>
+                                value={selectedNodeKey}
+                                onChange={(e) => {
+                                    setSelectedNodeKey(e.value);
+                                    updateColumnVisibility(e.value);
+                                }}
+                                onToggle={(e) => setExpandedKeys(e.value)}
+                                expandedKeys={expandedKeys}
+                                options={nodes}
+                                placeholder="Columns"
+                                selectionMode="checkbox"
+                                display="comma"
+                                metaKeySelection={false}>
                     </TreeSelect>
                 </div>
             </div>
 
-            <hr className="mt-0" />
+            <hr className="mt-0"/>
 
             <div className="d-flex align-items-center flex-wrap button-container">
-                <button id="delete-button" className="btn btn-danger iterations-button mb-3 d-flex align-items-center" title="Delete iterations" data-bs-toggle="modal"
+                <button id="delete-button" className="btn btn-danger iterations-button mb-3 d-flex align-items-center"
+                        title="Delete iterations" data-bs-toggle="modal"
                         data-bs-target="#delete-iterations" disabled={true}>
                     <span className="material-symbols-rounded">
                         delete
                     </span>
                     Delete
                 </button>
-                <button id="rename-button" className="btn btn-primary iterations-button mb-3 d-flex align-items-center" title="Rename iteration" data-bs-toggle="modal"
+                <button id="rename-button" className="btn btn-primary iterations-button mb-3 d-flex align-items-center"
+                        title="Rename iteration" data-bs-toggle="modal"
                         data-bs-target="#edit-iteration" disabled={true}>
                     <span className="material-symbols-rounded">
                         edit
                     </span>
                     Rename
                 </button>
-                <button id="compare-button" className="btn btn-success iterations-button mb-3 d-flex align-items-center" title="Compare iterations" disabled={true}>
+                <button id="compare-button" className="btn btn-success iterations-button mb-3 d-flex align-items-center"
+                        title="Compare iterations" disabled={true}>
                     <span className="material-symbols-rounded">
                         compare_arrows
                     </span>
                     Compare
                 </button>
-                <button id="clear-filters" onClick={clearFilters} className="btn btn-secondary iterations-button mb-3 d-flex align-items-center" title="Clear filters">
+                <button id="clear-filters" onClick={clearFilters}
+                        className="btn btn-secondary iterations-button mb-3 d-flex align-items-center"
+                        title="Clear filters">
                     <span className="material-symbols-rounded">
                         filter_alt_off
                     </span>
                     Clear filters
                 </button>
-                <button id="clear-sort" onClick={clearSort} className="btn btn-secondary iterations-button mb-3 d-flex align-items-center" title="Clear sorting">
+                <button id="clear-sort" onClick={clearSort}
+                        className="btn btn-secondary iterations-button mb-3 d-flex align-items-center"
+                        title="Clear sorting">
                     <span className="material-symbols-rounded">
                         filter_list_off
                     </span>
                     Clear sorting
                 </button>
                 <div className="ms-xxl-auto d-flex align-items-center">
-                    <button id="export-csv" onClick={exportToCSV} className="btn btn-primary iterations-button mb-3 d-flex align-items-center" title="Export to .csv file">
+                    <button id="export-csv" onClick={exportToCSV}
+                            className="btn btn-primary iterations-button mb-3 d-flex align-items-center"
+                            title="Export to .csv file">
                         <span className="material-symbols-rounded">
                             download
                         </span>
                         Export to CSV
                     </button>
-                    <button id="refresh-page" onClick={refreshPage} className="btn btn-primary iterations-button mb-3 d-flex align-items-center" title="Refresh page">
+                    <button id="refresh-page" onClick={refreshPage}
+                            className="btn btn-primary iterations-button mb-3 d-flex align-items-center"
+                            title="Refresh page">
                         <span className="material-symbols-rounded">
                             cached
                         </span>
@@ -1042,7 +1062,8 @@ function Iterations (props) {
                         <form onSubmit={handleEditIteration}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Rename iteration</h5>
-                                <button ref={closeEditModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                                <button ref={closeEditModalRef} type="button" className="btn-close"
+                                        data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                             </div>
                             <div className="modal-body">
@@ -1064,12 +1085,26 @@ function Iterations (props) {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                {currentIterationDataEditable.iteration_name !== currentIterationData.iteration_name ?
-                                    <button className="btn btn-primary float-end">Rename</button>
+                                {currentIterationDataEditable.iteration_name !== currentIterationData.iteration_name && currentIterationDataEditable.iteration_name !== "" ?
+                                    <button id="edit-iteration-action" className="btn btn-primary float-end">
+                                        <span className="d-flex align-items-center">
+                                            <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1"
+                                               style={{display: "none"}}></i>
+                                            Rename
+                                        </span>
+                                    </button>
 
                                     :
 
-                                    <button className="btn btn-primary float-end" disabled={true}>Rename</button>
+                                    <button id="edit-iteration-action" className="btn btn-primary float-end"
+                                            disabled={true}>
+                                        <span className="d-flex align-items-center">
+                                            <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1"
+                                               style={{display: "none"}}></i>
+                                            Rename
+                                        </span>
+                                    </button>
+
                                 }
                             </div>
                         </form>
@@ -1082,18 +1117,28 @@ function Iterations (props) {
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">Delete Iterations</h5>
-                            <button ref={closeDeleteModalRef} type="button" className="btn-close" data-bs-dismiss="modal"
+                            <button ref={closeDeleteModalRef} type="button" className="btn-close"
+                                    data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                         </div>
                         <div className="modal-body d-flex align-items-center justify-content-between">
-                                    <span className="material-symbols-rounded text-danger" style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                    <span className="material-symbols-rounded text-danger"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
                                         warning
                                     </span>
-                            <span>The following number of iterations will be deleted permamently: <span id="delete-value" className="fw-semibold">0</span>. Are you sure you want to continue?</span>
+                            <span>The following number of iterations will be deleted permamently: <span
+                                id="delete-value"
+                                className="fw-semibold">0</span>. Are you sure you want to continue?</span>
                         </div>
                         <div className="modal-footer">
                             <form onSubmit={handleDeleteIterations}>
-                                <button className="btn btn-danger float-end">Delete iterations</button>
+                                <button className="btn btn-danger float-end" id="delete-iterations-action">
+                                    <span className="d-flex align-items-center">
+                                        <i id="delete-iterations-spinner" className="fa fa-spinner fa-spin me-1"
+                                           style={{display: "none"}}></i>
+                                        Delete iterations
+                                    </span>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -1102,6 +1147,6 @@ function Iterations (props) {
 
         </div>
     );
-};
+}
 
 export default Iterations;
