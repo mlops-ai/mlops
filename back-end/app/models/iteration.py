@@ -2,9 +2,10 @@ import os
 import getpass
 from pydantic import Field, BaseModel, validator
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from beanie import PydanticObjectId
 from app.models.dataset import Dataset
+from app.models.chart import InteractiveChart
 
 
 class DatasetInIteration(BaseModel):
@@ -38,6 +39,7 @@ class Iteration(BaseModel):
     - **path_to_model (Optional[str])**: Path to model.
     - **model_name (Optional[str])**: Model name.
     - **dataset (Optional[DatasetInIteration])**: Dataset.
+    - **interactive_charts (Optional[List[InteractiveChart]])**: Interactive charts list.
     """
 
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
@@ -53,6 +55,7 @@ class Iteration(BaseModel):
     path_to_model: Optional[str] = Field(default='', description="Path to model")
     model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
+    interactive_charts: Optional[List[InteractiveChart]] = Field(default=None, description="Interactive charts list")
 
     @validator('path_to_model')
     def path_to_model_exists(cls, path):
@@ -98,7 +101,17 @@ class Iteration(BaseModel):
                 "dataset": {
                     "id": "5f9b3b7e9c9d6c0a3c7b3b7e",
                     "name": "Dataset Titanic"
-                }
+                },
+                "interactive_charts": [
+                    {
+                        "chart_name": "Chart 1",
+                        "chart_type": "line",
+                        "x_data": [1, 2, 3],
+                        "y_data": [1, 2, 3],
+                        "x_axis_name": "Age",
+                        "y_axis_name": "Survived"
+                    }
+                ]
             }
         }
 
