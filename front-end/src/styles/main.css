@@ -767,11 +767,11 @@ a:hover {
     background-color: var(--action-hover);
 }
 
-.no-projects {
+.no-projects, .no-datasets {
     padding: 128px;
 }
 
-.project-icon {
+.project-icon, .dataset-icon {
     color: var(--color-gray-500);
 }
 
@@ -1099,7 +1099,15 @@ button[data-bs-dismiss="modal"] {
     shadow: none;
 }
 
+.card {
+    max-width: 100%;
+}
+
 button[data-bs-dismiss="modal"]:hover {
     background-color: var(--action-hover);
     color: var(--color-primary);
+}
+
+.card-dataset .badge:first-of-type {
+    margin-left: 0px !important;
 }
