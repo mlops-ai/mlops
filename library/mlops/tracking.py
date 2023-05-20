@@ -2,6 +2,7 @@ import requests
 from contextlib import contextmanager
 from mlops.config.config import settings
 from mlops.src.iteration import Iteration
+from mlops.src.dataset import Dataset
 from mlops.exceptions.tracking import project_id_is_none_exception, experiment_id_is_none_exception, \
     failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_exception
 from typing import ContextManager
@@ -236,3 +237,25 @@ def start_iteration(iteration_name: str, project_id: str = None,
         yield iteration
     finally:
         iteration.end_iteration()
+
+
+def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
+                   dataset_problem_type: str = None) -> dict:
+
+    """
+
+    Args:
+        dataset_name: name of the created dataset
+        path_to_dataset: path to dataset files
+        dataset_description: short description of the dataset displayed in the app
+        dataset_problem_type: machine learning problem type the dataset is used for
+
+    Returns:
+        dataset: json data of created dataset
+    """
+
+    dataset = Dataset(dataset_name, path_to_dataset, dataset_description, dataset_problem_type)
+
+    app_response = dataset.create_dataset()
+
+    return app_response
