@@ -600,6 +600,10 @@ function Projects(props) {
                 return Promise.reject(response);
             })
             .then(data => setAllProjects(() => {
+                data = data.sort((a, b) => {
+                    // return new Date(a.updated_at) - new Date(b.updated_at)
+                    return new Date(b.updated_at) - new Date(a.updated_at)
+                })
                 return data
 
             }))
@@ -634,9 +638,13 @@ function Projects(props) {
         let archivedProjectsNumber;
 
         if (allProjects) {
-            active_projects = [...allProjects].filter((project) => !project.archived)
+            active_projects = [...allProjects].filter((project) => !project.archived).sort((a, b) => {
+                return new Date(b.updated_at) - new Date(a.updated_at)
+            })
             activeProjectsNumber = active_projects.length
-            archived_projects = [...allProjects].filter((project) => project.archived)
+            archived_projects = [...allProjects].filter((project) => project.archived).sort((a, b) => {
+                return new Date(b.updated_at) - new Date(a.updated_at)
+            })
             archivedProjectsNumber = archived_projects.length
             return [active_projects, activeProjectsNumber, archived_projects, archivedProjectsNumber]
         }

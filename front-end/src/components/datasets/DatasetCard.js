@@ -1,4 +1,5 @@
 import React from "react";
+import {toast} from "react-toastify";
 
 /**
  * Dataset card component.
@@ -30,8 +31,14 @@ function DatasetCard(props) {
     }
 
     if (props.datasetVersion !== "") {
-        version = <span className="badge"
-                        style={{backgroundColor: "#012970", marginLeft: 4 + "px"}}>{props.datasetVersion}</span>
+        if (tags) {
+            version = <span className="badge"
+                            style={{backgroundColor: "#012970", marginLeft: 4 + "px"}}>{props.datasetVersion}</span>
+        } else {
+            version = <span className="badge"
+                            style={{backgroundColor: "#012970"}}>{props.datasetVersion}</span>
+        }
+
         labels = labels.concat(version)
     }
 
@@ -43,10 +50,27 @@ function DatasetCard(props) {
 
                     <h5 className="card-title d-flex align-items-center justify-content-between">
 
-                        <div className="dataset-title">
+                        <div className="dataset-title d-flex align-items-center">
                             <a className="nav-link" title={props.datasetName}>
                                 {props.datasetName}
                             </a>
+                            <span className="material-symbols-rounded" title="Copy dataset id" style={{fontSize: 16 + "px", marginLeft: 4 + "px"}} onClick={
+                                () => {
+                                    toast.success('Copied to clipboard!', {
+                                        position: "bottom-center",
+                                        autoClose: 1000,
+                                        hideProgressBar: true,
+                                        closeOnClick: true,
+                                        pauseOnHover: false,
+                                        draggable: true,
+                                        progress: undefined,
+                                        theme: "light",
+                                    });
+                                    navigator.clipboard.writeText(props.datasetId)
+                                }
+                            }>
+                                content_copy
+                            </span>
                         </div>
                         <div className="more-action ps-3">
                                 <span className="more-action-button material-symbols-rounded" data-bs-toggle="dropdown"
@@ -221,11 +245,28 @@ function DatasetCard(props) {
                     <div className="row">
                         <div className="col-lg-3 col-md-4 col-sm-6 col-12">
                             <div className="mb-1 fw-bold" style={{marginTop: 12 + "px"}}>
-                                <div className="d-flex align-items-center">
+                                <div className="d-flex align-items-center path">
                                         <span className="material-symbols-rounded pe-1">
                                             link
                                         </span>
                                     Dataset Source
+                                    <span className="material-symbols-rounded" title="Copy dataset path" style={{fontSize: 14 + "px", marginLeft: 4 + "px"}} onClick={
+                                        () => {
+                                            toast.success('Copied to clipboard!', {
+                                                position: "bottom-center",
+                                                autoClose: 1000,
+                                                hideProgressBar: true,
+                                                closeOnClick: true,
+                                                pauseOnHover: false,
+                                                draggable: true,
+                                                progress: undefined,
+                                                theme: "light",
+                                            });
+                                            navigator.clipboard.writeText(props.datasetPath)
+                                        }
+                                    }>
+                                content_copy
+                            </span>
                                 </div>
                             </div>
 

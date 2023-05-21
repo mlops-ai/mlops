@@ -670,9 +670,13 @@ function Datasets(props) {
 
         if (datasetsData) {
             // active_datasets = [...datasetsData].filter((dataset) => !dataset.archived)
-            active_datasets = datasetsData
+            active_datasets = datasetsData.sort((a, b) => {
+                return new Date(b.updated_at) - new Date(a.updated_at)
+            })
             activeDatasetsNumber = active_datasets.length
-            archived_datasets = [...datasetsData].filter((dataset) => dataset.archived)
+            archived_datasets = [...datasetsData].filter((dataset) => dataset.archived).sort((a, b) => {
+                return new Date(b.updated_at) - new Date(a.updated_at)
+            })
             archivedDatasetsNumber = archived_datasets.length
 
             return [active_datasets, activeDatasetsNumber, archived_datasets, archivedDatasetsNumber]

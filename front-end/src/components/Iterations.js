@@ -472,7 +472,6 @@ function Iterations(props) {
             ]
 
             columns_data = JSON.parse(JSON.stringify(columns_data_multiple))
-            console.log(columns_data)
             columns_data_checked = JSON.parse(JSON.stringify(columns_data_checked_multiple))
             columns_list = JSON.parse(JSON.stringify(columns_list_multiple))
 
@@ -1008,7 +1007,6 @@ function Iterations(props) {
     }, [columnDefs]);
 
 
-    console.log(rowData)
     /**
      * Component rendering.
      * */

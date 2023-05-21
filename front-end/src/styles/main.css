@@ -1111,3 +1111,12 @@ button[data-bs-dismiss="modal"]:hover {
 .card-dataset .badge:first-of-type {
     margin-left: 0px !important;
 }
+
+.dataset-title span {
+    color: var(--color-gray-600) !important;
+}
+
+.dataset-title span:hover, .path span:hover {
+    cursor: pointer;
+    color: var(--color-primary) !important;
+}
