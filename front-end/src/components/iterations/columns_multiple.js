@@ -19,6 +19,21 @@ export let columns_data_multiple = [
         ]
     },
     {
+        key: 'dataset',
+        label: 'Dataset info',
+        leaf: true,
+        children: [
+            {
+                key: 'dataset.name',
+                label: 'Dataset Name'
+            },
+            {
+                key: 'dataset.version',
+                label: 'Version'
+            }
+        ]
+    },
+    {
         key: 'model',
         label: 'Model info',
         leaf: true,
@@ -48,6 +63,18 @@ export let columns_data_checked_multiple = {
         checked: true,
         partialChecked: false,
     },
+    dataset: {
+        checked: true,
+        partialChecked: false,
+    },
+    'dataset.name': {
+        checked: true,
+        partialChecked: false,
+    },
+    'dataset.version': {
+        checked: true,
+        partialChecked: false,
+    },
     model: {
         checked: true,
         partialChecked: false,
@@ -59,4 +86,4 @@ export let columns_data_checked_multiple = {
     }
 }
 
-export let columns_list_multiple = ['created_at', 'experiment_name', 'model_name', 'user_name']
+export let columns_list_multiple = ['created_at', 'experiment_name', 'model_name', 'user_name', 'dataset.name', 'dataset.version']

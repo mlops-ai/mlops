@@ -400,6 +400,7 @@ function Iterations(props) {
 
         let iteration_info
         let model_info
+        let dataset_info
         let columns_data
         let columns_data_checked
         let columns_list
@@ -447,6 +448,29 @@ function Iterations(props) {
                 }
             ]
 
+            dataset_info = [
+                {
+                    field: 'dataset.name',
+                    headerName: 'Dataset Name',
+                    cellRenderer: (props) => {
+                        if (props.data["dataset"] && props.data["dataset"]["name"]) {
+                            return props.data["dataset"]["name"]
+                        }
+                        return '-'
+                    }
+                },
+                {
+                    field: 'dataset.version',
+                    headerName: 'Version',
+                    cellRenderer: (props) => {
+                        if (props.data["dataset"] && props.data["dataset"]["version"]) {
+                            return props.data["dataset"]["version"]
+                        }
+                        return '-'
+                    }
+                }
+            ]
+
             columns_data = JSON.parse(JSON.stringify(columns_data_multiple))
             console.log(columns_data)
             columns_data_checked = JSON.parse(JSON.stringify(columns_data_checked_multiple))
@@ -489,6 +513,29 @@ function Iterations(props) {
                     headerName: 'Model',
                     cellRenderer: (props) => {
                         return <a href={'#'}>{props.data["model_name"]}</a>
+                    }
+                }
+            ]
+
+            dataset_info = [
+                {
+                    field: 'dataset.name',
+                    headerName: 'Dataset Name',
+                    cellRenderer: (props) => {
+                        if (props.data["dataset"] && props.data["dataset"]["name"]) {
+                            return props.data["dataset"]["name"]
+                        }
+                        return '-'
+                    }
+                },
+                {
+                    field: 'dataset.version',
+                    headerName: 'Version',
+                    cellRenderer: (props) => {
+                        if (props.data["dataset"] && props.data["dataset"]["version"]) {
+                            return props.data["dataset"]["version"]
+                        }
+                        return '-'
                     }
                 }
             ]
@@ -660,6 +707,10 @@ function Iterations(props) {
             {
                 headerName: 'Model info',
                 children: model_info
+            },
+            {
+                headerName: 'Dataset info',
+                children: dataset_info
             },
             {
                 headerName: 'Parameters',
@@ -956,6 +1007,8 @@ function Iterations(props) {
         </div>
     }, [columnDefs]);
 
+
+    console.log(rowData)
     /**
      * Component rendering.
      * */

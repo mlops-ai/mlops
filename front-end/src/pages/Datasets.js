@@ -104,7 +104,7 @@ function Datasets(props) {
     }
 
     /**
-     * Handle project add form data change.
+     * Handle dataset add form data change.
      * */
     function handleFormData(event) {
         setFormData(prevFormData => {
@@ -271,7 +271,7 @@ function Datasets(props) {
     }
 
     /**
-     * Function handling editing project request.
+     * Function handling editing dataset request.
      * */
     function handleEditDataset(event) {
         event.preventDefault();
@@ -476,6 +476,140 @@ function Datasets(props) {
             delete_spinner.style.display = "none"
             delete_button.disabled = false
             response.body && response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
+     * Function handling archiving dataset request.
+     * */
+    function handleArchiveDataset(event) {
+        event.preventDefault();
+
+        let archive_spinner = document.getElementById('archive-dataset-spinner')
+        let archive_button = document.getElementById('archive-dataset-action')
+
+        archive_button.disabled = true
+        archive_spinner.style.display = "inline"
+
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({archived: true})
+        };
+
+        fetch('http://localhost:8000/datasets/' + currentDatasetData._id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+
+            setDatasetsData(prevState => {
+                let datasets_copy = [...prevState];
+                let foundIndex = datasets_copy.findIndex(dataset => dataset._id === currentDatasetData._id);
+                datasets_copy[foundIndex] = json;
+                return datasets_copy
+            })
+
+            toast.success('Dataset archived successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            archive_spinner.style.display = "none"
+            archive_button.disabled = false
+
+            closeArchiveModalRef.current.click();
+        }).catch((response) => {
+
+            archive_spinner.style.display = "none"
+            archive_button.disabled = false
+
+            response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
+     * Function handling restoring dataset request.
+     * */
+    function handleRestoreDataset(event) {
+        event.preventDefault();
+
+        let restore_spinner = document.getElementById('restore-dataset-spinner')
+        let restore_button = document.getElementById('restore-dataset-action')
+
+        restore_button.disabled = true
+        restore_spinner.style.display = "inline"
+
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({archived: false})
+        };
+
+        fetch('http://localhost:8000/datasets/' + currentDatasetData._id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+
+            setDatasetsData(prevState => {
+                let datasets_copy = [...prevState];
+                let foundIndex = datasets_copy.findIndex(dataset => dataset._id === currentDatasetData._id);
+                datasets_copy[foundIndex] = json;
+                return datasets_copy
+            })
+
+            toast.success('Dataset restored successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            restore_spinner.style.display = "none"
+            restore_button.disabled = false
+
+            closeRestoreModalRef.current.click();
+        }).catch((response) => {
+            restore_spinner.style.display = "none"
+            restore_button.disabled = false
+            response.json().then((json: any) => {
                 toast.error(json.detail, {
                     position: "bottom-center",
                     autoClose: 3000,
@@ -986,7 +1120,12 @@ function Datasets(props) {
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        {currentDatasetDataEditable.dataset_name !== "" && currentDatasetDataEditable.path_to_dataset !== "" ?
+                                        {currentDatasetDataEditable.dataset_name !== "" && currentDatasetDataEditable.path_to_dataset !== "" &&
+                                        (currentDatasetDataEditable.dataset_name !== currentDatasetData.dataset_name ||
+                                        currentDatasetDataEditable.path_to_dataset !== currentDatasetData.path_to_dataset ||
+                                        currentDatasetDataEditable.dataset_description !== currentDatasetData.dataset_description ||
+                                        currentDatasetDataEditable.dataset_problem_type !== currentDatasetData.dataset_problem_type ||
+                                        currentDatasetDataEditable.version !== currentDatasetData.version) ?
 
                                             <button id="edit-dataset-action" className="btn btn-primary float-end">
                                                 <span className="d-flex align-items-center">
@@ -1037,6 +1176,70 @@ function Datasets(props) {
                                                 <i id="delete-dataset-spinner" className="fa fa-spinner fa-spin me-1"
                                                    style={{display: "none"}}></i>
                                                 Delete dataset
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="modal fade" id="archive-dataset" tabIndex="-1" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Archive Dataset <span
+                                        className="fst-italic fw-semibold">{currentDatasetData.dataset_name}</span></h5>
+                                    <button ref={closeArchiveModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body d-flex align-items-center justify-content-between">
+                                    <span className="material-symbols-rounded text-secondary"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                        archive
+                                    </span>
+                                    <span>Archiving a dataset will move it to the archive tab. You will not be able to edit or refer to it, but you can restore it at any time. Do you want to continue?</span>
+                                </div>
+                                <div className="modal-footer">
+                                    <form onSubmit={handleArchiveDataset}>
+                                        <button id="archive-dataset-action" className="btn btn-secondary float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="archive-dataet-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
+                                                Archive dataset
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="modal fade" id="restore-dataset" tabIndex="-1" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Restore Dataset <span
+                                        className="fst-italic fw-semibold">{currentDatasetData.dataset_name}</span></h5>
+                                    <button ref={closeRestoreModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body d-flex align-items-center justify-content-between">
+                                    <span className="material-symbols-rounded text-secondary"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                        unarchive
+                                    </span>
+                                    <span>Restoring a dataset will bring it back to the active dataset tab. Do you want to continue?</span>
+                                </div>
+                                <div className="modal-footer">
+                                    <form onSubmit={handleRestoreDataset}>
+                                        <button id="restore-dataset-action" className="btn btn-secondary float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="restore-dataset-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
+                                                Restore dataset
                                             </span>
                                         </button>
                                     </form>
