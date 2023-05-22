@@ -1,8 +1,11 @@
+import os
+import requests
+
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, status
-from beanie import PydanticObjectId, Link
+from fastapi import APIRouter, status, HTTPException
+from beanie import PydanticObjectId
 
 from app.models.dataset import Dataset, UpdateDataset
 from app.models.project import Project
@@ -32,22 +35,34 @@ async def get_datasets() -> List[Dataset]:
     return datasets
 
 
-@dataset_router.get("/{id}", response_model=Dataset, status_code=status.HTTP_200_OK)
-async def get_dataset(id: PydanticObjectId) -> Dataset:
+@dataset_router.get("/non-archived", response_model=List[Dataset], status_code=status.HTTP_200_OK)
+async def get_non_archived_datasets() -> List[Dataset]:
     """
-    Retrieve dataset by id.
+    Get all non-archived datasets.
 
     Args:
-    - **id (PydanticObjectId)**: Dataset id
+    - **None**
 
     Returns:
-    - **Dataset**: Dataset
+    - **List[Dataset]**: List of all non-archived datasets.
     """
+    datasets = await Dataset.find(Dataset.archived == False).to_list()
+    return datasets
 
-    dataset = await Dataset.get(id)
-    if not dataset:
-        raise dataset_not_found_exception()
-    return dataset
+
+@dataset_router.get("/archived", response_model=List[Dataset], status_code=status.HTTP_200_OK)
+async def get_archived_datasets() -> List[Dataset]:
+    """
+    Get all archived datasets.
+
+    Args:
+    - **None**
+
+    Returns:
+    - **List[Dataset]**: List of all archived datasets.
+    """
+    datasets = await Dataset.find(Dataset.archived == True).to_list()
+    return datasets
 
 
 @dataset_router.get("/name/{name}", response_model=Dataset, status_code=status.HTTP_200_OK)
@@ -69,6 +84,24 @@ async def get_dataset_by_name(name: str) -> Dataset:
     return dataset
 
 
+@dataset_router.get("/{id}", response_model=Dataset, status_code=status.HTTP_200_OK)
+async def get_dataset(id: PydanticObjectId) -> Dataset:
+    """
+    Retrieve dataset by id.
+
+    Args:
+    - **id (PydanticObjectId)**: Dataset id
+
+    Returns:
+    - **Dataset**: Dataset
+    """
+
+    dataset = await Dataset.get(id)
+    if not dataset:
+        raise dataset_not_found_exception()
+    return dataset
+
+
 @dataset_router.post("/", response_model=Dataset, status_code=status.HTTP_201_CREATED)
 async def create_dataset(dataset: Dataset) -> Dataset:
     """
@@ -80,6 +113,7 @@ async def create_dataset(dataset: Dataset) -> Dataset:
     Returns:
     - **Dataset**: Dataset
     """
+    await validate_path(dataset.path_to_dataset)
 
     dataset.created_at = datetime.now()
     dataset.updated_at = datetime.now()
@@ -104,6 +138,9 @@ async def update_dataset(id: PydanticObjectId, updated_dataset: UpdateDataset) -
     dataset = await Dataset.get(id)
     if not dataset:
         raise dataset_not_found_exception()
+
+    if updated_dataset.path_to_dataset:
+        await validate_path(updated_dataset.path_to_dataset)
 
     updated_dataset.updated_at = datetime.now()
 
@@ -171,3 +208,39 @@ async def update_linked_iterations(dataset: Dataset, updated_dataset: Optional[D
                 iteration.dataset = None
 
             await project.save()
+
+
+async def validate_path(value):
+    """
+    Util function to validate path or URL.
+
+    Args:
+    - **value**: Path or URL
+
+    Returns:
+    - **value**: Path or URL
+    """
+    if not isinstance(value, str):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid path or URL")
+
+    if value.strip() == "":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Path or URL is empty. "
+                                                                          "Please, enter path or URL.")
+
+    if os.path.isfile(r'{}'.format(value)):
+        return value
+    else:
+        os.chdir('/')  # Change the current working directory to the root directory
+        if os.path.isfile(r'{}'.format(value)):
+            return value
+
+    try:
+        response = requests.head(value)
+        if response.ok:
+            return value
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL is not accessible or "
+                                                                              "returns an error.")
+    except requests.exceptions.RequestException:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid URL or unable to connect to "
+                                                                          "the URL or invalid path.")

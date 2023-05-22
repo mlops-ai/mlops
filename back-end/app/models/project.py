@@ -1,4 +1,4 @@
-from beanie import Document, before_event, Replace, Insert
+from beanie import Document
 from pydantic import Field, validator
 from typing import Optional, List
 from datetime import datetime
@@ -32,11 +32,10 @@ class Project(Document):
 
     @validator('status')
     def validate_status(cls, v):
-        valid_statuses = ['not_started', 'in_progress', 'completed']
-        if v not in valid_statuses:
+        if v not in cls.Settings.valid_statuses:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Status must be one of {valid_statuses}"
+                detail=f"Status must be one of {cls.Settings.valid_statuses}"
             )
         return v
 
@@ -54,9 +53,9 @@ class Project(Document):
             return self.id == other.id
         return False
 
-
     class Settings:
         name = "project"
+        valid_statuses = ['not_started', 'in_progress', 'completed']
 
     class Config:
         schema_extra = {

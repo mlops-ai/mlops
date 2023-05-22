@@ -19,20 +19,19 @@ class InteractiveChart(BaseModel):
     """
 
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
-    chart_name: str = Field(..., description="Chart name", min_length=1, max_length=100)
-    chart_type: str = Field(..., description="Chart type", min_length=1, max_length=100)
-    x_data: List[float] = Field(..., description="X axis data")
-    y_data: List[float] = Field(..., description="Y axis data")
+    chart_name: str = Field(description="Chart name", min_length=1, max_length=100)
+    chart_type: str = Field(description="Chart type", min_length=1, max_length=100)
+    x_data: List[float] = Field(description="X axis data")
+    y_data: List[float] = Field(description="Y axis data")
     x_label: Optional[str] = Field(default="x", description="X label", min_length=1, max_length=100)
     y_label: Optional[str] = Field(default="y", description="Y label", min_length=1, max_length=100)
 
     @validator('chart_type')
     def validate_status(cls, v):
-        chart_types = ['scatter', 'line', 'bar', 'pie', 'candlestick', 'heatmap', 'boxplot', 'histogram']
-        if v not in chart_types:
+        if v not in cls.Settings.chart_types:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Status must be one of {chart_types}"
+                detail=f"Status must be one of {cls.Settings.chart_types}"
             )
         return v
 
@@ -63,6 +62,7 @@ class InteractiveChart(BaseModel):
 
     class Settings:
         name = "InteractiveChart"
+        chart_types = ['scatter', 'line', 'bar', 'pie', 'candlestick', 'heatmap', 'boxplot', 'histogram']
 
     class Config:
         schema_extra = {
