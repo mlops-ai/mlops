@@ -1,4 +1,3 @@
-import json
 import os
 
 import pytest
@@ -38,7 +37,8 @@ async def test_create_dataset_url(client: AsyncClient):
     dataset = {
         "dataset_name": "Test dataset",
         "dataset_description": "Test dataset description",
-        "dataset_type": "Test dataset type",
+        "tags": "Test, dataset",
+        "archived": False,
         "version": "0.0.0",
         "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
     }
@@ -63,7 +63,8 @@ async def test_get_dataset_by_id(client: AsyncClient):
     dataset = {
         "dataset_name": "Test dataset 2",
         "dataset_description": "Test dataset description 2",
-        "dataset_type": "Test dataset type",
+        "tags": "Test, dataset",
+        "archived": False,
         "version": "0.0.0",
         "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
     }
@@ -93,7 +94,8 @@ async def test_create_dataset_filepath(client: AsyncClient):
     dataset = {
         "dataset_name": "Test dataset 3",
         "dataset_description": "Test dataset description 3",
-        "dataset_type": "Test dataset type",
+        "tags": "Test, dataset",
+        "archived": True,
         "version": "0.0.0",
         "path_to_dataset": test_file_path
     }
@@ -135,7 +137,8 @@ async def test_get_dataset_by_name(client: AsyncClient):
     dataset = {
         "dataset_name": "Test dataset 4",
         "dataset_description": "Test dataset description 4",
-        "dataset_type": "Test dataset type",
+        "tags": "Test, dataset",
+        "archived": False,
         "version": "0.0.0",
         "path_to_dataset": "https://www.kaggle.com/c/titanic/data",
     }
@@ -165,7 +168,8 @@ async def test_update_dataset(client: AsyncClient):
 
     updated_dataset = { "dataset_name": "Test dataset 4 updated",
                         "dataset_description": "Test dataset description 4 updated",
-                        "dataset_type": "Test dataset type updated",
+                        "tags": "Test, dataset, changed",
+                        "archived": True,
                         "version": "0.0.2"}
 
     response = await client.get(f"/datasets/name/{dataset_name}")
@@ -251,3 +255,37 @@ async def test_delete_dataset_with_linked_iteration(client: AsyncClient):
 
     assert response.status_code == 200
     assert response.json()["dataset"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_non_archived_datasets(client: AsyncClient):
+    """
+    Test get non archived datasets.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    response = await client.get("/datasets/non-archived")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+@pytest.mark.asyncio
+async def test_get_archived_datasets(client: AsyncClient):
+    """
+    Test get archived datasets.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    response = await client.get("/datasets/archived")
+    assert response.status_code == 200
+    assert len(response.json()) == 0

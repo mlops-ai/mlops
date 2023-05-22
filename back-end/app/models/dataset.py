@@ -1,10 +1,8 @@
-import os
 from datetime import datetime
 from typing import Optional, Union, Dict
 from pathlib import Path
-from beanie import Document, Replace, Insert, before_event
-from pydantic import Field, HttpUrl, validator
-import requests
+from beanie import Document
+from pydantic import Field, HttpUrl
 
 
 class Dataset(Document):
@@ -16,42 +14,23 @@ class Dataset(Document):
     - **id** dataset_name (str): Dataset name
     - **path_to_dataset** (str): Path to dataset
     - **dataset_description** (str): Dataset description
-    - **dataset_problem_type** (str): Dataset problem type
+    - **tags** (str): Dataset tags
+    - **archived** (bool): Dataset status
     - **created_at** (datetime): Date and time of dataset creation
     - **updated_at** (datetime): Date and time of dataset update
     - **version** (str): Dataset version
     - **linked_iterations** (Dict): Linked iterations (key - iteration id, value - (project_id, experiment_id)
     """
 
-    dataset_name: str = Field(..., description="Dataset name", min_length=1, max_length=40)
+    dataset_name: str = Field(description="Dataset name", min_length=1, max_length=40)
     path_to_dataset: str = Field(default='', description="Path to dataset")
     dataset_description: Optional[str] = Field(default='', description="Dataset description", max_length=150)
-    dataset_problem_type: Optional[str] = Field(default='', description="Dataset problem type")
+    tags: Optional[str] = Field(default='', description="Dataset tags")
+    archived: bool = Field(default=False, description="Dataset status")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
     version: Optional[str] = Field(default='', description="Dataset version")
     linked_iterations: Optional[Dict] = Field(default_factory=dict, description="Linked iterations")
-
-    @validator('path_to_dataset')
-    def validate_path(cls, value):
-        if isinstance(value, str):
-            if not value:
-                raise ValueError("Path or URL is empty. Please, enter path or URL.")
-            if os.path.isfile(r'{}'.format(value)):
-                return value
-            else:
-                os.chdir('/')             # Change the current working directory to the root directory
-                if os.path.isfile(r'{}'.format(value)):
-                    return value
-            try:
-                response = requests.head(value)
-                if response.ok:
-                    return value
-                else:
-                    raise ValueError("URL is not accessible or returns an error.")
-            except requests.exceptions.RequestException:
-                raise ValueError("Invalid URL or unable to connect to the URL.")
-        raise ValueError("Invalid path or URL")
 
     def __repr__(self) -> str:
         return f"<Dataset {self.dataset_name}>"
@@ -67,10 +46,6 @@ class Dataset(Document):
             return self.id == other.id
         return False
 
-    @before_event([Insert, Replace])
-    def update_updated_at(self):
-        self.updated_at = datetime.now()
-
     class Settings:
         name = "dataset"
 
@@ -80,7 +55,8 @@ class Dataset(Document):
                 "dataset_name": "Titanic",
                 "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv",
                 "dataset_description": "Titanic dataset",
-                "dataset_problem_type": "Classification",
+                "tags": "Classification, Titanic",
+                "archived": False,
                 "version": "1.0.0"
             }
         }
@@ -94,7 +70,8 @@ class UpdateDataset(Dataset):
     - **dataset_name (str)**: Dataset name
     - **path_to_dataset (str)**: Path to dataset
     - **dataset_description (str)**: Dataset description
-    - **dataset_problem_type (str)**: Dataset problem type
+    - **tags (str)**: Dataset tags
+    - **archived (bool)**: Dataset status
     - **version (str)**: Dataset version
     - **updated_at (datetime)**: Date and time of dataset update
     """
@@ -102,7 +79,8 @@ class UpdateDataset(Dataset):
     dataset_name: Optional[str]
     path_to_dataset: Optional[Union[str, HttpUrl, Path]]
     dataset_description: Optional[str]
-    dataset_problem_type: Optional[str]
+    tags: Optional[str]
+    archived: Optional[bool]
     version: Optional[str]
     updated_at: datetime = Field(default_factory=datetime.now)
 
@@ -112,7 +90,8 @@ class UpdateDataset(Dataset):
                 "dataset_name": "Titanic",
                 "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv",
                 "dataset_description": "Titanic dataset",
-                "dataset_problem_type": "Classification",
+                "tags": "Classification, Titanic",
+                "archived": False,
                 "version": "1.0.0"
             }
         }

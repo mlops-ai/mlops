@@ -251,7 +251,8 @@ async def test_delete_iteration_with_dataset(client: AsyncClient):
     dataset = {
         "dataset_name": "Test dataset in iteration",
         "dataset_description": "Test dataset description",
-        "dataset_type": "Test dataset type",
+        "tags": "Test, dataset",
+        "archived": False,
         "version": "0.0.0",
         "path_to_dataset": "https://www.kaggle.com/c/titanic/data",
     }
