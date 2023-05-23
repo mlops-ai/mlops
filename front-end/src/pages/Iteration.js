@@ -14,6 +14,8 @@ import {BarChart} from 'echarts/charts';
 import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
 import custom_theme from "../js/customed.json";
+import {toast} from "react-toastify";
+import Toast from "../components/Toast";
 
 
 /**
@@ -107,6 +109,16 @@ function Iteration(props) {
                         }
                     })
                     metrics_chart_options = {
+                        toolbox: {
+                            show: true,
+                            feature: {
+                                saveAsImage: {}
+                            }
+                        },
+                        title: {
+                            left: 'center',
+                            text: "Metric Chart"
+                        },
                         tooltip: {},
                         xAxis: {
                             type: "category",
@@ -116,18 +128,19 @@ function Iteration(props) {
                             type: 'value'
                         },
                         legend: {
-                            data: metrics_names
+                            data: metrics_names,
+                            top: 'bottom'
                         },
-
                         series: series
                     };
-                    console.log(metrics_chart_options)
                 }
             }
             return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options]
         }
         return [null, null, null, null, null]
     }, [iterationData])
+
+    console.log(iterationData && iterationData.dataset)
 
     /**
      * Component rendering.
@@ -139,7 +152,31 @@ function Iteration(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1>Iteration</h1>
+                    <h1 className="d-flex align-items-center">
+                        <span className="fw-semibold">
+                            {iterationData.iteration_name}
+                        </span>
+                        <span className="project-info-id d-flex align-items-center" style={{fontWeight: "normal"}}>
+                            @{iterationData.id}
+                            <span className="material-symbols-rounded" title="Copy iteration id" onClick={
+                                () => {
+                                    toast.success('Copied to clipboard!', {
+                                        position: "bottom-center",
+                                        autoClose: 1000,
+                                        hideProgressBar: true,
+                                        closeOnClick: true,
+                                        pauseOnHover: false,
+                                        draggable: true,
+                                        progress: undefined,
+                                        theme: "light",
+                                    });
+                                    navigator.clipboard.writeText(iterationData.id)
+                                }
+                            }>
+                                content_copy
+                            </span>
+                        </span>
+                    </h1>
                     <nav>
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href="/projects">Projects</a></li>
@@ -154,39 +191,98 @@ function Iteration(props) {
                 </div>
 
                 <section className="iteration-view section content-data">
-                    <h4><span className="fw-semibold">{iterationData.iteration_name}</span></h4>
+                    <h5><span className="fw-semibold">Iteration details</span></h5>
                     <p><span className="fst-italic">Tu mógłby być opis iteracji!</span></p>
-                    <div className="row mb-3">
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Iteration
-                            ID: {iterationData.id}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Creation
-                            date: {moment(new Date(iterationData.created_at)).format("DD-MM-YYYY, HH:mm:ss")}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">User
-                            name: {iterationData.user_name}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Model
-                            name: {iterationData.model_name}</div>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-2">Path to
-                            model: {iterationData.path_to_model !== "" ? iterationData.path_to_model : '-'}</div>
+                    <div className="card p-2 table-responsive">
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                <tr>
+                                    <th>Creation Date</th>
+                                    <th>Last Modification</th>
+                                    <th>User</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>{moment(new Date(iterationData.created_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>
+                                    <td>{moment(new Date(iterationData.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>
+                                    <td>{iterationData.user_name}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
+                    <h5><span className="fw-semibold">Model details</span></h5>
+                    <div className="card p-2">
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                <tr>
+                                    <th>Model Name</th>
+                                    <th>Model Path</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>{iterationData.model_name}</td>
+                                    <td>{iterationData.path_to_model !== "" ? iterationData.path_to_model : '-'}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <h5><span className="fw-semibold">Dataset details</span></h5>
+
+                    { iterationData.dataset ?
+                        <div className="card p-2">
+                            <div className="table-responsive">
+                                <table className="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Dataset Name</th>
+                                        <th>Dataset Version</th>
+                                        <th>Dataset Path</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>{iterationData.dataset.name}</td>
+                                        <td>{iterationData.dataset.version !== "" ? iterationData.dataset.version : '-'}</td>
+                                        <td>{iterationData.dataset.path_to_dataset !== "" ? iterationData.dataset.path_to_dataset : '-'}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        :
+
+                        <p><span className="fst-italic">No dataset details to show!</span></p>
+                    }
 
                     <h5><span className="fw-semibold">Parameters</span></h5>
 
                     {parameters_names && parameters_names.length > 0 ?
 
-                        <div className="card p-2" style={{overflowX: "auto"}}>
-                            <table className="table">
-                                <thead>
-                                <tr>
-                                    {parameters_names && parameters_names.map(param => <th key={param}
-                                                                                           scope="col">{param}</th>)}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    {parameters_names && parameters_values.map(value => <td key={value}>{value}</td>)}
-                                </tr>
-                                </tbody>
-                            </table>
+                        <div className="card p-2">
+                            <div className="table-responsive">
+                                <table className="table">
+                                    <thead>
+                                    <tr>
+                                        {parameters_names && parameters_names.map(param => <th key={param}
+                                                                                               scope="col">{param}</th>)}
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        {parameters_names && parameters_values.map(value => <td key={value}>{value}</td>)}
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         :
@@ -198,21 +294,28 @@ function Iteration(props) {
 
                     {metrics_names && metrics_names.length > 0 ?
 
-                        <div className="card p-2" style={{overflowX: "auto"}}>
-                            <table className="table">
-                                <thead>
-                                <tr>
-                                    {metrics_names.map(param => <th key={param} scope="col">{param}</th>)}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    {metrics_values.map(value => <td key={value}>{value}</td>)}
-                                </tr>
-                                </tbody>
-                            </table>
-                            <ReactEcharts option={metrics_chart_options} theme="customed"/>
-                        </div>
+                        <>
+                            <div className="card p-2">
+                                <div className="table-responsive">
+                                    <table className="table">
+                                        <thead>
+                                        <tr>
+                                            {metrics_names.map(param => <th key={param} scope="col">{param}</th>)}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            {metrics_values.map(value => <td key={value}>{value}</td>)}
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div className="card p-2">
+                                <ReactEcharts option={metrics_chart_options} theme="customed"/>
+                            </div>
+                        </>
 
                         :
 
@@ -225,6 +328,8 @@ function Iteration(props) {
                     <p><span className="fst-italic">Tu będą wykresy zdefiniowane przez użytkownika!</span></p>
 
                 </section>
+
+                <Toast/>
 
             </main>
         )
@@ -255,6 +360,7 @@ function Iteration(props) {
 
                 </section>
             </main>
+
         );
     }
 }

@@ -5,26 +5,7 @@ import Iterations from "../components/Iterations";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingData from "../components/LoadingData";
-import * as echarts from 'echarts';
-import {
-    TooltipComponent,
-    GridComponent,
-    LegendComponent,
-    LegendScrollComponent,
-    LegendPlainComponent
-} from 'echarts/components';
-import {BarChart} from 'echarts/charts';
-import {CanvasRenderer} from 'echarts/renderers';
-import ReactEcharts from "echarts-for-react";
 import custom_theme from "../js/customed.json";
-import moment from "moment/moment";
-
-
-/**
- * Echarts register theme and initial configuration.
- * */
-echarts.registerTheme('customed', custom_theme)
-echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollComponent, LegendPlainComponent, BarChart, CanvasRenderer]);
 
 /**
  * Experiments component for displaying list of experiments and iterations grid.
@@ -33,15 +14,6 @@ echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollCompo
 function Experiments(props) {
 
     console.log("[FOR DEBUGGING PURPOSES]: EXPERIMENTS !")
-
-    /**
-     * Function for string captitalization.
-     * */
-    const capitalizeFirstLetter = str => {
-        return (
-            str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
-        );
-    }
 
     /**
      * React hook for search params.
@@ -173,7 +145,7 @@ function Experiments(props) {
 
                 let active_ids = []
 
-                if (intersection) {
+                if (intersection && intersection.length > 0) {
                     data.experiments = data.experiments.map((experiment, index) => {
                         if (intersection.includes(experiment.id)) {
                             return {
@@ -201,12 +173,15 @@ function Experiments(props) {
                             checked: false
                         }
                     });
-                    setSearchParams({experiments: active_ids[0]}, {replace: true});
+                    if (active_ids.length > 0) {
+                        setSearchParams({experiments: active_ids[0]}, {replace: true});
+                    } else {
+                        setSearchParams({experiments: 'none'}, {replace: true});
+                    }
                 }
                 setProjectData(data)
             })
             .catch((response) => {
-                console.log(response)
                 navigate('/projects')
             });
     }, []);
@@ -224,17 +199,17 @@ function Experiments(props) {
         let experiments_ids = []
 
         let experiments = projectData.experiments.map((experiment) => {
-            if (experiment.checked) {
-                experiments_ids.push(experiment.id)
-            }
             if (experiment.id === event.target.name) {
-                experiments_ids.push(experiment.id)
                 return {
                     ...experiment,
                     checked: !experiment.checked
                 }
             }
             return experiment
+        })
+
+        experiments_ids = experiments.filter(experiment => experiment.checked).map(experiment => {
+            return experiment.id
         })
 
         setSearchParams((prevParams) => {
@@ -385,12 +360,25 @@ function Experiments(props) {
                 experimentDescription: ""
             });
 
-            setProjectData(prevProjectData => {
-                return {
-                    ...prevProjectData,
-                    experiments: [...prevProjectData.experiments, json]
-                }
-            })
+            if (experiments.length > 0) {
+                setProjectData(prevProjectData => {
+                    return {
+                        ...prevProjectData,
+                        experiments: [...prevProjectData.experiments, json]
+                    }
+                })
+            } else {
+                setSearchParams({experiments: json.id}, {replace: true});
+                setProjectData(prevProjectData => {
+                    let exp = json;
+                    exp = {...exp, checked: true}
+                    return {
+                        ...prevProjectData,
+                        experiments: [...prevProjectData.experiments, exp]
+                    }
+                })
+            }
+
 
             toast.success('Experiment created successfully!', {
                 position: "bottom-center",
@@ -522,7 +510,7 @@ function Experiments(props) {
             setProjectData(prevProjectData => {
                 let experiments = prevProjectData.experiments
                 let foundIndex = experiments.findIndex(experiment => experiment.id === currentExperimentDataEditable.id);
-                experiments[foundIndex] = json
+                experiments[foundIndex] = {...json, checked: experiments[foundIndex].checked}
                 return {
                     ...prevProjectData,
                     experiments: experiments
@@ -592,13 +580,50 @@ function Experiments(props) {
             delete_spinner.style.display = "none"
             delete_button.disabled = false
 
-            setProjectData(prevProjectData => {
-                let experiments = prevProjectData.experiments.filter((experiment) => experiment.id !== currentExperimentData.id)
-                return {
-                    ...prevProjectData,
-                    experiments: experiments
+            let active_ids = active_experiments.map(experiment => experiment.id)
+
+            if (active_ids.includes(currentExperimentData.id)) {
+                if (experiments.length === 1) {
+                    setSearchParams({experiments: 'none'}, {replace: true});
+                    setProjectData(prevProjectData => {
+                        let experiments = prevProjectData.experiments.filter((experiment) => experiment.id !== currentExperimentData.id)
+                        return {
+                            ...prevProjectData,
+                            experiments: experiments
+                        }
+                    })
                 }
-            })
+                if (experiments.length > 1 && active_experiments.length === 1) {
+                    let experiments = projectData.experiments.filter((experiment) => experiment.id !== currentExperimentData.id)
+                    experiments[0] = {...experiments[0], checked: true}
+                    setSearchParams({experiments: experiments[0].id}, {replace: true});
+                    setProjectData(prevProjectData => {
+                        return {
+                            ...prevProjectData,
+                            experiments: experiments
+                        }
+                    })
+                }
+                if (experiments.length > 1 && active_experiments.length > 1) {
+                    let experiments = projectData.experiments.filter((experiment) => experiment.id !== currentExperimentData.id)
+                    active_ids = active_ids.filter(id => id !== currentExperimentData.id)
+                    setSearchParams({experiments: active_ids.join(',')}, {replace: true});
+                    setProjectData(prevProjectData => {
+                        return {
+                            ...prevProjectData,
+                            experiments: experiments
+                        }
+                    })
+                }
+            } else {
+                let experiments = projectData.experiments.filter((experiment) => experiment.id !== currentExperimentData.id)
+                setProjectData(prevProjectData => {
+                    return {
+                        ...prevProjectData,
+                        experiments: experiments
+                    }
+                })
+            }
 
             toast.success('Experiment deleted successfully!', {
                 position: "bottom-center",

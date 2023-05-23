@@ -15,6 +15,21 @@ export let columns_data_single = [
         ]
     },
     {
+        key: 'dataset',
+        label: 'Dataset info',
+        leaf: true,
+        children: [
+            {
+                key: 'dataset.name',
+                label: 'Dataset Name'
+            },
+            {
+                key: 'dataset.version',
+                label: 'Version'
+            }
+        ]
+    },
+    {
         key: 'model',
         label: 'Model info',
         leaf: true,
@@ -40,6 +55,18 @@ export let columns_data_checked_single = {
         checked: true,
         partialChecked: false,
     },
+    dataset: {
+        checked: true,
+        partialChecked: false,
+    },
+    'dataset.name': {
+        checked: true,
+        partialChecked: false,
+    },
+    'dataset.version': {
+        checked: true,
+        partialChecked: false,
+    },
     model: {
         checked: true,
         partialChecked: false,
@@ -50,4 +77,4 @@ export let columns_data_checked_single = {
     },
 }
 
-export let columns_list_single = ['created_at', 'model_name', 'user_name']
+export let columns_list_single = ['created_at', 'model_name', 'user_name', 'dataset.name', 'dataset.version']
