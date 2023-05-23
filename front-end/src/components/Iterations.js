@@ -14,6 +14,7 @@ import {
     columns_list_multiple
 } from "./iterations/columns_multiple";
 import {columns_data_single, columns_data_checked_single, columns_list_single} from "./iterations/columns_single";
+import {useNavigate} from "react-router-dom";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -34,6 +35,11 @@ function Iterations(props) {
      */
     const closeDeleteModalRef = useRef();
     const closeEditModalRef = useRef();
+
+    /**
+     * Function for redirecting.
+     * */
+    let navigate = useNavigate();
 
     /**
      * React ref hook for grid api.
@@ -397,6 +403,7 @@ function Iterations(props) {
          * */
         document.getElementById('delete-button').disabled = true
         document.getElementById('rename-button').disabled = true
+        document.getElementById('compare-button').disabled = true
 
         let iteration_info
         let model_info
@@ -734,6 +741,7 @@ function Iterations(props) {
         let deleteButton = document.getElementById('delete-button')
         let deleteModal = document.getElementById('delete-value')
         let renameButton = document.getElementById('rename-button')
+        let compareButton = document.getElementById('compare-button')
 
         let selectedRows = event.api.getSelectedRows()
         let selectedRowsNum = selectedRows.length
@@ -742,6 +750,7 @@ function Iterations(props) {
             deleteButton.disabled = false
             if (selectedRowsNum === 1) {
                 renameButton.disabled = false
+                compareButton.disabled = true
                 setCurrentIterationData({
                     experiment_id: selectedRows[0].experiment_id,
                     id: selectedRows[0].id,
@@ -755,9 +764,13 @@ function Iterations(props) {
             } else {
                 renameButton.disabled = true
             }
+            if (selectedRowsNum >= 2) {
+                compareButton.disabled = false
+            }
         } else {
             deleteButton.disabled = true
             renameButton.disabled = true
+            compareButton.disabled = true
         }
         deleteModal.innerHTML = selectedRowsNum
     }, []);
@@ -1007,6 +1020,24 @@ function Iterations(props) {
     }, [columnDefs]);
 
 
+    function compareIterations() {
+        let iterations = gridRef.current.api.getSelectedRows().map((iteration) => {
+            return {
+                experiment_id: iteration.experiment_id,
+                iteration_id: iteration.id
+            }
+        })
+
+        iterations = iterations.reduce((group, iteration) => {
+            let category = iteration.experiment_id
+            group[category] = group[category] ?? []
+            group[category].push(iteration.iteration_id)
+            return group
+        }, {})
+
+        navigate('/projects/' + props.projectID + '/iterations-compare?iterations=' + JSON.stringify(iterations))
+    }
+
     /**
      * Component rendering.
      * */
@@ -1048,7 +1079,7 @@ function Iterations(props) {
             <div className="d-flex align-items-center flex-wrap button-container">
                 <button id="delete-button" className="btn btn-danger iterations-button mb-3 d-flex align-items-center"
                         title="Delete iterations" data-bs-toggle="modal"
-                        data-bs-target="#delete-iterations" disabled={true}>
+                        data-bs-target="#delete-iterations">
                     <span className="material-symbols-rounded">
                         delete
                     </span>
@@ -1056,14 +1087,14 @@ function Iterations(props) {
                 </button>
                 <button id="rename-button" className="btn btn-primary iterations-button mb-3 d-flex align-items-center"
                         title="Rename iteration" data-bs-toggle="modal"
-                        data-bs-target="#edit-iteration" disabled={true}>
+                        data-bs-target="#edit-iteration">
                     <span className="material-symbols-rounded">
                         edit
                     </span>
                     Rename
                 </button>
                 <button id="compare-button" className="btn btn-success iterations-button mb-3 d-flex align-items-center"
-                        title="Compare iterations" disabled={true}>
+                        title="Compare iterations" onClick={compareIterations}>
                     <span className="material-symbols-rounded">
                         compare_arrows
                     </span>

@@ -61,7 +61,7 @@ function Datasets(props) {
         dataset_name: "",
         path_to_dataset: "",
         dataset_description: "",
-        dataset_problem_type: "",
+        tags: "",
         version: "",
         archived: ""
     });
@@ -74,7 +74,7 @@ function Datasets(props) {
         dataset_name: "",
         path_to_dataset: "",
         dataset_description: "",
-        dataset_problem_type: "",
+        tags: "",
         version: "",
         archived: ""
     });
@@ -211,7 +211,7 @@ function Datasets(props) {
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({dataset_name: name, path_to_dataset: path, dataset_description: description, version: version, dataset_problem_type: tags})
+            body: JSON.stringify({dataset_name: name, path_to_dataset: path, dataset_description: description, version: version, tags: tags})
         };
 
         fetch('http://localhost:8000/datasets', requestOptions)
@@ -288,7 +288,7 @@ function Datasets(props) {
         let name = currentDatasetDataEditable.dataset_name.trim()
         let description = currentDatasetDataEditable.dataset_description.trim()
         let version = currentDatasetDataEditable.version.trim()
-        let tags = currentDatasetDataEditable.dataset_problem_type.trim()
+        let tags = currentDatasetDataEditable.tags.trim()
         let path = currentDatasetDataEditable.path_to_dataset.trim()
 
         if (name.length === 0) {
@@ -366,9 +366,9 @@ function Datasets(props) {
         let body;
 
         if (name !== currentDatasetData.dataset_name.trim()) {
-            body = {dataset_name: name, path_to_dataset: path, dataset_description: description, version: version, dataset_problem_type: tags};
+            body = {dataset_name: name, path_to_dataset: path, dataset_description: description, version: version, dataset_tags: tags};
         } else {
-            body = {path_to_dataset: path, dataset_description: description, version: version, dataset_problem_type: tags};
+            body = {path_to_dataset: path, dataset_description: description, version: version, tags: tags};
         }
 
         const requestOptions = {
@@ -669,8 +669,7 @@ function Datasets(props) {
         let archivedDatasetsNumber;
 
         if (datasetsData) {
-            // active_datasets = [...datasetsData].filter((dataset) => !dataset.archived)
-            active_datasets = datasetsData.sort((a, b) => {
+            active_datasets = [...datasetsData].filter((dataset) => !dataset.archived).sort((a, b) => {
                 return new Date(b.updated_at) - new Date(a.updated_at)
             })
             activeDatasetsNumber = active_datasets.length
@@ -703,7 +702,7 @@ function Datasets(props) {
 
             active_datasets_filtered = active_datasets.filter((dataset) =>
                 dataset.dataset_name.toLowerCase().includes(query) || dataset.dataset_description.toLowerCase().includes(query) ||
-                dataset.dataset_problem_type.toLowerCase().includes(query) || dataset.version.toLowerCase().includes(query) ||
+                dataset.tags.toLowerCase().includes(query) || dataset.version.toLowerCase().includes(query) ||
                 dataset.path_to_dataset.toLowerCase().includes(query)
             )
 
@@ -715,7 +714,7 @@ function Datasets(props) {
                         key={dataset._id}
                         datasetId={dataset._id}
                         datasetName={dataset.dataset_name}
-                        datasetTags={dataset.dataset_problem_type}
+                        datasetTags={dataset.tags}
                         datasetPath={dataset.path_to_dataset}
                         datasetVersion={dataset.version}
                         datasetDescription={dataset.dataset_description}
@@ -731,7 +730,7 @@ function Datasets(props) {
             query = searchData.searchArchived.toLowerCase().trim();
             archived_datasets_filtered = archived_datasets.filter((dataset) =>
                 dataset.dataset_name.toLowerCase().includes(query) || dataset.dataset_description.toLowerCase().includes(query) ||
-                dataset.dataset_problem_type.toLowerCase().includes(query) || dataset.version.toLowerCase().includes(query) ||
+                dataset.tags.toLowerCase().includes(query) || dataset.version.toLowerCase().includes(query) ||
                 dataset.path_to_dataset.toLowerCase().includes(query)
             )
 
@@ -743,7 +742,7 @@ function Datasets(props) {
                         key={dataset._id}
                         datasetId={dataset._id}
                         datasetName={dataset.dataset_name}
-                        datasetTags={dataset.dataset_problem_type}
+                        datasetTags={dataset.tags}
                         datasetDescription={dataset.dataset_description}
                         datasetIsArchived={dataset.archived}
                         datasetCreationDate={moment(new Date(dataset.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
@@ -1098,9 +1097,9 @@ function Datasets(props) {
                                                 Dataset tags
                                             </label>
                                             <input type="text" className="form-control shadow-none" id="dataset-tags"
-                                                   name="dataset_problem_type"
+                                                   name="tags"
                                                    placeholder="eg. Classification, Numeric Data ..."
-                                                   value={currentDatasetDataEditable.dataset_problem_type}
+                                                   value={currentDatasetDataEditable.tags}
                                                    onChange={handleCurrentDataEditable}
                                             />
                                             <small className="form-text text-muted" style={{fontSize: 13 + "px"}}>
@@ -1128,7 +1127,7 @@ function Datasets(props) {
                                         (currentDatasetDataEditable.dataset_name !== currentDatasetData.dataset_name ||
                                         currentDatasetDataEditable.path_to_dataset !== currentDatasetData.path_to_dataset ||
                                         currentDatasetDataEditable.dataset_description !== currentDatasetData.dataset_description ||
-                                        currentDatasetDataEditable.dataset_problem_type !== currentDatasetData.dataset_problem_type ||
+                                        currentDatasetDataEditable.tags !== currentDatasetData.tags ||
                                         currentDatasetDataEditable.version !== currentDatasetData.version) ?
 
                                             <button id="edit-dataset-action" className="btn btn-primary float-end">

@@ -1120,3 +1120,22 @@ button[data-bs-dismiss="modal"]:hover {
     cursor: pointer;
     color: var(--color-primary) !important;
 }
+
+.iterations-compare-view .card {
+    white-space: nowrap;
+}
+
+.iterations-compare-view table th {
+    min-width: 180px !important;
+    max-width: 180px !important;
+}
+
+.iterations-compare-view table td {
+    min-width: 240px !important;
+}
+
+.iterations-compare-view table td {
+    max-width: 240px !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
