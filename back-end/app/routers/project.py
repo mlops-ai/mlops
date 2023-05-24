@@ -6,6 +6,7 @@ from typing import List, Dict
 
 from app.models.dataset import Dataset
 from app.models.experiment import Experiment
+from app.models.iteration import Iteration
 from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.project import (
@@ -186,6 +187,8 @@ async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -
     await project.update({"$set": updated_project.dict(exclude_unset=True)})
     await project.save()
 
+    await update_iteration_project_title(project)
+
     display_project = DisplayProject(
         id=project.id,
         title=project.title,
@@ -281,3 +284,20 @@ async def delete_iterations_from_dataset_deleting_project(experiments: List[Expe
                 await dataset.save()
 
     return None
+
+
+async def update_iteration_project_title(project: Project) -> None:
+    """
+    Util function for updating project title inside iteration.
+
+    Args:
+        project: Project.
+
+    Returns:
+        None
+    """
+    for experiment in project.experiments:
+        for iteration in experiment.iterations:
+            iteration.project_title = project.title
+
+    await project.save()

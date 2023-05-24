@@ -21,7 +21,6 @@ class Dataset(Document):
     - **version** (str): Dataset version
     - **linked_iterations** (Dict): Linked iterations (key - iteration id, value - (project_id, experiment_id)
     """
-
     dataset_name: str = Field(description="Dataset name", min_length=1, max_length=40)
     path_to_dataset: str = Field(default='', description="Path to dataset")
     dataset_description: Optional[str] = Field(default='', description="Dataset description", max_length=150)

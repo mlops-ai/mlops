@@ -141,6 +141,7 @@ async def update_experiment(project_id: PydanticObjectId, id: PydanticObjectId,
     experiment.description = updated_experiment.description or experiment.description
     experiment.updated_at = datetime.now()
 
+    await update_iteration_experiment_name(project, experiment)
     await project.save()
 
     return experiment
@@ -272,3 +273,20 @@ async def delete_iteration_from_dataset_deleting_iterations(iteration: Iteration
     await dataset.save()
 
     return None
+
+
+async def update_iteration_experiment_name(project: Project, experiment: Experiment) -> None:
+    """
+    Util function for updating experiment name inside iteration.
+
+    Args:
+        project: Project.
+        experiment: Experiment.
+
+    Returns:
+        None
+    """
+    for iteration in experiment.iterations:
+        iteration.experiment_name = experiment.name
+
+    await project.save()
