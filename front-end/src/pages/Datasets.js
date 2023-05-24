@@ -366,7 +366,7 @@ function Datasets(props) {
         let body;
 
         if (name !== currentDatasetData.dataset_name.trim()) {
-            body = {dataset_name: name, path_to_dataset: path, dataset_description: description, version: version, dataset_tags: tags};
+            body = {dataset_name: name, path_to_dataset: path, dataset_description: description, version: version, tags: tags};
         } else {
             body = {path_to_dataset: path, dataset_description: description, version: version, tags: tags};
         }
@@ -743,6 +743,8 @@ function Datasets(props) {
                         datasetId={dataset._id}
                         datasetName={dataset.dataset_name}
                         datasetTags={dataset.tags}
+                        datasetPath={dataset.path_to_dataset}
+                        datasetVersion={dataset.version}
                         datasetDescription={dataset.dataset_description}
                         datasetIsArchived={dataset.archived}
                         datasetCreationDate={moment(new Date(dataset.created_at)).format("DD-MM-YYYY, HH:mm:ss")}
@@ -1208,7 +1210,7 @@ function Datasets(props) {
                                     <form onSubmit={handleArchiveDataset}>
                                         <button id="archive-dataset-action" className="btn btn-secondary float-end">
                                             <span className="d-flex align-items-center">
-                                                <i id="archive-dataet-spinner" className="fa fa-spinner fa-spin me-1"
+                                                <i id="archive-dataset-spinner" className="fa fa-spinner fa-spin me-1"
                                                    style={{display: "none"}}></i>
                                                 Archive dataset
                                             </span>
