@@ -275,12 +275,14 @@ async def test_delete_iteration_with_dataset(client: AsyncClient):
         "parameters": {
             "learning_rate": 0.01},
         "dataset": {
-            "id": dataset_id,
-            "name": "Test dataset in iteration"}
+            "id": dataset_id
+        }
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
     iteration_id = response.json()["id"]
+    assert response.json()["dataset"]["name"] == dataset["dataset_name"]
+    assert response.json()["dataset"]["version"] == dataset["version"]
 
     await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
 
@@ -339,6 +341,50 @@ async def test_add_iteration_with_chart(client: AsyncClient):
     assert response.json()["interactive_charts"][0]["chart_name"] == "Test chart 1"
     assert len(response.json()["interactive_charts"]) == 1
 
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_str_chart(client: AsyncClient):
+    """
+    Test add iteration with chart string values.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "interactive_charts": [
+            {
+                "chart_name": "Test chart with string values",
+                "chart_type": "bar",
+                "x_data": ["height", "width", "length"],
+                "y_data": [180.0, 79, 100.0],
+                "x_label": "String labels",
+                "y_label": "Values",
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 201
+    assert response.json()["interactive_charts"][0]["chart_name"] == "Test chart with string values"
+    assert len(response.json()["interactive_charts"]) == 1
+    assert response.json()["dataset"] == None
 
 @pytest.mark.asyncio
 async def test_add_iteration_with_duplicated_chart_names(client: AsyncClient):
@@ -447,3 +493,59 @@ async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClie
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Number of x_data and y_data must be the same for the selected chart type"
+
+
+@pytest.mark.asyncio
+async def test_change_iteration_project_title_update(client: AsyncClient):
+    """
+    Test change iteration project_title field when updating project name.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    new_title = "Test project updated"
+    response = await client.put(f"/projects/{project_id}", json={"title": new_title})
+    assert response.status_code == 200
+    assert response.json()["title"] == new_title
+
+    experiment_name = "Test experiment"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+
+    for iteration in response_exp.json()["iterations"]:
+        assert iteration["project_title"] == new_title
+
+
+@pytest.mark.asyncio
+async def test_change_iteration_experiment_name_update(client: AsyncClient):
+    """
+    Test change iteration experiment_name field when updating experiment name.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    new_name = "Test experiment updated"
+    response = await client.put(f"/projects/{project_id}/experiments/{experiment_id}", json={"name": new_name})
+
+    assert response.status_code == 200
+    assert response.json()['name'] == new_name
+
+    for iteration in response.json()["iterations"]:
+        assert iteration["experiment_name"] == new_name

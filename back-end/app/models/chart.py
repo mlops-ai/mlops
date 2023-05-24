@@ -21,8 +21,8 @@ class InteractiveChart(BaseModel):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     chart_name: str = Field(description="Chart name", min_length=1, max_length=100)
     chart_type: str = Field(description="Chart type", min_length=1, max_length=100)
-    x_data: List[float] = Field(description="X axis data")
-    y_data: List[float] = Field(description="Y axis data")
+    x_data: List = Field(description="X axis data")
+    y_data: List = Field(description="Y axis data")
     x_label: Optional[str] = Field(default="x", description="X label", min_length=1, max_length=100)
     y_label: Optional[str] = Field(default="y", description="Y label", min_length=1, max_length=100)
 

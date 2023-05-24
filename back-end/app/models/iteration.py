@@ -15,10 +15,11 @@ class DatasetInIteration(BaseModel):
     Attributes:
     - **id (PydanticObjectId)**: Dataset id.
     - **name (Optional[str])**: Dataset name.
+    - **version (Optional[str])**: Dataset version.
     """
-
-    id: PydanticObjectId
-    name: Optional[str] = None
+    id: PydanticObjectId = Field(..., description="Dataset id")
+    name: Optional[str] = Field(default=None, description="Dataset name")
+    version: Optional[str] = Field(default=None, description="Dataset version")
 
 
 class Iteration(BaseModel):
@@ -99,8 +100,7 @@ class Iteration(BaseModel):
                 "path_to_model": "model.pkl",
                 "model_name": "model",
                 "dataset": {
-                    "id": "5f9b3b7e9c9d6c0a3c7b3b7e",
-                    "name": "Dataset Titanic"
+                    "id": "5f9b3b7e9c9d6c0a3c7b3b7e"
                 },
                 "interactive_charts": [
                     {
