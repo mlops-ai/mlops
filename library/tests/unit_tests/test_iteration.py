@@ -1,8 +1,10 @@
 import pytest
 
+import mlops.tracking
 from app.config.config import settings as app_settings
 from app.database.init_mongo_db import drop_database
 from mlops.src.iteration import Iteration
+from mlops.src.dataset import Dataset
 
 
 @pytest.fixture(scope="module")
@@ -67,3 +69,17 @@ def test_single_backslash_path_formatting(setup):
     iteration.format_path()
 
     assert iteration.path_to_model == '..\\mlops\\library\\tests\\test_tracking.py'
+
+
+def test_log_dataset(setup):
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset')
+
+    iteration = Iteration(
+        iteration_name='test_iteration',
+        project_id='test+project',
+        experiment_id='test_experiment'
+    )
+
+    iteration.log_dataset(dataset["_id"])
+
+    assert iteration.dataset.dataset_name == 'test_dataset'

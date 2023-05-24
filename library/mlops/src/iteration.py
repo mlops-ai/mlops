@@ -1,6 +1,10 @@
+import mlops.tracking
 from mlops.config.config import settings
+from mlops.exceptions.tracking import request_failed_exception
+from mlops.src.dataset import Dataset
 import requests
 from mlops.exceptions.iteration import iteration_request_failed_exception
+
 
 
 class Iteration:
@@ -17,6 +21,9 @@ class Iteration:
         self.path_to_model: str = ""
         self.parameters: dict = {}
         self.metrics: dict = {}
+        self.hasDataset: bool = False
+        self.dataset_id: str = None
+        self.dataset_name: str = None
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
@@ -79,6 +86,25 @@ class Iteration:
         """
         self.parameters.update(parameters)
 
+    def log_dataset(self, dataset_id: str):
+        """
+        Logging dataset
+
+        Args:
+            dataset_id: string containing dataset id
+        """
+
+        app_response = requests.get(f"{settings.url}/datasets/{dataset_id}")
+
+        response_json = app_response.json()
+
+        if app_response.status_code == 200:
+            self.dataset_name = response_json["dataset_name"]
+            self.dataset_id = dataset_id
+            self.hasDataset = True
+        else:
+            raise request_failed_exception(app_response)
+
     def end_iteration(self) -> dict:
         """
         End iteration and send data to API.
@@ -88,15 +114,28 @@ class Iteration:
         """
 
         self.format_path()
-
-        data = {
-            "user_name": self.user_name,
-            "iteration_name": self.iteration_name,
-            "metrics": self.metrics,
-            "parameters": self.parameters,
-            "path_to_model": self.path_to_model,
-            "model_name": self.model_name
-        }
+        if self.hasDataset:
+            data = {
+                "user_name": self.user_name,
+                "iteration_name": self.iteration_name,
+                "metrics": self.metrics,
+                "parameters": self.parameters,
+                "path_to_model": self.path_to_model,
+                "model_name": self.model_name,
+                "dataset": {
+                    "id": self.dataset_id,
+                    "name": self.dataset_name
+                  }
+            }
+        else:
+            data = {
+                "user_name": self.user_name,
+                "iteration_name": self.iteration_name,
+                "metrics": self.metrics,
+                "parameters": self.parameters,
+                "path_to_model": self.path_to_model,
+                "model_name": self.model_name
+            }
 
         app_response = requests.post(
             f'{settings.url}/projects/{self.project_id}/experiments/{self.experiment_id}/iterations/', json=data)
