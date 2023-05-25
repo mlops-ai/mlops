@@ -12,3 +12,7 @@ front-end/package-lock.json
 /data
 **/*.env
 back-end/*.env
+
+# Notebooks
+/.ipynb_checkpoints
+**/.ipynb_checkpoints

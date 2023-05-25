@@ -36,3 +36,4 @@ services:
       - ./back-end/.env
     ports:
       - ${MONGODB_PORT}:${MONGODB_PORT}
+    command: mongod --quiet --logpath /dev/null
