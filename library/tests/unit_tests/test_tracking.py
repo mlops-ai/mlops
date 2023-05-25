@@ -46,7 +46,7 @@ async def test_get_project(setup):
     assert str(exc_info.value) == "Request failed with status code 422: [{'loc': ['path', 'id'], 'msg': 'Id " "must " \
                                   "be of type PydanticObjectId', 'type': 'type_error'}]"
 
-
+@pytest.mark.asyncio
 async def test_get_project_by_name(setup):
     # Test for project that does not exist
     with pytest.raises(Exception) as exc_info:
@@ -122,6 +122,16 @@ async def test_set_active_experiment(setup):
     mlops.tracking.set_active_experiment(experiment_id=experiment['id'])
 
     assert lib_settings.active_experiment_id == experiment['id']
+
+
+@pytest.mark.asyncio
+async def test_create_dataset_success(setup):
+    await drop_database()
+
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset', path_to_dataset='https://www.kaggle.com/c'
+                                                                                    '/titanic/download/train.csv')
+
+    assert dataset['dataset_name'] == 'test_dataset'
 
 
 # Test for start_iteration function
@@ -203,3 +213,25 @@ async def test_start_iteration_with_multiple_params_and_metrics(setup):
     assert result['parameters'] == params
     assert result['metrics'] == metrics
 
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_dataset(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset', path_to_dataset='https://www.kaggle.com/c'
+                                                                                         '/titanic/download/train.csv')
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_dataset(dataset['_id'])
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
+    assert result['dataset']['name'] == 'test_dataset'

@@ -241,8 +241,8 @@ def start_iteration(iteration_name: str, project_id: str = None,
 
 def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
                    dataset_problem_type: str = None) -> dict:
-
     """
+    Function for creating mlops datasets
 
     Args:
         dataset_name: name of the created dataset
@@ -256,6 +256,7 @@ def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description:
 
     dataset = Dataset(dataset_name, path_to_dataset, dataset_description, dataset_problem_type)
 
-    app_response = dataset.create_dataset()
+    app_response = dataset.create_dataset_in_app()
 
     return app_response
+
