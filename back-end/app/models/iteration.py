@@ -2,11 +2,47 @@ import os
 import getpass
 from pydantic import Field, BaseModel, validator
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, List
 from beanie import PydanticObjectId
+from app.models.dataset import Dataset
+from app.models.chart import InteractiveChart
+
+
+class DatasetInIteration(BaseModel):
+    """
+    Dataset in iteration model.
+
+    Attributes:
+    - **id (PydanticObjectId)**: Dataset id.
+    - **name (Optional[str])**: Dataset name.
+    - **version (Optional[str])**: Dataset version.
+    """
+    id: PydanticObjectId = Field(..., description="Dataset id")
+    name: Optional[str] = Field(default=None, description="Dataset name")
+    version: Optional[str] = Field(default=None, description="Dataset version")
 
 
 class Iteration(BaseModel):
+    """
+    Iteration model.
+
+    Attributes:
+    - **id (PydanticObjectId)**: Iteration id.
+    - **experiment_id (PydanticObjectId)**: Experiment id.
+    - **project_id (PydanticObjectId)**: Project id.
+    - **experiment_name (str)**: Experiment name.
+    - **project_title (str)**: Project title.
+    - **user_name (str)**: User name.
+    - **iteration_name (str)**: Iteration title.
+    - **created_at (datetime)**: Iteration creation date.
+    - **metrics (Optional[dict])**: Iteration metrics.
+    - **parameters (Optional[dict])**: Iteration parameters.
+    - **path_to_model (Optional[str])**: Path to model.
+    - **model_name (Optional[str])**: Model name.
+    - **dataset (Optional[DatasetInIteration])**: Dataset.
+    - **interactive_charts (Optional[List[InteractiveChart]])**: Interactive charts list.
+    """
+
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     experiment_id: PydanticObjectId = Field(default=None,  alias="experiment_id")
     project_id: PydanticObjectId = Field(default=None, alias="project_id")
@@ -19,6 +55,8 @@ class Iteration(BaseModel):
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
     model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
+    dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
+    interactive_charts: Optional[List[InteractiveChart]] = Field(default=None, description="Interactive charts list")
 
     @validator('path_to_model')
     def path_to_model_exists(cls, path):
@@ -60,12 +98,32 @@ class Iteration(BaseModel):
                 "metrics": {"accuracy": 0.9},
                 "parameters": {"batch_size": 32},
                 "path_to_model": "model.pkl",
-                "model_name": "model"
+                "model_name": "model",
+                "dataset": {
+                    "id": "5f9b3b7e9c9d6c0a3c7b3b7e"
+                },
+                "interactive_charts": [
+                    {
+                        "chart_name": "Chart 1",
+                        "chart_type": "line",
+                        "x_data": [1, 2, 3],
+                        "y_data": [1, 2, 3],
+                        "x_axis_name": "Age",
+                        "y_axis_name": "Survived"
+                    }
+                ]
             }
         }
 
 
 class UpdateIteration(Iteration):
+    """
+    Update iteration model.
+
+    Attributes:
+    - **iteration_name (str)**: Iteration title.
+    """
+
     iteration_name: Optional[str]
 
     class Config:

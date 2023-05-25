@@ -1,4 +1,4 @@
-from beanie import Document, before_event, Replace, Insert
+from beanie import Document
 from pydantic import Field, validator
 from typing import Optional, List
 from datetime import datetime
@@ -8,6 +8,20 @@ from app.models.experiment import Experiment
 
 
 class Project(Document):
+    """
+    Project model.
+
+    Attributes:
+    - **id (str)**: Project ID.
+    - **title (str)**: Project title.
+    - **description (str)**: Project description.
+    - **status (str)**: Project status.
+    - **archived (bool)**: Project archived status.
+    - **created_at (datetime)**: Project creation date.
+    - **updated_at (datetime)**: Project last update date.
+    - **experiments (List[Experiment])**: List of experiments in the project.
+    """
+
     title: str = Field(description="Project title", min_length=1, max_length=40)
     description: Optional[str] = Field(default="", description="Project description", max_length=150)
     status: str = Field(default='not_started', description="Project status")
@@ -18,11 +32,10 @@ class Project(Document):
 
     @validator('status')
     def validate_status(cls, v):
-        valid_statuses = ['not_started', 'in_progress', 'completed']
-        if v not in valid_statuses:
+        if v not in cls.Settings.valid_statuses:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Status must be one of {valid_statuses}"
+                detail=f"Status must be one of {cls.Settings.valid_statuses}"
             )
         return v
 
@@ -40,12 +53,9 @@ class Project(Document):
             return self.id == other.id
         return False
 
-    @before_event([Insert, Replace])
-    def update_updated_at(self):
-        self.updated_at = datetime.now()
-
     class Settings:
         name = "project"
+        valid_statuses = ['not_started', 'in_progress', 'completed']
 
     class Config:
         schema_extra = {
@@ -57,6 +67,17 @@ class Project(Document):
 
 
 class UpdateProject(Project):
+    """
+    Update project model.
+
+    Attributes:
+    - **title (str)**: Project title.
+    - **description (str)**: Project description.
+    - **status (str)**: Project status.
+    - **archived (bool)**: Project archived status.
+    - **updated_at (datetime)**: Project last update date.
+    """
+
     title: Optional[str]
     description: Optional[str]
     status: Optional[str]
@@ -75,6 +96,20 @@ class UpdateProject(Project):
 
 
 class DisplayProject(Project):
+    """
+    Display project model.
+
+    Attributes:
+    - **id (str)**: Project ID.
+    - **title (str)**: Project title.
+    - **description (str)**: Project description.
+    - **status (str)**: Project status.
+    - **archived (bool)**: Project archived status.
+    - **created_at (datetime)**: Project creation date.
+    - **updated_at (datetime)**: Project last update date.
+    - **experiments (List[str])**: List of experiments in the project.
+    """
+
     experiments: List[str] = []
 
     class Config:

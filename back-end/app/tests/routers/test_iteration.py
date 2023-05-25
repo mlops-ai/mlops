@@ -67,7 +67,6 @@ async def test_add_iteration(client: AsyncClient):
 
     iteration = {
         "iteration_name": "Test iteration",
-        "description": "Test iteration description",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
         "model_name": "Test model name"
@@ -103,7 +102,6 @@ async def test_add_iteration2(client: AsyncClient):
 
     iteration = {
         "iteration_name": "Test iteration 2",
-        "description": "Test iteration description",
         "metrics": {"accuracy": 0.9, "precision": 0.8, "recall": 0.7, "f1": 0.6},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.001},
         "path_to_model": test_file_path,
@@ -193,7 +191,6 @@ async def test_change_iteration_name(client: AsyncClient):
 
     iteration = {
         "iteration_name": "Test iteration to change",
-        "description": "Test iteration description to change",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
         "model_name": "Test model name to change"
@@ -237,3 +234,318 @@ async def test_delete_iteration_by_id(client: AsyncClient):
 
     response = await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
     assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_delete_iteration_with_dataset(client: AsyncClient):
+    """
+    Test delete iteration with dataset.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    dataset = {
+        "dataset_name": "Test dataset in iteration",
+        "dataset_description": "Test dataset description",
+        "tags": "Test, dataset",
+        "archived": False,
+        "version": "0.0.0",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/data",
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    dataset_id = response.json()["_id"]
+
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "dataset": {
+            "id": dataset_id
+        }
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+    assert response.json()["dataset"]["name"] == dataset["dataset_name"]
+    assert response.json()["dataset"]["version"] == dataset["version"]
+
+    await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    response = await client.get(f"/datasets/{dataset_id}")
+
+    assert response.json()["linked_iterations"] == {}
+
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_chart(client: AsyncClient):
+    """
+    Test add iteration with chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset_name = "Test dataset in iteration"
+    response = await client.get(f"/datasets/name/{dataset_name}")
+    dataset_id = response.json()["_id"]
+
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "dataset": {
+            "id": dataset_id,
+            "name": "Test dataset in iteration"},
+        "interactive_charts": [
+            {
+                "chart_name": "Test chart 1",
+                "chart_type": "line",
+                "x_data": [1, 2, 3, 4, 5],
+                "y_data": [8, 2, 30, 4, 10],
+                "x_label": "Shot number",
+                "y_label": "Points",
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 201
+    assert response.json()["interactive_charts"][0]["chart_name"] == "Test chart 1"
+    assert len(response.json()["interactive_charts"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_str_chart(client: AsyncClient):
+    """
+    Test add iteration with chart string values.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "interactive_charts": [
+            {
+                "chart_name": "Test chart with string values",
+                "chart_type": "bar",
+                "x_data": ["height", "width", "length"],
+                "y_data": [180.0, 79, 100.0],
+                "x_label": "String labels",
+                "y_label": "Values",
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 201
+    assert response.json()["interactive_charts"][0]["chart_name"] == "Test chart with string values"
+    assert len(response.json()["interactive_charts"]) == 1
+    assert response.json()["dataset"] == None
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_duplicated_chart_names(client: AsyncClient):
+    """
+    Test add iteration with duplicated chart names.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    dataset_name = "Test dataset in iteration"
+    response = await client.get(f"/datasets/name/{dataset_name}")
+    dataset_id = response.json()["_id"]
+
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration with duplicated chart names",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "dataset": {
+            "id": dataset_id,
+            "name": "Test dataset in iteration"},
+        "interactive_charts": [
+            {
+                "chart_name": "Test chart 1",
+                "chart_type": "line",
+                "x_data": [1, 2, 3, 4, 5, 6],
+                "y_data": [8, 2, 30, 4, 10, 12],
+                "x_label": "Shot number",
+                "y_label": "Points"
+            },
+            {
+                "chart_name": "Test chart 1",
+                "chart_type": "line",
+                "x_data": [20, 30, 40, 50, 60, 70],
+                "y_data": [8, 2, 30, 4, 10, 12],
+                "x_label": "Age of the player",
+                "y_label": "Count"
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Chart names in iteration must be unique"
+
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClient):
+    """
+    Test add iteration with different amounts of x and y.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset_name = "Test dataset in iteration"
+    response = await client.get(f"/datasets/name/{dataset_name}")
+    dataset_id = response.json()["_id"]
+
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration with different amounts of x and y",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "dataset": {
+            "id": dataset_id,
+            "name": "Test dataset in iteration"},
+        "interactive_charts": [
+            {
+                "chart_name": "Test chart 1",
+                "chart_type": "line",
+                "x_data": [1, 2, 3],
+                "y_data": [8, 2, 30, 4, 10, 12],
+                "x_label": "Shot number",
+                "y_label": "Points"
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Number of x_data and y_data must be the same for the selected chart type"
+
+
+@pytest.mark.asyncio
+async def test_change_iteration_project_title_update(client: AsyncClient):
+    """
+    Test change iteration project_title field when updating project name.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    new_title = "Test project updated"
+    response = await client.put(f"/projects/{project_id}", json={"title": new_title})
+    assert response.status_code == 200
+    assert response.json()["title"] == new_title
+
+    experiment_name = "Test experiment"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+
+    for iteration in response_exp.json()["iterations"]:
+        assert iteration["project_title"] == new_title
+
+
+@pytest.mark.asyncio
+async def test_change_iteration_experiment_name_update(client: AsyncClient):
+    """
+    Test change iteration experiment_name field when updating experiment name.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    new_name = "Test experiment updated"
+    response = await client.put(f"/projects/{project_id}/experiments/{experiment_id}", json={"name": new_name})
+
+    assert response.status_code == 200
+    assert response.json()['name'] == new_name
+
+    for iteration in response.json()["iterations"]:
+        assert iteration["experiment_name"] == new_name

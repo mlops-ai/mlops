@@ -1,6 +1,10 @@
+import mlops.tracking
 from mlops.config.config import settings
+from mlops.exceptions.tracking import request_failed_exception
+from mlops.src.dataset import Dataset
 import requests
 from mlops.exceptions.iteration import iteration_request_failed_exception
+
 
 
 class Iteration:
@@ -17,6 +21,7 @@ class Iteration:
         self.path_to_model: str = ""
         self.parameters: dict = {}
         self.metrics: dict = {}
+        self.dataset_id: str = None
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
@@ -79,6 +84,25 @@ class Iteration:
         """
         self.parameters.update(parameters)
 
+    def log_dataset(self, dataset_id: str):
+        """
+        Logging dataset
+
+        Args:
+            dataset_id: string containing dataset id
+        """
+
+        app_response = requests.get(f"{settings.url}/datasets/{dataset_id}")
+
+        response_json = app_response.json()
+
+        if app_response.status_code == 200:
+            self.dataset_name = response_json["dataset_name"]
+            self.dataset_id = dataset_id
+            self.hasDataset = True
+        else:
+            raise request_failed_exception(app_response)
+
     def end_iteration(self) -> dict:
         """
         End iteration and send data to API.
@@ -88,6 +112,10 @@ class Iteration:
         """
 
         self.format_path()
+        if self.dataset_id:
+            dataset = {"id": self.dataset_id}
+        else:
+            dataset = None
 
         data = {
             "user_name": self.user_name,
@@ -95,7 +123,8 @@ class Iteration:
             "metrics": self.metrics,
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
-            "model_name": self.model_name
+            "model_name": self.model_name,
+            "dataset": dataset
         }
 
         app_response = requests.post(

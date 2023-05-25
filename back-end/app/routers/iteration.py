@@ -4,8 +4,11 @@ from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List, Dict
 
+from app.models.dataset import Dataset
 from app.models.iteration import Iteration, UpdateIteration
 from app.models.project import Project
+from app.routers.exceptions.chart import chart_name_in_iteration_not_unique_exception
+from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
@@ -53,7 +56,6 @@ async def get_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     Returns:
     - **Iteration**: Iteration
     """
-
     project = await Project.get(project_id)
     if not project:
         raise project_not_found_exception()
@@ -83,7 +85,6 @@ async def get_iterations_by_name(project_id: PydanticObjectId, experiment_id: Py
     Returns:
     - **List[Iteration]**: List of iterations with selected name
     """
-
     project = await Project.get(project_id)
     if not project:
         raise project_not_found_exception()
@@ -114,7 +115,6 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     Returns:
     - **Iteration**: Iteration added to experiment
     """
-
     project = await Project.get(project_id)
     if not project:
         raise project_not_found_exception()
@@ -128,6 +128,22 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
     iteration.experiment_name = experiment.name
     iteration.project_title = project.title
     iteration.created_at = datetime.now()
+
+    if iteration.interactive_charts:
+        unique_charts_names = await is_chart_name_unique(iteration)
+        if not unique_charts_names:
+            raise chart_name_in_iteration_not_unique_exception()
+
+    if iteration.dataset:
+        dataset = await Dataset.get(iteration.dataset.id)
+        if not dataset:
+            raise dataset_not_found_exception()
+
+        # set iteration dataset name and version automatically based on given id
+        iteration.dataset.name = dataset.dataset_name
+        iteration.dataset.version = dataset.version
+
+        await add_iteration_to_dataset_linked_iterations(iteration)
 
     experiment.iterations.append(iteration)
     await project.save()
@@ -150,7 +166,6 @@ async def update_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     Returns:
     - **Iteration**: Updated iteration
     """
-
     project = await Project.get(project_id)
     if not project:
         raise project_not_found_exception()
@@ -183,7 +198,6 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     Returns:
     - **None**: None
     """
-
     project = await Project.get(project_id)
     if not project:
         raise project_not_found_exception()
@@ -196,7 +210,67 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     if not iteration:
         raise iteration_not_found_exception()
 
+    if iteration.dataset:
+        await delete_iteration_from_dataset_deleting_iteration(iteration)
+
     experiment.iterations.remove(iteration)
     await project.save()
+
+    return None
+
+
+async def delete_iteration_from_dataset_deleting_iteration(iteration: Iteration) -> None:
+    """
+    Util function for deleting iteration from dataset when iteration is deleted.
+
+    Args:
+    - **iteration (Iteration)**: Iteration
+
+    Returns:
+    - **None**: None
+    """
+    dataset = await Dataset.get(iteration.dataset.id)
+    if not dataset:
+        raise dataset_not_found_exception()
+
+    del dataset.linked_iterations[str(iteration.id)]
+    await dataset.save()
+
+    return None
+
+
+async def is_chart_name_unique(iteration: Iteration) -> bool:
+    """
+    Check if chart name is unique in iteration.
+
+    Args:
+    - **iteration (Iteration)**: Iteration
+
+    Returns:
+    - **bool**: True if chart name is unique, False otherwise
+    """
+    chart_names = [chart.chart_name for chart in iteration.interactive_charts]
+    if len(chart_names) != len(set(chart_names)):
+        return False
+    return True
+
+
+async def add_iteration_to_dataset_linked_iterations(iteration: Iteration) -> None:
+    """
+    Util function for adding iteration to dataset linked iterations.
+
+    Args:
+    - **iteration (Iteration)**: Iteration
+
+    Returns:
+    - **None**: None
+    """
+    dataset = await Dataset.get(iteration.dataset.id)
+    if not dataset:
+        raise dataset_not_found_exception()
+
+    iteration.dataset.name = dataset.dataset_name
+    dataset.linked_iterations[str(iteration.id)] = (iteration.project_id, iteration.experiment_id)
+    await dataset.save()
 
     return None

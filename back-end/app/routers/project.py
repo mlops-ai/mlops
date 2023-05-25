@@ -1,11 +1,14 @@
-import json
 from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
 from typing import List, Dict
 
+from app.models.dataset import Dataset
+from app.models.experiment import Experiment
+from app.models.iteration import Iteration
 from app.models.project import Project, UpdateProject, DisplayProject
+from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
@@ -88,12 +91,8 @@ async def get_project_base(id: PydanticObjectId) -> DisplayProject:
         archived=project.archived,
         created_at=project.created_at,
         updated_at=project.updated_at,
-        experiments=[]
+        experiments=[experiment.name for experiment in project.experiments]
     )
-
-    experiments_names = [experiment.name for experiment in project.experiments]
-
-    display_project.experiments = experiments_names
 
     return display_project
 
@@ -165,13 +164,13 @@ async def add_project(project: Project) -> Project:
     return project
 
 
-@router.put("/{id}", response_model=Project, status_code=status.HTTP_200_OK)
-async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -> Project:
+@router.put("/{id}", response_model=DisplayProject, status_code=status.HTTP_200_OK)
+async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -> DisplayProject:
     """
     Update project.
 
     Args:
-    - **id** (PydanticObjectId): Project id.
+    - **id** (PydanticObjectId)**: Project id.
 
     Returns:
     - **Project**: Updated project.
@@ -188,7 +187,20 @@ async def update_project(id: PydanticObjectId, updated_project: UpdateProject) -
     await project.update({"$set": updated_project.dict(exclude_unset=True)})
     await project.save()
 
-    return project
+    await update_iteration_project_title(project)
+
+    display_project = DisplayProject(
+        id=project.id,
+        title=project.title,
+        description=project.description,
+        status=project.status,
+        archived=project.archived,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        experiments=[experiment.name for experiment in project.experiments]
+    )
+
+    return display_project
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -205,6 +217,10 @@ async def delete_project(id: PydanticObjectId):
     project = await Project.get(id)
     if not project:
         raise project_not_found_exception()
+
+    experiments = project.experiments
+
+    await delete_iterations_from_dataset_deleting_project(experiments)
 
     await project.delete()
     return None
@@ -244,3 +260,44 @@ async def is_title_unique(title: str) -> bool:
     if project:
         return False
     return True
+
+
+async def delete_iterations_from_dataset_deleting_project(experiments: List[Experiment]) -> None:
+    """
+    Util function for deleting iterations from dataset when deleting project.
+
+    Args:
+        experiments: List of experiments.
+
+    Returns:
+        None
+    """
+    for experiment in experiments:
+        iterations = experiment.iterations
+        for iteration in iterations:
+            if iteration.dataset:
+                dataset = await Dataset.get(iteration.dataset.id)
+                if not dataset:
+                    raise dataset_not_found_exception()
+
+                del dataset.linked_iterations[str(iteration.id)]
+                await dataset.save()
+
+    return None
+
+
+async def update_iteration_project_title(project: Project) -> None:
+    """
+    Util function for updating project title inside iteration.
+
+    Args:
+        project: Project.
+
+    Returns:
+        None
+    """
+    for experiment in project.experiments:
+        for iteration in experiment.iterations:
+            iteration.project_title = project.title
+
+    await project.save()

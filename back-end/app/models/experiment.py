@@ -6,6 +6,19 @@ from app.models.iteration import Iteration
 
 
 class Experiment(BaseModel):
+    """
+    Experiment model.
+
+    Attributes:
+    - **id (PydanticObjectId)**: Experiment ID.
+    - **project_id (PydanticObjectId)**: Project ID.
+    - **name (str)**: Experiment title.
+    - **description (Optional[str])**: Experiment description.
+    - **created_at (datetime)**: Experiment creation date.
+    - **updated_at (Optional[datetime])**: Experiment last update date.
+    - **iterations (List[Iteration])**: Experiment iterations.
+    """
+
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     project_id: PydanticObjectId = Field(default=None, alias="project_id")
     name: str = Field(..., description="Experiment title", min_length=1, max_length=40)
@@ -35,13 +48,21 @@ class Experiment(BaseModel):
         schema_extra = {
             "example": {
                 "name": "Is the passenger survived?",
-                "description": "Predicting if the passenger survived the Titanic disaster.",
-                "created_at": datetime.now()
+                "description": "Predicting if the passenger survived the Titanic disaster."
             }
         }
 
 
 class UpdateExperiment(Experiment):
+    """
+    Update experiment model.
+
+    Attributes:
+    - **name (Optional[str])**: Experiment title.
+    - **description (Optional[str])**: Experiment description.
+    - **updated_at (datetime)**: Experiment last update date.
+    """
+
     name: Optional[str]
     description: Optional[str]
     updated_at: datetime = Field(default_factory=datetime.now)
