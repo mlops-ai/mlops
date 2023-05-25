@@ -8,8 +8,7 @@ function DatasetCard(props) {
     /**
      * Color palette for badges.
      * */
-    const colors = [// '#3E54AC', '#8294C4', '#2CD3E1', '#146C94', '#B0DAFF',
-        '#3E54AC', '#F0A04B', '#EB455F', '#A084DC', '#FF6969', '#F97B22', '#89375F', '#B2A4FF', '#EA5455', '#539165']
+    const colors = ['#3E54AC', '#F0A04B', '#EB455F', '#A084DC', '#FF6969', '#F97B22', '#89375F', '#B2A4FF', '#EA5455', '#539165']
 
     /**
      * Generating labels.
@@ -54,7 +53,8 @@ function DatasetCard(props) {
                             <a className="nav-link" title={props.datasetName}>
                                 {props.datasetName}
                             </a>
-                            <span className="material-symbols-rounded" title="Copy dataset id" style={{fontSize: 16 + "px", marginLeft: 4 + "px"}} onClick={
+                            <span className="material-symbols-rounded" title="Copy dataset id"
+                                  style={{fontSize: 16 + "px", marginLeft: 4 + "px"}} onClick={
                                 () => {
                                     toast.success('Copied to clipboard!', {
                                         position: "bottom-center",
@@ -96,7 +96,7 @@ function DatasetCard(props) {
                                                 dataset_name: props.datasetName,
                                                 path_to_dataset: props.datasetPath,
                                                 dataset_description: props.datasetDescription || "",
-                                                dataset_problem_type: props.datasetTags || "",
+                                                tags: props.datasetTags || "",
                                                 version: props.datasetVersion || "",
                                                 archived: props.projectIsArchived
                                             })
@@ -105,7 +105,7 @@ function DatasetCard(props) {
                                                 dataset_name: props.datasetName,
                                                 path_to_dataset: props.datasetPath,
                                                 dataset_description: props.datasetDescription || "",
-                                                dataset_problem_type: props.datasetTags || "",
+                                                tags: props.datasetTags || "",
                                                 version: props.datasetVersion || "",
                                                 archived: props.projectIsArchived
                                             })
@@ -128,7 +128,7 @@ function DatasetCard(props) {
                                                 dataset_name: props.datasetName,
                                                 path_to_dataset: props.datasetPath,
                                                 dataset_description: props.datasetDescription || "",
-                                                dataset_problem_type: props.datasetTags || "",
+                                                tags: props.datasetTags || "",
                                                 version: props.datasetVersion || "",
                                                 archived: props.projectIsArchived
                                             })
@@ -151,7 +151,7 @@ function DatasetCard(props) {
                                                 dataset_name: props.datasetName,
                                                 path_to_dataset: props.datasetPath,
                                                 dataset_description: props.datasetDescription || "",
-                                                dataset_problem_type: props.datasetTags || "",
+                                                tags: props.datasetTags || "",
                                                 version: props.datasetVersion || "",
                                                 archived: props.projectIsArchived
                                             })
@@ -188,7 +188,7 @@ function DatasetCard(props) {
                                                 dataset_name: props.datasetName,
                                                 path_to_dataset: props.datasetPath,
                                                 dataset_description: props.datasetDescription || "",
-                                                dataset_problem_type: props.datasetTags || "",
+                                                tags: props.datasetTags || "",
                                                 version: props.datasetVersion || "",
                                                 archived: props.projectIsArchived
                                             })
@@ -211,7 +211,7 @@ function DatasetCard(props) {
                                                 dataset_name: props.datasetName,
                                                 path_to_dataset: props.datasetPath,
                                                 dataset_description: props.datasetDescription || "",
-                                                dataset_problem_type: props.datasetTags || "",
+                                                tags: props.datasetTags || "",
                                                 version: props.datasetVersion || "",
                                                 archived: props.projectIsArchived
                                             })
@@ -250,7 +250,8 @@ function DatasetCard(props) {
                                             link
                                         </span>
                                     Dataset Source
-                                    <span className="material-symbols-rounded" title="Copy dataset path" style={{fontSize: 14 + "px", marginLeft: 4 + "px"}} onClick={
+                                    <span className="material-symbols-rounded" title="Copy dataset path"
+                                          style={{fontSize: 14 + "px", marginLeft: 4 + "px"}} onClick={
                                         () => {
                                             toast.success('Copied to clipboard!', {
                                                 position: "bottom-center",
@@ -265,8 +266,8 @@ function DatasetCard(props) {
                                             navigator.clipboard.writeText(props.datasetPath)
                                         }
                                     }>
-                                content_copy
-                            </span>
+                                        content_copy
+                                    </span>
                                 </div>
                             </div>
 

@@ -83,12 +83,14 @@ function Iteration(props) {
      * @ metrics_chart_options: configuration of metrics chart
      * UseMemo is used for optimization purposes.
      * */
-    const [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options] = useMemo(() => {
+    const [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts] = useMemo(() => {
         let parameters_names
         let parameters_values
         let metrics_names
         let metrics_values
         let metrics_chart_options
+        let custom_charts = []
+
         if (iterationData) {
             if (iterationData.parameters) {
                 parameters_names = Object.getOwnPropertyNames(iterationData.parameters)
@@ -112,7 +114,17 @@ function Iteration(props) {
                         toolbox: {
                             show: true,
                             feature: {
-                                saveAsImage: {}
+                                dataZoom: {
+                                    show: true,
+                                    yAxisIndex: "none"
+                                },
+                                brush: {
+                                    type: 'polygon',
+                                },
+                                restore: {
+                                    show: true,
+                                },
+                                saveAsImage: {},
                             }
                         },
                         title: {
@@ -135,12 +147,201 @@ function Iteration(props) {
                     };
                 }
             }
-            return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options]
+            if (iterationData.interactive_charts) {
+                iterationData.interactive_charts.forEach(chart_data => {
+                    let options;
+
+                    if (chart_data.chart_type === 'scatter') {
+                        let data = []
+
+                        var callback = (args) => {
+                            return args.marker + args.seriesName + ' (' + args.dataIndex +')<br />' + '(' + args.data.join(', ') + ')'
+                        }
+
+                        chart_data.x_data.forEach((value, index) => {
+                            data.push([chart_data.x_data[index], chart_data.y_data[index]])
+                        })
+
+                        options = {
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: 0
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            title: {
+                                left: 'center',
+                                text: chart_data.chart_name ? chart_data.chart_name : '',
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: callback,
+                            },
+                            legend: {
+                                top: 'bottom'
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: chart_data.y_label,
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            xAxis: {
+                                type: 'value',
+                                name: chart_data.x_label,
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            series: [
+                                {
+                                    name: iterationData.iteration_name,
+                                    data: data,
+                                    type: chart_data.chart_type,
+                                },
+                            ]
+                        }
+                        custom_charts.push(
+                            <div className="card p-2">
+                                <ReactEcharts option={options} theme="customed"/>
+                            </div>
+                        )
+                    } else if (chart_data.chart_type === 'line') {
+
+                        let data = []
+
+                        var callback = (args) => {
+                            return args[0].marker + args[0].seriesName + ' (' + args[0].dataIndex +')<br />' + '(' + args[0].data.join(', ') + ')'
+                        }
+
+                        chart_data.x_data.forEach((value, index) => {
+                            data.push([chart_data.x_data[index], chart_data.y_data[index]])
+                        })
+
+                        options = {
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: "none"
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            title: {
+                                left: 'center',
+                                text: chart_data.chart_name ? chart_data.chart_name : '',
+                            },
+                            tooltip: {
+                                trigger: 'axis',
+                                formatter: callback,
+                            },
+                            legend: {
+                                top: 'bottom'
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: chart_data.y_label,
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            xAxis: {
+                                type: 'value',
+                                name: chart_data.x_label,
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            series: [
+                                {
+                                    name: iterationData.iteration_name,
+                                    data: data,
+                                    type: chart_data.chart_type,
+                                    showSymbol: false
+                                },
+                            ]
+                        }
+                        custom_charts.push(
+                            <div className="card p-2">
+                                <ReactEcharts option={options} theme="customed"/>
+                            </div>
+                        )
+                    } else if (chart_data.chart_type === 'bar') {
+                        options = {
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: "none"
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            title: {
+                                left: 'center',
+                                text: chart_data.chart_name ? chart_data.chart_name : '',
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                            },
+                            legend: {
+                                top: 'bottom'
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: chart_data.y_label,
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            xAxis: {
+                                type: 'category',
+                                data: chart_data.x_data,
+                                name: chart_data.x_label,
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            series: [
+                                {
+                                    name: iterationData.iteration_name,
+                                    data: chart_data.y_data,
+                                    type: chart_data.chart_type,
+                                },
+                            ]
+                        }
+                        custom_charts.push(
+                            <div className="card p-2">
+                                <ReactEcharts option={options} theme="customed"/>
+                            </div>
+                        )
+                    }
+                })
+
+            }
+            return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts]
         }
-        return [null, null, null, null, null]
+        return [null, null, null, null, null, null]
     }, [iterationData])
 
-    console.log(iterationData && iterationData.dataset)
+    console.log(iterationData)
 
     /**
      * Component rendering.
@@ -325,7 +526,13 @@ function Iteration(props) {
 
                     <h5><span className="fw-semibold">Custom charts</span></h5>
 
-                    <p><span className="fst-italic">Tu będą wykresy zdefiniowane przez użytkownika!</span></p>
+                    {custom_charts.length > 0 ?
+                        custom_charts
+
+                        :
+
+                        <p><span className="fst-italic">No custom charts to show!</span></p>
+                    }
 
                 </section>
 
