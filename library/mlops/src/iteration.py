@@ -21,9 +21,7 @@ class Iteration:
         self.path_to_model: str = ""
         self.parameters: dict = {}
         self.metrics: dict = {}
-        self.hasDataset: bool = False
         self.dataset_id: str = None
-        self.dataset_name: str = None
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
@@ -114,28 +112,20 @@ class Iteration:
         """
 
         self.format_path()
-        if self.hasDataset:
-            data = {
-                "user_name": self.user_name,
-                "iteration_name": self.iteration_name,
-                "metrics": self.metrics,
-                "parameters": self.parameters,
-                "path_to_model": self.path_to_model,
-                "model_name": self.model_name,
-                "dataset": {
-                    "id": self.dataset_id,
-                    "name": self.dataset_name
-                  }
-            }
+        if self.dataset_id:
+            dataset = {"id": self.dataset_id}
         else:
-            data = {
-                "user_name": self.user_name,
-                "iteration_name": self.iteration_name,
-                "metrics": self.metrics,
-                "parameters": self.parameters,
-                "path_to_model": self.path_to_model,
-                "model_name": self.model_name
-            }
+            dataset = None
+
+        data = {
+            "user_name": self.user_name,
+            "iteration_name": self.iteration_name,
+            "metrics": self.metrics,
+            "parameters": self.parameters,
+            "path_to_model": self.path_to_model,
+            "model_name": self.model_name,
+            "dataset": dataset
+        }
 
         app_response = requests.post(
             f'{settings.url}/projects/{self.project_id}/experiments/{self.experiment_id}/iterations/', json=data)
