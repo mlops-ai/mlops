@@ -4,8 +4,10 @@ from pydantic import Field, BaseModel, validator
 from datetime import datetime
 from typing import Optional, Dict, List
 from beanie import PydanticObjectId
-from app.models.dataset import Dataset
 from app.models.chart import InteractiveChart
+from app.models.image_chart import ImageChart
+
+from app.routers.exceptions.iteration import model_path_not_exist_exception
 
 
 class DatasetInIteration(BaseModel):
@@ -57,6 +59,7 @@ class Iteration(BaseModel):
     model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
     interactive_charts: Optional[List[InteractiveChart]] = Field(default=None, description="Interactive charts list")
+    image_charts: Optional[List[ImageChart]] = Field(default=None, description="Image charts list")
 
     @validator('path_to_model')
     def path_to_model_exists(cls, path):
@@ -71,7 +74,7 @@ class Iteration(BaseModel):
             if os.path.isfile(path):
                 return path
             else:
-                raise ValueError('File does not exist')
+                raise model_path_not_exist_exception()
 
     def __repr__(self) -> str:
         return f"<Iteration {self.iteration_name}>"
@@ -110,6 +113,12 @@ class Iteration(BaseModel):
                         "y_data": [1, 2, 3],
                         "x_axis_name": "Age",
                         "y_axis_name": "Survived"
+                    }
+                ],
+                "image_charts": [
+                    {
+                        "name": "Chart 1",
+                        "image_path": "image.png"
                     }
                 ]
             }

@@ -2,6 +2,7 @@ import os
 
 import pytest
 import logging
+import base64
 
 from httpx import AsyncClient
 from app.database.init_mongo_db import drop_database
@@ -494,6 +495,91 @@ async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClie
     assert response.status_code == 400
     assert response.json()["detail"] == "Number of x_data and y_data must be the same for the selected chart type"
 
+
+async def test_add_iteration_with_image_charts(client: AsyncClient):
+    """
+    Test add iteration with image charts from .jpg.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    input_image_path = os.path.join(os.path.dirname(__file__), "test_files", "test_image_chart.png")
+    iteration = {
+        "iteration_name": "Test iteration with different amounts of x and y",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "image_charts": [
+            {
+                "name": "Test chart 1",
+                "image_path": input_image_path
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 201
+    assert response.json()["image_charts"][0]["name"] == "Test chart 1"
+    assert response.json()["image_charts"][0]["encoded_image"] != ""
+
+    output_image_path = os.path.join(os.path.dirname(__file__), "test_files", "output_image_chart.png")
+    with open(output_image_path, "wb") as output_image:
+        output_image.write(base64.b64decode(response.json()["image_charts"][0]["encoded_image"]))
+
+    # test if two images are the same
+    assert open(input_image_path, "rb").read() == open(output_image_path, "rb").read()
+
+
+async def test_add_iteration_with_image_charts_failure(client: AsyncClient):
+    """
+    Test add iteration with image charts from .jpg with invalid path.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Test project"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    input_image_path = os.path.join(os.path.dirname(__file__), "invalid_folder", "invalid_image.png")
+    iteration = {
+        "iteration_name": "Test iteration with different amounts of x and y",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "image_charts": [
+            {
+                "name": "Test chart invalid",
+                "image_path": input_image_path
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Image path does not exist."
 
 @pytest.mark.asyncio
 async def test_change_iteration_project_title_update(client: AsyncClient):
