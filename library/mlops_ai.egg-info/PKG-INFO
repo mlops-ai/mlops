@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: mlops-ai
-Version: 1.0.0
+Version: 1.0.1
 Summary: Mlops-ai library for managing machine learning projects, experiments, iterations and datasets.
 Author: Kacper Pękalski, Kajetan Szal, Jędrzej Rybczyński
 License: Apache License 2.0

@@ -1,5 +1,5 @@
 import pathlib
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -9,7 +9,7 @@ README = (HERE/"README.md").read_text()
 
 setup(
    name="mlops-ai",
-   version="1.0.0",
+   version="1.0.1",
    description="Mlops-ai library for managing machine learning projects, experiments, iterations and datasets.",
    long_description=README,
    long_description_content_type="text/markdown",
@@ -24,7 +24,7 @@ setup(
         "Programming Language :: Python :: 3.11",
 
    ],
-   packages=["mlops"],
+   packages=find_packages(),
    includepackagedata=True,
    install_requires=["requests"],
  )
