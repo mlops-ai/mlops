@@ -1,0 +1,10 @@
+README.md
+setup.py
+mlops/__init__.py
+mlops/monitoring.py
+mlops/tracking.py
+mlops_ai.egg-info/PKG-INFO
+mlops_ai.egg-info/SOURCES.txt
+mlops_ai.egg-info/dependency_links.txt
+mlops_ai.egg-info/requires.txt
+mlops_ai.egg-info/top_level.txt
