@@ -17,6 +17,9 @@ import custom_theme from "../js/customed.json";
 import {toast} from "react-toastify";
 import Toast from "../components/Toast";
 
+import chart_1 from "../assets/chart_1.json";
+import chart_2 from "../assets/chart_2.json";
+
 
 /**
  * Echarts register theme and initial configuration.
@@ -117,7 +120,7 @@ function IterationsCompare(props) {
      * @ metrics_chart: configuration of metrics comparasion chart
      * UseMemo is used for optimization purposes.
      * */
-    const [iterations_details, models_details, datasets_details, parameters_data, metrics_data, metrics_chart] = useMemo(() => {
+    const [iterations_details, models_details, datasets_details, parameters_data, metrics_data, metrics_chart, custom_charts] = useMemo(() => {
         if (iterationsData) {
             let ids = []
             let names = []
@@ -143,6 +146,8 @@ function IterationsCompare(props) {
 
             let metrics_chart;
             let names_text = [];
+
+            let custom_charts = [];
 
             iterationsData.iterations.forEach(iteration => {
                 ids.push(<td>{iteration.id}</td>);
@@ -294,6 +299,453 @@ function IterationsCompare(props) {
                 metrics_chart = null
             }
 
+            /**
+             * Custom charts
+             * */
+            let custom_charts_packed = [chart_1, chart_2]
+
+            let custom_charts_unpacked = []
+
+            custom_charts_packed.forEach((chart_pack, index) => {
+                chart_pack.forEach((chart_single, idx) => {
+                    custom_charts_unpacked.push(chart_single)
+                })
+            })
+
+            custom_charts_unpacked = custom_charts_unpacked.filter(chart => chart.comparable && (chart.chart_type === "line" || chart.chart_type === "scatter" || chart.chart_type === "bar"))
+
+            let custom_charts_grouped = custom_charts_unpacked.reduce(function (arr, chart) {
+                arr[chart.name] = arr[chart.name] || [];
+                arr[chart.name].push(chart);
+                return arr;
+            }, Object.create(null));
+
+            console.log(custom_charts_grouped)
+
+            function checkTypes(array, firstType) {
+                return array.every(chart => {
+                    return chart.chart_type === firstType;
+                });
+            }
+
+            function onlyNumbers(array) {
+                return array.every(element => {
+                    return !isNaN(element);
+                });
+            }
+
+            var min_value = (value) => {
+                return Math.floor(value.min, 0);
+            }
+
+            var max_value = (value) => {
+                return Math.ceil(value.max, 0);
+            }
+
+            Object.keys(custom_charts_grouped).forEach(chart_group => {
+                let charts = custom_charts_grouped[chart_group]
+                let firstChartType = charts[0].chart_type
+                if (checkTypes(charts, firstChartType)) {
+                    if (firstChartType === "line") {
+
+                        let x_type = 'value';
+                        charts.forEach(chart => {
+                            chart.x_data.forEach(data => {
+                                if (!onlyNumbers(data)) {
+                                    x_type = 'category'
+                                }
+                            })
+                        })
+
+                        let options;
+                        let series_data = [];
+
+                        charts.forEach((chart_data) => {
+                            let data = []
+                            if (chart_data.x_data.length === 1) {
+                                chart_data.y_data.forEach((data_y, index) => {
+                                    let data_for_series = []
+                                    chart_data.x_data[0].forEach((value, idx) => {
+                                        data_for_series.push([value, data_y[idx]])
+                                    })
+                                    data.push(data_for_series)
+                                })
+                            } else {
+                                chart_data.y_data.forEach((data_y, index) => {
+                                    let data_for_series = []
+                                    chart_data.x_data[index].forEach((value, idx) => {
+                                        data_for_series.push([value, data_y[idx]])
+                                    })
+                                    data.push(data_for_series)
+                                })
+                            }
+
+                            if (data.length >= 2) {
+                                data.forEach((val, index) => {
+                                    series_data.push(
+                                        {
+                                            name: chart_data.y_data_names ? chart_data.y_data_names[index] + ' - ' + chart_data.iteration_name : chart_data.iteration_name + ' (' + (index + 1) + ')',
+                                            data: val,
+                                            type: chart_data.chart_type,
+                                            showSymbol: false,
+                                            emphasis: {
+                                                focus: 'series'
+                                            },
+                                        },
+                                    )
+                                })
+                            } else {
+                                series_data.push(
+                                    {
+                                        name: chart_data.y_data_names ? chart_data.y_data_names[0] + ' - ' + chart_data.iteration_name : chart_data.iteration_name,
+                                        data: data[0],
+                                        type: chart_data.chart_type,
+                                        showSymbol: false,
+                                        emphasis: {
+                                            focus: 'series'
+                                        },
+                                    },
+                                )
+                            }
+                        })
+
+                        options = {
+                            // Tytuł i podtytuł wykresu
+                            title: {
+                                text: charts[0].chart_title ? charts[0].chart_title : '',
+                                subtext: charts[0].chart_subtitle ? charts[0].chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
+                            },
+                            // Legenda
+                            legend: {
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
+                            },
+                            // Siatka
+                            grid: {
+                                show: true,
+                            },
+                            // Oś X
+                            xAxis: {
+                                type: x_type,
+                                name: charts[0].x_label ? charts[0].x_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: min_value,
+                                max: max_value,
+                            },
+                            // Oś Y
+                            yAxis: {
+                                type: 'value',
+                                name: charts[0].y_label ? charts[0].y_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: min_value,
+                                max: max_value,
+                            },
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'axis',
+                            },
+                            // Toolbox
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: "none"
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            // Dane
+                            series: series_data
+                        }
+
+                        custom_charts.push(
+                            <div className="card p-2">
+                                <ReactEcharts option={options}/>
+                            </div>
+                        )
+
+                    } else if (firstChartType === "scatter") {
+
+                        var callback = (args) => {
+                            return args.marker + args.seriesName + ' (' + args.dataIndex + ')<br />' + '(' + args.data.join(', ') + ')'
+                        }
+
+                        let x_type = 'value';
+                        charts.forEach(chart => {
+                            chart.x_data.forEach(data => {
+                                if (!onlyNumbers(data)) {
+                                    x_type = 'category'
+                                }
+                            })
+                        })
+
+                        let options;
+                        let series_data = [];
+
+                        charts.forEach((chart_data) => {
+                            let data = []
+                            if (chart_data.x_data.length === 1) {
+                                chart_data.y_data.forEach((data_y, index) => {
+                                    let data_for_series = []
+                                    chart_data.x_data[0].forEach((value, idx) => {
+                                        data_for_series.push([value, data_y[idx]])
+                                    })
+                                    data.push(data_for_series)
+                                })
+                            } else {
+                                chart_data.y_data.forEach((data_y, index) => {
+                                    let data_for_series = []
+                                    chart_data.x_data[index].forEach((value, idx) => {
+                                        data_for_series.push([value, data_y[idx]])
+                                    })
+                                    data.push(data_for_series)
+                                })
+                            }
+
+                            if (data.length >= 2) {
+                                data.forEach((val, index) => {
+                                    series_data.push(
+                                        {
+                                            name: chart_data.y_data_names ? chart_data.y_data_names[index] + ' - ' + chart_data.iteration_name : chart_data.iteration_name + ' (' + (index + 1) + ')',
+                                            data: val,
+                                            type: chart_data.chart_type,
+                                            showSymbol: false,
+                                            emphasis: {
+                                                focus: 'series'
+                                            },
+                                        },
+                                    )
+                                })
+                            } else {
+                                series_data.push(
+                                    {
+                                        name: chart_data.y_data_names ? chart_data.y_data_names[0] + ' - ' + chart_data.iteration_name : chart_data.iteration_name,
+                                        data: data[0],
+                                        type: chart_data.chart_type,
+                                        showSymbol: false,
+                                        emphasis: {
+                                            focus: 'series'
+                                        },
+                                    },
+                                )
+                            }
+                        })
+
+                        options = {
+                            // Tytuł i podtytuł wykresu
+                            title: {
+                                text: charts[0].chart_title ? charts[0].chart_title : '',
+                                subtext: charts[0].chart_subtitle ? charts[0].chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
+                            },
+                            // Legenda
+                            legend: {
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
+                            },
+                            // Siatka
+                            grid: {
+                                show: true,
+                            },
+                            // Oś X
+                            xAxis: {
+                                type: x_type,
+                                name: charts[0].x_label ? charts[0].x_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: min_value,
+                                max: max_value,
+                            },
+                            // Oś Y
+                            yAxis: {
+                                type: 'value',
+                                name: charts[0].y_label ? charts[0].y_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: min_value,
+                                max: max_value,
+                            },
+                            // Tooltip
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: callback,
+                            },
+                            // Toolbox
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: 0
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            // Dane
+                            series: series_data
+                        }
+
+                        custom_charts.push(
+                            <div className="card p-2">
+                                <ReactEcharts option={options}/>
+                            </div>
+                        )
+
+                    } else if (firstChartType === "bar") {
+
+                        function checkX(array, firstX) {
+                            return array.every(chart => {
+                                return chart.x_data.every(x => {
+                                    return JSON.stringify(x) === JSON.stringify(firstX);
+                                })
+                            });
+                        }
+                        // return JSON.stringify(array1) === JSON.stringify(array2);
+
+                        let firstX = charts[0].x_data[0]
+
+                        if (checkX(charts, firstX)) {
+
+                            let options;
+                            let series_data = [];
+
+                            charts.forEach((chart_data) => {
+
+                                if (chart_data.y_data.length >= 2) {
+                                    chart_data.y_data.forEach((val, index) => {
+                                        series_data.push(
+                                            {
+                                                name: chart_data.y_data_names ? chart_data.y_data_names[index] + ' - ' + chart_data.iteration_name : chart_data.iteration_name + ' (' + (index + 1) + ')',
+                                                data: val,
+                                                type: chart_data.chart_type,
+                                                showSymbol: false,
+                                                emphasis: {
+                                                    focus: 'series'
+                                                },
+                                            },
+                                        )
+                                    })
+                                } else {
+                                    series_data.push(
+                                        {
+                                            name: chart_data.y_data_names ? chart_data.y_data_names[0] + ' - ' + chart_data.iteration_name : chart_data.iteration_name,
+                                            data: chart_data.y_data[0],
+                                            type: chart_data.chart_type,
+                                            showSymbol: false,
+                                            emphasis: {
+                                                focus: 'series'
+                                            },
+                                        },
+                                    )
+                                }
+                            })
+
+                            options = {
+                                // Tytuł i podtytuł wykresu
+                                title: {
+                                    text: charts[0].chart_title ? charts[0].chart_title : '',
+                                    subtext: charts[0].chart_subtitle ? charts[0].chart_subtitle : '',
+                                    left: "center",
+                                    textStyle: {
+                                        fontSize: 18,
+                                    },
+                                    subtextStyle: {
+                                        fontSize: 16
+                                    },
+                                },
+                                // Legenda
+                                legend: {
+                                    top: 'bottom',
+                                    type: 'scroll',
+                                    show: true,
+                                    orient: 'horizontal',
+                                },
+                                // Siatka
+                                grid: {
+                                    show: true,
+                                },
+                                // Oś X
+                                xAxis: {
+                                    type: 'category',
+                                    data: charts[0].x_data[0],
+                                    name: charts[0].x_label ? charts[0].x_label : '',
+                                    nameLocation: 'center',
+                                    nameGap: 30,
+                                },
+                                // Oś Y
+                                yAxis: {
+                                    type: 'value',
+                                    name: charts[0].y_label ? charts[0].y_label : '',
+                                    nameLocation: 'center',
+                                    nameGap: 30,
+                                },
+                                // Tooltip
+                                // Tooltip
+                                tooltip: {
+                                    trigger: 'item',
+                                },
+                                // Toolbox
+                                toolbox: {
+                                    feature: {
+                                        dataZoom: {
+                                            show: true,
+                                            yAxisIndex: "none"
+                                        },
+                                        brush: {
+                                            type: 'polygon',
+                                        },
+                                        restore: {
+                                            show: true,
+                                        },
+                                        saveAsImage: {},
+                                    }
+                                },
+                                // Dane
+                                series: series_data
+                            }
+
+                            custom_charts.push(
+                                <div className="card p-2">
+                                    <ReactEcharts option={options}/>
+                                </div>
+                            )
+
+                        }
+                    }
+                }
+            });
+
             return [
                 {
                     ids: ids,
@@ -314,10 +766,11 @@ function IterationsCompare(props) {
                 },
                 parameters_data,
                 metrics_data,
-                metrics_chart
+                metrics_chart,
+                custom_charts
             ]
         }
-        return [null, null, null, null, null, null]
+        return [null, null, null, null, null, null, null]
     })
 
     /**
@@ -495,7 +948,13 @@ function IterationsCompare(props) {
 
                     <h5><span className="fw-semibold">Custom charts</span></h5>
 
-                    <p><span className="fst-italic">Tu będą wykresy zdefiniowane przez użytkownika!</span></p>
+                    {custom_charts.length > 0 ?
+                        custom_charts
+
+                        :
+
+                        <p><span className="fst-italic">No custom charts to show!</span></p>
+                    }
 
                 </section>
 
