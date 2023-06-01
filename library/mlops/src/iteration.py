@@ -4,7 +4,7 @@ from mlops.exceptions.tracking import request_failed_exception
 from mlops.src.dataset import Dataset
 import requests
 from mlops.exceptions.iteration import iteration_request_failed_exception
-
+from mlops.src.chart import Chart
 
 
 class Iteration:
@@ -22,6 +22,7 @@ class Iteration:
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
+        self.charts: list = []
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
@@ -103,6 +104,30 @@ class Iteration:
         else:
             raise request_failed_exception(app_response)
 
+    def log_chart(self, chart: Chart):
+        """
+        Logging a single chart
+
+        Args:
+            chart: instance of mlops Chart
+        """
+
+        self.charts.append(chart)
+
+    def transform_charts_to_dictionary(self):
+        """
+
+        Returns:
+
+        """
+
+        interactive_charts = []
+
+        for chart in self.charts:
+            interactive_charts.append(chart.get_chart_dictionary())
+
+        return interactive_charts
+
     def end_iteration(self) -> dict:
         """
         End iteration and send data to API.
@@ -111,11 +136,18 @@ class Iteration:
             iteration: json data of created iteration
         """
 
+        interactive_charts = {}
+
         self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:
             dataset = None
+
+        if self.charts:
+            interactive_charts = self.transform_charts_to_dictionary()
+        else:
+            interactive_charts = None
 
         data = {
             "user_name": self.user_name,
@@ -124,7 +156,8 @@ class Iteration:
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
             "model_name": self.model_name,
-            "dataset": dataset
+            "dataset": dataset,
+            "interactive_charts": interactive_charts
         }
 
         app_response = requests.post(
