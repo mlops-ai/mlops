@@ -7,6 +7,7 @@ import mlops.tracking
 from app.config.config import settings as app_settings
 from mlops.config.config import settings as lib_settings
 from app.database.init_mongo_db import drop_database
+from mlops.src.chart import Chart
 
 
 # Fixture to set up test environment
@@ -48,6 +49,7 @@ async def test_get_project(setup):
 
     assert str(exc_info.value) == "Request failed with status code 422: [{'loc': ['path', 'id'], 'msg': 'Id " "must " \
                                   "be of type PydanticObjectId', 'type': 'type_error'}]"
+
 
 @pytest.mark.asyncio
 async def test_get_project_by_name(setup):
@@ -323,3 +325,24 @@ async def test_start_iteration_with_image_charts_failure(setup):
         result = iteration.end_iteration()
 
     assert str(exc_info.value) == 'Provided image path does not exist.'
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_chart(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    chart = Chart(chart_name="Chart 1", chart_type="line", x_data=[1, 2, 3], y_data=[1, 2, 3], x_label="Age", y_label="Survived")
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_chart(chart)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
