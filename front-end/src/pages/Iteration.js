@@ -83,13 +83,14 @@ function Iteration(props) {
      * @ metrics_chart_options: configuration of metrics chart
      * UseMemo is used for optimization purposes.
      * */
-    const [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts] = useMemo(() => {
+    const [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts, image_charts] = useMemo(() => {
         let parameters_names
         let parameters_values
         let metrics_names
         let metrics_values
         let metrics_chart_options
         let custom_charts = []
+        let image_charts = []
 
         if (iterationData) {
             if (iterationData.parameters) {
@@ -336,9 +337,45 @@ function Iteration(props) {
                 })
 
             }
-            return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts]
+
+            if (iterationData.image_charts) {
+                iterationData.image_charts.forEach(image_chart => {
+                    if (image_chart.encoded_image.startsWith('/')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
+                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                    } else if (image_chart.encoded_image.startsWith('i')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
+                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                    } else if (image_chart.encoded_image.startsWith('R')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
+                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                    } else if (image_chart.encoded_image.startsWith('Q')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
+                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                    } else if (image_chart.encoded_image.startsWith('U')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
+                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                    }
+                })
+            }
+            return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts, image_charts]
         }
-        return [null, null, null, null, null, null]
+        return [null, null, null, null, null, null, null]
     }, [iterationData])
 
     console.log(iterationData)
@@ -533,6 +570,17 @@ function Iteration(props) {
 
                         <p><span className="fst-italic">No custom charts to show!</span></p>
                     }
+
+                    <h5><span className="fw-semibold">Image charts</span></h5>
+
+                    {image_charts.length > 0 ?
+                        image_charts
+
+                        :
+
+                        <p><span className="fst-italic">No image charts to show!</span></p>
+                    }
+
 
                 </section>
 
