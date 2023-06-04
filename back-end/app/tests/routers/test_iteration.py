@@ -326,20 +326,20 @@ async def test_add_iteration_with_chart(client: AsyncClient):
             "name": "Test dataset in iteration"},
         "interactive_charts": [
             {
-                "chart_name": "Test chart 1",
+                "name": "test-line-chart",
+                "chart_title": "Test chart 1",
                 "chart_type": "line",
-                "x_data": [1, 2, 3, 4, 5],
-                "y_data": [8, 2, 30, 4, 10],
+                "x_data": [[1, 2, 3, 4, 5]],
+                "y_data": [[8, 2, 30, 4, 10]],
                 "x_label": "Shot number",
-                "y_label": "Points",
+                "y_label": "Points"
             }
         ]
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
-
     assert response.status_code == 201
-    assert response.json()["interactive_charts"][0]["chart_name"] == "Test chart 1"
+    assert response.json()["interactive_charts"][0]["chart_title"] == "Test chart 1"
     assert len(response.json()["interactive_charts"]) == 1
 
 
@@ -370,10 +370,11 @@ async def test_add_iteration_with_str_chart(client: AsyncClient):
             "learning_rate": 0.01},
         "interactive_charts": [
             {
-                "chart_name": "Test chart with string values",
+                "name": "test-bar-chart",
+                "chart_title": "Test chart with string values",
                 "chart_type": "bar",
-                "x_data": ["height", "width", "length"],
-                "y_data": [180.0, 79, 100.0],
+                "x_data": [["height", "width", "length"]],
+                "y_data": [[180.0, 79, 100.0]],
                 "x_label": "String labels",
                 "y_label": "Values",
             }
@@ -383,9 +384,10 @@ async def test_add_iteration_with_str_chart(client: AsyncClient):
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
 
     assert response.status_code == 201
-    assert response.json()["interactive_charts"][0]["chart_name"] == "Test chart with string values"
+    assert response.json()["interactive_charts"][0]["chart_title"] == "Test chart with string values"
     assert len(response.json()["interactive_charts"]) == 1
-    assert response.json()["dataset"] == None
+    assert response.json()["dataset"] is None
+
 
 @pytest.mark.asyncio
 async def test_add_iteration_with_duplicated_chart_names(client: AsyncClient):
@@ -422,20 +424,24 @@ async def test_add_iteration_with_duplicated_chart_names(client: AsyncClient):
             "name": "Test dataset in iteration"},
         "interactive_charts": [
             {
-                "chart_name": "Test chart 1",
+                "name": "test-line-chart",
+                "chart_title": "Test chart 1",
                 "chart_type": "line",
-                "x_data": [1, 2, 3, 4, 5, 6],
-                "y_data": [8, 2, 30, 4, 10, 12],
+                "x_data": [[1, 2, 3, 4, 5, 6]],
+                "y_data": [[8, 2, 30, 4, 10, 12]],
                 "x_label": "Shot number",
-                "y_label": "Points"
+                "y_label": "Points",
+                "comparable": True
             },
             {
-                "chart_name": "Test chart 1",
+                "name": "test-line-chart",
+                "chart_title": "Test chart 1",
                 "chart_type": "line",
-                "x_data": [20, 30, 40, 50, 60, 70],
-                "y_data": [8, 2, 30, 4, 10, 12],
+                "x_data": [[20, 30, 40, 50, 60, 70]],
+                "y_data": [[8, 2, 30, 4, 10, 12]],
                 "x_label": "Age of the player",
-                "y_label": "Count"
+                "y_label": "Count",
+                "comparable": True
             }
         ]
     }
@@ -480,10 +486,11 @@ async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClie
             "name": "Test dataset in iteration"},
         "interactive_charts": [
             {
-                "chart_name": "Test chart 1",
+                "name": "line-plot-1",
+                "chart_title": "Test chart 1",
                 "chart_type": "line",
-                "x_data": [1, 2, 3],
-                "y_data": [8, 2, 30, 4, 10, 12],
+                "x_data": [[1, 2, 3]],
+                "y_data": [[8, 2, 30, 4, 10, 12]],
                 "x_label": "Shot number",
                 "y_label": "Points"
             }
@@ -493,9 +500,10 @@ async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClie
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
 
     assert response.status_code == 400
-    assert response.json()["detail"] == "Number of x_data and y_data must be the same for the selected chart type"
+    assert response.json()["detail"] == "Length of x_data and y_data must be equal"
 
 
+@pytest.mark.asyncio
 async def test_add_iteration_with_image_charts(client: AsyncClient):
     """
     Test add iteration with image charts from .jpg.
@@ -543,6 +551,7 @@ async def test_add_iteration_with_image_charts(client: AsyncClient):
     assert open(input_image_path, "rb").read() == open(output_image_path, "rb").read()
 
 
+@pytest.mark.asyncio
 async def test_add_iteration_with_image_charts_failure(client: AsyncClient):
     """
     Test add iteration with image charts from .jpg with invalid path.
@@ -580,6 +589,7 @@ async def test_add_iteration_with_image_charts_failure(client: AsyncClient):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Image path does not exist."
+
 
 @pytest.mark.asyncio
 async def test_change_iteration_project_title_update(client: AsyncClient):
@@ -635,3 +645,166 @@ async def test_change_iteration_experiment_name_update(client: AsyncClient):
 
     for iteration in response.json()["iterations"]:
         assert iteration["experiment_name"] == new_name
+
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_bar_plot(client: AsyncClient):
+    """
+    Test add iteration with bar plot.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment updated"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration with bar plot",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "interactive_charts": [
+            {
+                "chart_type": "bar",
+                "name": "bar_plot-1",
+                "chart_title": "The number of people in each age group",
+                "chart_subtitle": "Source: World Bank",
+                "x_data": [["20-40", "40-60", "60-80"]],
+                "y_data": [[100, 200, 300], [400, 500, 600]],
+                "y_data_names": ["Poznan", "Warsaw"],
+                "x_label": "X",
+                "y_label": "Y",
+                "compare": False
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 201
+    assert response.json()["interactive_charts"][0]["name"] == "bar_plot-1"
+    assert response.json()["interactive_charts"][0]["chart_title"] == "The number of people in each age group"
+    assert response.json()["interactive_charts"][0]["chart_subtitle"] == "Source: World Bank"
+    assert response.json()["interactive_charts"][0]["x_data"] == [["20-40", "40-60", "60-80"]]
+
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_scatter_plots(client: AsyncClient):
+    """
+    Test add iteration with scatter plots.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment updated"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration with scatter plots",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "interactive_charts": [
+            {
+                "chart_type": "scatter",
+                "name": "scatter_plot-1",
+                "chart_title": "The number of deaths at different ages",
+                "chart_subtitle": "Source: World Bank",
+                "x_data": [[20, 40, 60], [10, 30, 50]],
+                "y_data": [[100, 200, 300], [400, 500, 600]],
+                "x_label": "Age",
+                "y_label": "Amount of deaths",
+                "compare": True
+            },
+            {
+                "chart_type": "scatter",
+                "name": "scatter_plot-1",
+                "chart_title": "The number of deaths at different ages 2",
+                "chart_subtitle": "Source: World Bank",
+                "x_data": [[25, 45, 65], [15, 35, 55]],
+                "y_data": [[100, 200, 300], [400, 500, 600]],
+                "x_label": "Age",
+                "y_label": "Amount of deaths",
+                "compare": True
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 201
+    assert response.json()["interactive_charts"][0]["name"] == "scatter_plot-1"
+    assert response.json()["interactive_charts"][0]["chart_title"] == "The number of deaths at different ages"
+    assert response.json()["interactive_charts"][0]["chart_subtitle"] == "Source: World Bank"
+    assert response.json()["interactive_charts"][0]["x_data"] == [[20, 40, 60], [10, 30, 50]]
+    assert response.json()["interactive_charts"][1]["name"] == "scatter_plot-1"
+    assert response.json()["interactive_charts"][1]["chart_title"] == "The number of deaths at different ages 2"
+    assert response.json()["interactive_charts"][1]["chart_subtitle"] == "Source: World Bank"
+    assert response.json()["interactive_charts"][1]["x_data"] == [[25, 45, 65], [15, 35, 55]]
+
+
+@pytest.mark.asyncio
+async def test_add_iteration_with_pie_plot(client: AsyncClient):
+    """
+    Test add iteration with pie plot.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment updated"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    iteration = {
+        "iteration_name": "Test iteration with pie plot",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "interactive_charts": [
+            {
+                "chart_type": "pie",
+                "name": "pie_plot-1",
+                "chart_title": "The number of deaths at different ages",
+                "chart_subtitle": "Source: World Bank",
+                "x_data": [[20, 40, 60]],
+                "y_data": [[100, 200, 300], [400, 500, 600]],
+                "x_label": "Age",
+                "y_label": "Amount of deaths",
+                "compare": False
+            }
+        ]
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "x_data and y_data can only have one list of data"
