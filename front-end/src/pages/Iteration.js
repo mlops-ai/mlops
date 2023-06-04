@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import LoadingData from "../components/LoadingData";
 import moment from "moment/moment";
 import * as echarts from 'echarts';
@@ -17,6 +17,11 @@ import custom_theme from "../js/customed.json";
 import {toast} from "react-toastify";
 import Toast from "../components/Toast";
 
+import FsLightbox from "fslightbox-react";
+import Masonry from "react-masonry-css";
+
+import { PhotoProvider, PhotoView } from 'react-photo-view';
+import 'react-photo-view/dist/react-photo-view.css';
 
 /**
  * Echarts register theme and initial configuration.
@@ -32,10 +37,23 @@ function Iteration(props) {
 
     console.log("[FOR DEBUGGING PURPOSES]: ITERATION VIEW !")
 
+    const [lightBox, setLightBox] = useState({
+        isOpen: false,
+        key: 1
+    });
+
     /**
-     * State used for rerun REST API request and rerender component after performing an action modifying data in the database.
+     * Masonry Grid breakpoints definitions.
+     * UseMemo is used for optimization purposes.
      * */
-    const [refresh, setRefresh] = useState(0);
+    const breakpointColumnsObj = useMemo(() => {
+        return {
+            default: 4,
+            1399: 3,
+            991: 2,
+            575: 1
+        }
+    })
 
     /**
      * Get :project_id, :experiment_id, :iteration_id params from url.
@@ -53,11 +71,16 @@ function Iteration(props) {
     let navigate = useNavigate();
 
     /**
+     * React location hook.
+     * */
+    let location = useLocation();
+
+    /**
      * REST API request for iteration data based on url params (:project_id, :experiment_id, :iteration_id).
      * If project, experiment or iteration based on url params don't exist, user will be redirected to main page.
      * */
     useEffect(() => {
-
+        setIterationData(null)
         fetch('http://localhost:8000/projects/' + project_id + '/experiments/' + experiment_id + '/iterations/' + iteration_id)
             .then(response => {
                 if (response.ok) {
@@ -72,7 +95,7 @@ function Iteration(props) {
                 navigate('/projects')
             });
 
-    }, [refresh]);
+    }, [location.pathname]);
 
     /**
      * Prepare data from REST API request to displayable form.
@@ -83,14 +106,13 @@ function Iteration(props) {
      * @ metrics_chart_options: configuration of metrics chart
      * UseMemo is used for optimization purposes.
      * */
-    const [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts, image_charts] = useMemo(() => {
+    const [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts] = useMemo(() => {
         let parameters_names
         let parameters_values
         let metrics_names
         let metrics_values
         let metrics_chart_options
         let custom_charts = []
-        let image_charts = []
 
         if (iterationData) {
             if (iterationData.parameters) {
@@ -338,47 +360,87 @@ function Iteration(props) {
 
             }
 
-            if (iterationData.image_charts) {
-                iterationData.image_charts.forEach(image_chart => {
-                    if (image_chart.encoded_image.startsWith('/')) {
-                        image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
-                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
-                            </div>
-                        )
-                    } else if (image_chart.encoded_image.startsWith('i')) {
-                        image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
-                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
-                            </div>
-                        )
-                    } else if (image_chart.encoded_image.startsWith('R')) {
-                        image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
-                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
-                            </div>
-                        )
-                    } else if (image_chart.encoded_image.startsWith('Q')) {
-                        image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
-                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
-                            </div>
-                        )
-                    } else if (image_chart.encoded_image.startsWith('U')) {
-                        image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px"}}>
-                                <img className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
-                            </div>
-                        )
-                    }
-                })
-            }
-            return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts, image_charts]
+            return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts]
         }
-        return [null, null, null, null, null, null, null]
+        return [null, null, null, null, null, null]
     }, [iterationData])
 
+    const [image_charts, image_charts_sources] = useMemo(() => {
+        if (iterationData) {
+            let image_charts = []
+            let image_charts_sources = []
+            if (iterationData.image_charts) {
+                iterationData.image_charts.forEach((image_chart, index) => {
+                    if (image_chart.encoded_image.startsWith('/')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                                <img onClick={() => setLightBox(prevState => {
+                                    return {
+                                        isOpen: !prevState.isOpen,
+                                        key: (index + 1)
+                                    }
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                        image_charts_sources.push("data:image/jpeg;base64," + image_chart.encoded_image)
+                    } else if (image_chart.encoded_image.startsWith('i')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                                <img onClick={() => setLightBox(prevState => {
+                                    return {
+                                        isOpen: !prevState.isOpen,
+                                        key: (index + 1)
+                                    }
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                        image_charts_sources.push("data:image/png;base64," + image_chart.encoded_image)
+                    } else if (image_chart.encoded_image.startsWith('R')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                                <img onClick={() => setLightBox(prevState => {
+                                    return {
+                                        isOpen: !prevState.isOpen,
+                                        key: (index + 1)
+                                    }
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                        image_charts_sources.push("data:image/gif;base64," + image_chart.encoded_image)
+                    } else if (image_chart.encoded_image.startsWith('Q')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                                <img onClick={() => setLightBox(prevState => {
+                                    return {
+                                        isOpen: !prevState.isOpen,
+                                        key: (index + 1)
+                                    }
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                        image_charts_sources.push("data:image/bmp;base64," + image_chart.encoded_image)
+                    } else if (image_chart.encoded_image.startsWith('U')) {
+                        image_charts.push(
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                                <img onClick={() => setLightBox(prevState => {
+                                    return {
+                                        isOpen: !prevState.isOpen,
+                                        key: (index + 1)
+                                    }
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                            </div>
+                        )
+                        image_charts_sources.push("data:image/webp;base64," + image_chart.encoded_image)
+                    }
+                })
+                return [image_charts, image_charts_sources]
+            }
+        }
+        return [null, null]
+    },[iterationData, lightBox])
+
     console.log(iterationData)
+    console.log(image_charts_sources)
 
     /**
      * Component rendering.
@@ -573,14 +635,28 @@ function Iteration(props) {
 
                     <h5><span className="fw-semibold">Image charts</span></h5>
 
-                    {image_charts.length > 0 ?
-                        image_charts
+                    {image_charts && image_charts.length > 0 ?
+
+                        <>
+                            <FsLightbox
+                                toggler={lightBox.isOpen}
+                                sources={image_charts_sources}
+                                slide={lightBox.key}
+                            />
+
+                            <Masonry
+                                breakpointCols={breakpointColumnsObj}
+                                className="my-masonry-grid"
+                                columnClassName="my-masonry-grid_column">
+                                {image_charts}
+                            </Masonry>
+
+                        </>
 
                         :
 
                         <p><span className="fst-italic">No image charts to show!</span></p>
                     }
-
 
                 </section>
 

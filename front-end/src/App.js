@@ -14,6 +14,8 @@ import Experiments from "./pages/Experiments";
 import Iteration from "./pages/Iteration";
 import Datasets from "./pages/Datasets";
 import IterationsCompare from "./pages/IterationsCompare";
+import Searchbar from "./components/Searchbar";
+import {createContext, useState} from "react";
 function App() {
 
     let perfEntries = performance.getEntriesByType("navigation");
@@ -27,17 +29,16 @@ function App() {
             <Helmet>
                 {/*<script src="./js/main.js" type="text/babel"></script>*/}
             </Helmet>
-
-            <Navigation />
-
-            <Routes>
-                <Route exact path='/' element={<Navigate replace={true} to="/projects" />} />
-                <Route path='/projects' exact element={<Projects />} />
-                <Route path='/projects/:project_id/experiments' exact element={<Experiments />} />
-                <Route path='/projects/:project_id/experiments/:experiment_id/iterations/:iteration_id' exact element={<Iteration />} />
-                <Route path="/projects/:project_id/iterations-compare" exact element={<IterationsCompare />} />
-                <Route path='/datasets' exact element={<Datasets />} />
-            </Routes>
+                <Navigation />
+                <Routes>
+                    <Route exact path='/' element={<Navigate replace={true} to="/projects" />} />
+                    <Route path='/projects' exact element={<Projects />} />
+                    <Route path='/projects/:project_id/experiments' exact element={<Experiments />} />
+                    <Route path='/projects/:project_id/experiments/:experiment_id/iterations/:iteration_id' exact element={<Iteration /> } />
+                    <Route path="/projects/:project_id/iterations-compare" exact element={<IterationsCompare />} />
+                    <Route path='/datasets' exact element={<Datasets />} />
+                    <Route path='/searchbar' exact element={<Searchbar />} />
+                </Routes>
         </BrowserRouter>
     );
 }

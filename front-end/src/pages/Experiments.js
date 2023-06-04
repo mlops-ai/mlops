@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
-import {useParams, useNavigate, useSearchParams} from "react-router-dom";
+import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
+import {useParams, useNavigate, useSearchParams, useLocation} from "react-router-dom";
 import ExperimentListItem from "../components/experiments/ExperimentListItem";
 import Iterations from "../components/Iterations";
 import {toast, ToastContainer} from "react-toastify";
@@ -19,6 +19,11 @@ function Experiments(props) {
      * React hook for search params.
      * */
     const [searchParams, setSearchParams] = useSearchParams();
+
+    /**
+     * React location hook.
+     * */
+    let location = useLocation();
 
     /**
      * Import library for date manipulation.
@@ -125,7 +130,7 @@ function Experiments(props) {
      * React hook for executing code after component mounting (after rendering).
      * */
     useEffect(() => {
-
+        setProjectData(null)
         fetch('http://localhost:8000/projects/' + project_id)
             .then(response => {
                 if (response.ok) {
@@ -184,7 +189,7 @@ function Experiments(props) {
             .catch((response) => {
                 navigate('/projects')
             });
-    }, []);
+    }, [location.pathname]);
 
     /**
      * Handle multiple experiment display on checkbox click action.
@@ -655,74 +660,6 @@ function Experiments(props) {
             })
         });
     }
-
-    // /**
-    //  * Variable containing number of iterations in experiments chart data.
-    //  * UseMemo is used for optimization purposes.
-    //  * */
-    // const chart_data = useMemo(() => {
-    //     let chart_data;
-    //     let counts;
-    //
-    //     if (projectData) {
-    //         counts = projectData.experiments.map((experiment) => {
-    //             return {
-    //                 experiment_name: experiment.name,
-    //                 iterations: experiment.iterations.length
-    //             }
-    //         })
-    //
-    //         let experiments_names = counts.map((experiment) => experiment.experiment_name);
-    //         let experiments_values = counts.map((experiment) => experiment.iterations);
-    //
-    //         let series = experiments_names.map((name, index) => {
-    //             let data = Array(experiments_names.length).fill(0)
-    //             data[index] = experiments_values[index]
-    //             return {
-    //                 name: name,
-    //                 data: data,
-    //                 type: 'bar',
-    //                 stack: 'stack',
-    //             }
-    //         })
-    //
-    //         if (experiments_names.length > 0) {
-    //             chart_data = {
-    //                 toolbox: {
-    //                     show: true,
-    //                     feature: {
-    //                         saveAsImage: {
-    //                             type: 'png'
-    //                         },
-    //                     },
-    //                 },
-    //                 title: {
-    //                     text: "Number of iterations in experiments",
-    //                     left: 'center',
-    //                 },
-    //                 xAxis: {
-    //                     type: "category",
-    //                     data: experiments_names,
-    //                 },
-    //                 "yAxis": {
-    //                     "type": "value"
-    //                 },
-    //                 tooltip: {},
-    //                 legend: {
-    //                     data: experiments_names,
-    //                     orient: 'horizontal',
-    //                     left: 'center',
-    //                     top: 30,
-    //                 },
-    //                 series: series
-    //             }
-    //         } else {
-    //             return null
-    //         }
-    //         return chart_data
-    //     }
-    //     return null
-    // })
 
     /**
      * Variable containing all experiments.
