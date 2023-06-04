@@ -1,5 +1,6 @@
 import os
 import requests
+import validators
 
 from datetime import datetime
 from typing import List, Optional
@@ -227,12 +228,9 @@ async def validate_path(value):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Path or URL is empty. "
                                                                           "Please, enter path or URL.")
 
-    if os.path.isfile(r'{}'.format(value)):
+    # if value is not url type, just return it as it is
+    if not validators.url(value):
         return value
-    else:
-        os.chdir('/')  # Change the current working directory to the root directory
-        if os.path.isfile(r'{}'.format(value)):
-            return value
 
     try:
         response = requests.head(value)
@@ -243,4 +241,4 @@ async def validate_path(value):
                                                                               "returns an error.")
     except requests.exceptions.RequestException:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid URL or unable to connect to "
-                                                                          "the URL or invalid path.")
+                                                                          "the URL.")
