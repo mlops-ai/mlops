@@ -6,6 +6,7 @@ import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingData from "../components/LoadingData";
 import custom_theme from "../js/customed.json";
+import {OptionsContext} from "../App";
 
 /**
  * Experiments component for displaying list of experiments and iterations grid.
@@ -36,6 +37,11 @@ function Experiments(props) {
     const closeModalRef = useRef();
     const closeDeleteModalRef = useRef();
     const closeEditModalRef = useRef();
+
+    /**
+     * React content hook for refreshing options list after changing data in database.
+     * */
+    const [refresher, setRefresher] = useContext(OptionsContext);
 
     /**
      * Get :project_id param from url.
@@ -384,6 +390,7 @@ function Experiments(props) {
                 })
             }
 
+            setRefresher(prevRefresher => prevRefresher + 1)
 
             toast.success('Experiment created successfully!', {
                 position: "bottom-center",
@@ -522,6 +529,8 @@ function Experiments(props) {
                 }
             })
 
+            setRefresher(prevRefresher => prevRefresher + 1)
+
             toast.success('Experiment updated successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -629,6 +638,8 @@ function Experiments(props) {
                     }
                 })
             }
+
+            setRefresher(prevRefresher => prevRefresher + 1)
 
             toast.success('Experiment deleted successfully!', {
                 position: "bottom-center",

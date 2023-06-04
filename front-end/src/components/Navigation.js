@@ -3,7 +3,7 @@ import {Github} from "react-bootstrap-icons";
 import {useLocation} from "react-router-dom";
 
 import AppLogo from "./topbar-navbar/AppLogo";
-import Searchbar from "./Searchbar";
+import Searchbar from "./topbar-navbar/Searchbar";
 import RightPanel from "./topbar-navbar/RightPanel";
 import NavItem from "./sidebar/NavItem";
 

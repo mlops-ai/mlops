@@ -14,8 +14,11 @@ import Experiments from "./pages/Experiments";
 import Iteration from "./pages/Iteration";
 import Datasets from "./pages/Datasets";
 import IterationsCompare from "./pages/IterationsCompare";
-import Searchbar from "./components/Searchbar";
-import {createContext, useState} from "react";
+import Searchbar from "./components/topbar-navbar/Searchbar";
+import {createContext, useContext, useState} from "react";
+
+export const OptionsContext = createContext()
+
 function App() {
 
     let perfEntries = performance.getEntriesByType("navigation");
@@ -24,11 +27,14 @@ function App() {
         window.location.reload();
     }
 
+    const [refresher, setRefresher] = useState(0)
+
     return (
         <BrowserRouter>
             <Helmet>
                 {/*<script src="./js/main.js" type="text/babel"></script>*/}
             </Helmet>
+            <OptionsContext.Provider value={[refresher, setRefresher]}>
                 <Navigation />
                 <Routes>
                     <Route exact path='/' element={<Navigate replace={true} to="/projects" />} />
@@ -39,6 +45,7 @@ function App() {
                     <Route path='/datasets' exact element={<Datasets />} />
                     <Route path='/searchbar' exact element={<Searchbar />} />
                 </Routes>
+            </OptionsContext.Provider>
         </BrowserRouter>
     );
 }
