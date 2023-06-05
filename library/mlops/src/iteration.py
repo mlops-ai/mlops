@@ -1,10 +1,9 @@
-import mlops.tracking
+import requests
+import os
+
 from mlops.config.config import settings
 from mlops.exceptions.tracking import request_failed_exception
-from mlops.src.dataset import Dataset
-import requests
-from mlops.exceptions.iteration import iteration_request_failed_exception
-
+from mlops.exceptions.iteration import iteration_request_failed_exception, model_path_not_exist_exception
 
 
 class Iteration:
@@ -22,10 +21,18 @@ class Iteration:
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
+        self.dataset_name: str = None
+        self.has_dataset: bool = False
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
             '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('/', '\\')
+
+    def path_to_model_exists(self):
+        if os.path.exists(self.path_to_model) or self.path_to_model == "":
+            return True
+        else:
+            raise model_path_not_exist_exception()
 
     def log_model_name(self, model_name: str):
         """
@@ -43,8 +50,8 @@ class Iteration:
         Args:
             path_to_model: input path to model
         """
-
         self.path_to_model = path_to_model
+        self.format_path()
 
     def log_metric(self, metric_name: str, value):
         """
@@ -99,7 +106,7 @@ class Iteration:
         if app_response.status_code == 200:
             self.dataset_name = response_json["dataset_name"]
             self.dataset_id = dataset_id
-            self.hasDataset = True
+            self.has_dataset = True
         else:
             raise request_failed_exception(app_response)
 
@@ -110,8 +117,8 @@ class Iteration:
         Returns:
             iteration: json data of created iteration
         """
+        self.path_to_model_exists()
 
-        self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:

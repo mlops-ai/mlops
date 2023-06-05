@@ -215,6 +215,42 @@ async def test_start_iteration_with_multiple_params_and_metrics(setup):
 
 
 @pytest.mark.asyncio
+async def test_start_iteration_with_path_to_model(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration')
+        iteration.log_path_to_model('../../mlops/tracking.py')
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['path_to_model'] == '..\\..\\mlops\\tracking.py'
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_invalid_path_to_model(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                            experiment_id=experiment['id']) as iteration:
+            iteration.log_model_name('test_iteration')
+            iteration.log_path_to_model('INVALID PATH')
+
+        result = iteration.end_iteration()
+
+    assert str(exc_info.value) == 'Provided model path does not exist.'
+
+
+@pytest.mark.asyncio
 async def test_start_iteration_with_dataset(setup):
     await drop_database()
 

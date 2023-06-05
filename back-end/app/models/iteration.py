@@ -1,4 +1,3 @@
-import os
 import getpass
 from pydantic import Field, BaseModel, validator
 from datetime import datetime
@@ -6,8 +5,6 @@ from typing import Optional, Dict, List
 from beanie import PydanticObjectId
 from app.models.chart import InteractiveChart
 from app.models.image_chart import ImageChart
-
-from app.routers.exceptions.iteration import model_path_not_exist_exception
 
 
 class DatasetInIteration(BaseModel):
@@ -60,21 +57,6 @@ class Iteration(BaseModel):
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
     interactive_charts: Optional[List[InteractiveChart]] = Field(default=None, description="Interactive charts list")
     image_charts: Optional[List[ImageChart]] = Field(default=None, description="Image charts list")
-
-    @validator('path_to_model')
-    def path_to_model_exists(cls, path):
-        if not path:
-            return path
-        path = r'{}'.format(path)
-        if os.path.isfile(path):
-            return path
-        else:
-            # Change the current working directory to the root directory
-            os.chdir('/')
-            if os.path.isfile(path):
-                return path
-            else:
-                raise model_path_not_exist_exception()
 
     def __repr__(self) -> str:
         return f"<Iteration {self.iteration_name}>"

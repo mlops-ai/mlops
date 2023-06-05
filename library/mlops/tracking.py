@@ -7,6 +7,8 @@ from mlops.exceptions.tracking import project_id_is_none_exception, experiment_i
     failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_exception
 from typing import ContextManager
 
+from mlops.exceptions.iteration import model_path_not_exist_exception
+
 
 def get_project(project_id: str = None) -> dict:
     """
@@ -205,6 +207,29 @@ def set_active_experiment(experiment_id: str) -> str:
     return f"Active experiment set to: {settings.active_experiment_id}"
 
 
+def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
+                   tags: str = None, version: str = None) -> dict:
+    """
+    Function for creating mlops datasets
+
+    Args:
+        dataset_name: name of the created dataset
+        path_to_dataset: path to dataset files
+        dataset_description: short description of the dataset displayed in the app
+        tags: tags for dataset
+        version: version of the dataset
+
+    Returns:
+        dataset: json data of created dataset
+    """
+
+    dataset = Dataset(dataset_name, path_to_dataset, dataset_description, tags, version)
+
+    app_response = dataset.create_dataset_in_app()
+
+    return app_response
+
+
 @contextmanager
 def start_iteration(iteration_name: str, project_id: str = None,
                     experiment_id: str = None) -> ContextManager[Iteration]:
@@ -237,27 +262,3 @@ def start_iteration(iteration_name: str, project_id: str = None,
         yield iteration
     finally:
         iteration.end_iteration()
-
-
-def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
-                   tags: str = None, version: str = None) -> dict:
-    """
-    Function for creating mlops datasets
-
-    Args:
-        dataset_name: name of the created dataset
-        path_to_dataset: path to dataset files
-        dataset_description: short description of the dataset displayed in the app
-        tags: tags for dataset
-        version: version of the dataset
-
-    Returns:
-        dataset: json data of created dataset
-    """
-
-    dataset = Dataset(dataset_name, path_to_dataset, dataset_description, tags, version)
-
-    app_response = dataset.create_dataset_in_app()
-
-    return app_response
-

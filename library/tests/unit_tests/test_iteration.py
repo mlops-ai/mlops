@@ -72,7 +72,8 @@ def test_single_backslash_path_formatting(setup):
 
 
 def test_log_dataset(setup):
-    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset')
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset="https://www.kaggle.com/c/titanic/data")
 
     iteration = Iteration(
         iteration_name='test_iteration',
@@ -82,4 +83,4 @@ def test_log_dataset(setup):
 
     iteration.log_dataset(dataset["_id"])
 
-    assert iteration.dataset.dataset_name == 'test_dataset'
+    assert iteration.dataset_name == 'test_dataset'
