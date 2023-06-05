@@ -1,9 +1,14 @@
 import requests
 import os
+import base64
 
 from mlops.config.config import settings
 from mlops.exceptions.tracking import request_failed_exception
-from mlops.exceptions.iteration import iteration_request_failed_exception, model_path_not_exist_exception
+from mlops.exceptions.iteration import (
+    iteration_request_failed_exception,
+    model_path_not_exist_exception,
+    image_path_not_exist_exception
+)
 
 
 class Iteration:
@@ -23,16 +28,38 @@ class Iteration:
         self.dataset_id: str = None
         self.dataset_name: str = None
         self.has_dataset: bool = False
+        self.exception_occurred: bool = False
+        self.image_charts: list = []
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
             '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('/', '\\')
 
-    def path_to_model_exists(self):
+    def path_to_model_exists(self) -> bool:
+        """
+        Checking if path to model exists.
+
+        Returns:
+            True if path to model exists, Exception otherwise.
+        """
         if os.path.exists(self.path_to_model) or self.path_to_model == "":
             return True
         else:
+            self.exception_occurred = True
             raise model_path_not_exist_exception()
+
+    def path_to_image_chart_exists(self, path) -> bool:
+        """
+        Checking if path to image chart exists.
+
+        Returns:
+            True if path to image chart exists, Exception otherwise.
+        """
+        if os.path.exists(path):
+            return True
+        else:
+            self.exception_occurred = True
+            raise image_path_not_exist_exception()
 
     def log_model_name(self, model_name: str):
         """
@@ -52,6 +79,7 @@ class Iteration:
         """
         self.path_to_model = path_to_model
         self.format_path()
+        self.path_to_model_exists()
 
     def log_metric(self, metric_name: str, value):
         """
@@ -110,19 +138,37 @@ class Iteration:
         else:
             raise request_failed_exception(app_response)
 
-    def end_iteration(self) -> dict:
+    def log_image_chart(self, name: str, image_path: str):
+        """
+        Logging image chart
+
+        Args:
+            image_path: path to the image chart
+            name: name of the image chart
+        """
+        self.path_to_image_chart_exists(image_path)
+        with open(image_path, "rb") as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+        self.image_charts.append({"name": name, "encoded_image": encoded_image})
+
+    def end_iteration(self) -> dict or None:
         """
         End iteration and send data to API.
 
         Returns:
             iteration: json data of created iteration
         """
-        self.path_to_model_exists()
+        if self.exception_occurred:
+            return  # prevent sending data to API if exception occurred before, on logging
 
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:
             dataset = None
+
+        if not self.image_charts:
+            self.image_charts = None
 
         data = {
             "user_name": self.user_name,
@@ -131,7 +177,8 @@ class Iteration:
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
             "model_name": self.model_name,
-            "dataset": dataset
+            "dataset": dataset,
+            "image_charts": self.image_charts
         }
 
         app_response = requests.post(

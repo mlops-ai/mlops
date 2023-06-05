@@ -244,7 +244,6 @@ def start_iteration(iteration_name: str, project_id: str = None,
     Returns:
         Iteration.end_iteration() method output
     """
-
     project_id = settings.active_project_id if not project_id else project_id
     experiment_id = settings.active_experiment_id if not experiment_id else experiment_id
 

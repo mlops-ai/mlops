@@ -523,6 +523,9 @@ async def test_add_iteration_with_image_charts(client: AsyncClient):
     experiment_id = response.json()["id"]
 
     input_image_path = os.path.join(os.path.dirname(__file__), "test_files", "test_image_chart.png")
+    with open(input_image_path, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
     iteration = {
         "iteration_name": "Test iteration with different amounts of x and y",
         "metrics": {
@@ -532,7 +535,7 @@ async def test_add_iteration_with_image_charts(client: AsyncClient):
         "image_charts": [
             {
                 "name": "Test chart 1",
-                "image_path": input_image_path
+                "encoded_image": encoded_image
             }
         ]
     }
@@ -549,46 +552,6 @@ async def test_add_iteration_with_image_charts(client: AsyncClient):
 
     # test if two images are the same
     assert open(input_image_path, "rb").read() == open(output_image_path, "rb").read()
-
-
-@pytest.mark.asyncio
-async def test_add_iteration_with_image_charts_failure(client: AsyncClient):
-    """
-    Test add iteration with image charts from .jpg with invalid path.
-
-    Args:
-        client (AsyncClient): Async client fixture
-
-    Returns:
-        None
-    """
-    project_title = "Test project"
-    response = await client.get(f"/projects/title/{project_title}")
-    project_id = response.json()["_id"]
-
-    experiment_name = "Test experiment"
-    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
-    experiment_id = response.json()["id"]
-
-    input_image_path = os.path.join(os.path.dirname(__file__), "invalid_folder", "invalid_image.png")
-    iteration = {
-        "iteration_name": "Test iteration with different amounts of x and y",
-        "metrics": {
-            "accuracy": 0.9},
-        "parameters": {
-            "learning_rate": 0.01},
-        "image_charts": [
-            {
-                "name": "Test chart invalid",
-                "image_path": input_image_path
-            }
-        ]
-    }
-
-    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
-
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Image path does not exist."
 
 
 @pytest.mark.asyncio
