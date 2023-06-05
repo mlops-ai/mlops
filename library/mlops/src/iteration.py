@@ -167,9 +167,6 @@ class Iteration:
         else:
             dataset = None
 
-        if not self.image_charts:
-            self.image_charts = None
-
         data = {
             "user_name": self.user_name,
             "iteration_name": self.iteration_name,

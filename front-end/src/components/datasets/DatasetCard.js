@@ -75,7 +75,7 @@ function DatasetCard(props) {
                         <div className="more-action ps-3">
                                 <span className="more-action-button material-symbols-rounded" data-bs-toggle="dropdown"
                                       title="Dataset actions">
-                                    more_horiz
+                                    more_vert
                                 </span>
 
                             {!props.datasetIsArchived ?
