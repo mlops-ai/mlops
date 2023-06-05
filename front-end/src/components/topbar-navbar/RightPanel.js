@@ -17,11 +17,11 @@ function RightPanel(props) {
                     </a>
                 </li>
 
-                <Notifications />
+                {/*<Notifications />*/}
 
-                <Messages />
+                {/*<Messages />*/}
 
-                <ProfileNav />
+                {/*<ProfileNav />*/}
 
             </ul>
         </nav>

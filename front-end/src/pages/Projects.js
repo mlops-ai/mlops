@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
 
 import Masonry from "react-masonry-css";
 
@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ProjectCard from "../components/projects/ProjectCard";
 import LoadingData from "../components/LoadingData";
 import Toast from "../components/Toast";
+import {OptionsContext} from "../App";
 
 /**
  * Project page component for displaying projects.
@@ -26,6 +27,11 @@ function Projects(props) {
     const closeArchiveModalRef = useRef();
     const closeRestoreModalRef = useRef();
     const closeEditModalRef = useRef();
+
+    /**
+     * React content hook for refreshing options list after changing data in database.
+     * */
+    const [refresher, setRefresher] = useContext(OptionsContext);
 
     /**
      * Import library for date manipulation.
@@ -206,6 +212,8 @@ function Projects(props) {
                 return [...prevAllProjectData, json]
             })
 
+            setRefresher(prevRefresher => prevRefresher + 1)
+
             toast.success('Project created successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -346,6 +354,8 @@ function Projects(props) {
                 return projects_copy
             })
 
+            setRefresher(prevRefresher => prevRefresher + 1)
+
             toast.success('Project updated successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -409,6 +419,8 @@ function Projects(props) {
             setAllProjects(prevState => {
                 return prevState.filter(project => project._id !== currentProjectData._id)
             })
+
+            setRefresher(prevRefresher => prevRefresher + 1)
 
             toast.success('Project deleted successfully!', {
                 position: "bottom-center",

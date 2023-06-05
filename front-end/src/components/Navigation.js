@@ -36,6 +36,7 @@ function Navigation(props) {
 
                 <AppLogo toogleSidebar={toggleSidebar}/>
 
+                {/*<Searchbar />*/}
                 <Searchbar />
 
                 <RightPanel toggleSearchbar={toggleSearchbar}/>

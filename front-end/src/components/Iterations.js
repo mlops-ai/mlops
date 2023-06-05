@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect, useMemo, useCallback} from 'react';
+import React, {useState, useRef, useEffect, useMemo, useCallback, useContext} from 'react';
 import {AgGridReact} from 'ag-grid-react';
 
 import 'ag-grid-community/styles/ag-grid.css';
@@ -15,6 +15,7 @@ import {
 } from "./iterations/columns_multiple";
 import {columns_data_single, columns_data_checked_single, columns_list_single} from "./iterations/columns_single";
 import {useNavigate} from "react-router-dom";
+import {OptionsContext} from "../App";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -40,6 +41,11 @@ function Iterations(props) {
      * Function for redirecting.
      * */
     let navigate = useNavigate();
+
+    /**
+     * React content hook for refreshing options list after changing data in database.
+     * */
+    const [refresher, setRefresher] = useContext(OptionsContext);
 
     /**
      * React ref hook for grid api.
@@ -213,6 +219,8 @@ function Iterations(props) {
                 }
             })
 
+            setRefresher(prevRefresher => prevRefresher + 1)
+
             toast.success('Iteration updated successfully!', {
                 position: "bottom-center",
                 autoClose: 3000,
@@ -309,6 +317,8 @@ function Iterations(props) {
                     })
                 }
             })
+
+            setRefresher(prevRefresher => prevRefresher + 1)
 
             toast.success('Iteration/s deleted successfully!', {
                 position: "bottom-center",

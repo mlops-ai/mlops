@@ -141,7 +141,8 @@ a:hover {
     * */
 
 .topbar-navbar .search-bar {
-    min-width: 420px;
+    min-width: 560px;
+    max-width: 560px;
     padding: 0 20px;
 }
 
@@ -157,6 +158,8 @@ a:hover {
         z-index: 9999;
         visibility: hidden;
         opacity: 0;
+        max-width: 100%;
+        min-width: 420px;
     }
 
     .topbar-navbar .search-bar-show {
@@ -1139,3 +1142,20 @@ button[data-bs-dismiss="modal"]:hover {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+.search-bar-main {
+    border: 1.5px solid rgba(1, 41, 112, 0.2);
+    border-radius: 6px;
+}
+
+.search-bar-main:hover, .search-bar-main:focus {
+    border: 1.5px solid var(--color-primary);
+    border-radius: 6px;
+}
+.css-13cymwt-control {
+    border: none;
+    max-height: 32px;
+}
+/*.css-t3ipsp-control, .css-t3ipsp-control:hover, .css-t3ipsp-control:focus, .css-13cymwt-control, .css-13cymwt-control{*/
+/*    border: 1.5px solid var(--color-primary);*/
+/*}*/
