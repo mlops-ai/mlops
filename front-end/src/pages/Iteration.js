@@ -20,7 +20,7 @@ import Toast from "../components/Toast";
 import FsLightbox from "fslightbox-react";
 import Masonry from "react-masonry-css";
 
-import { PhotoProvider, PhotoView } from 'react-photo-view';
+import {PhotoProvider, PhotoView} from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
 /**
@@ -171,21 +171,260 @@ function Iteration(props) {
                 }
             }
             if (iterationData.interactive_charts) {
-                iterationData.interactive_charts.forEach(chart_data => {
+
+                function onlyNumbers(array) {
+                    return array.every(element => {
+                        return !isNaN(element);
+                    });
+                }
+
+                var min_value = (value) => {
+                    return Math.floor(value.min, 0);
+                }
+
+                var max_value = (value) => {
+                    return Math.ceil(value.max, 0);
+                }
+
+                console.log(iterationData)
+
+                iterationData.interactive_charts.forEach((chart_data, index) => {
                     let options;
+                    if (chart_data.chart_type === "line") {
 
-                    if (chart_data.chart_type === 'scatter') {
-                        let data = []
-
-                        var callback = (args) => {
-                            return args.marker + args.seriesName + ' (' + args.dataIndex +')<br />' + '(' + args.data.join(', ') + ')'
-                        }
-
-                        chart_data.x_data.forEach((value, index) => {
-                            data.push([chart_data.x_data[index], chart_data.y_data[index]])
+                        let x_type = 'value';
+                        chart_data.x_data.forEach(data => {
+                            if (!onlyNumbers(data)) {
+                                x_type = 'category'
+                            }
                         })
 
+                        let data = []
+
+                        if (chart_data.x_data.length === 1) {
+                            chart_data.y_data.forEach((data_y, index) => {
+                                let data_for_series = []
+                                chart_data.x_data[0].forEach((value, idx) => {
+                                    data_for_series.push([value, data_y[idx]])
+                                })
+                                data.push(data_for_series)
+                            })
+                        } else {
+                            chart_data.y_data.forEach((data_y, index) => {
+                                let data_for_series = []
+                                chart_data.x_data[index].forEach((value, idx) => {
+                                    data_for_series.push([value, data_y[idx]])
+                                })
+                                data.push(data_for_series)
+                            })
+                        }
+
+                        let series_data = [];
+
+                        if (data.length >= 2) {
+                            data.forEach((val, index) => {
+                                series_data.push(
+                                    {
+                                        name: chart_data.y_data_names && chart_data.y_data_names.length > 0 ? chart_data.y_data_names[index] : iterationData.iteration_name + ' (' + (index + 1) + ')',
+                                        data: val,
+                                        type: chart_data.chart_type,
+                                        showSymbol: false,
+                                        emphasis: {
+                                            focus: 'series'
+                                        },
+                                    },
+                                )
+                            })
+                        } else {
+                            series_data.push(
+                                {
+                                    name: chart_data.y_data_names && chart_data.y_data_names.length > 0 ? chart_data.y_data_names[0] : iterationData.iteration_name,
+                                    data: data[0],
+                                    type: chart_data.chart_type,
+                                    showSymbol: false,
+                                    emphasis: {
+                                        focus: 'series'
+                                    },
+                                },
+                            )
+                        }
+
                         options = {
+                            // Tytuł i podtytuł wykresu
+                            title: {
+                                text: chart_data.chart_title ? chart_data.chart_title : '',
+                                subtext: chart_data.chart_subtitle ? chart_data.chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
+                            },
+                            // Legenda
+                            legend: {
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
+                            },
+                            // Siatka
+                            grid: {
+                                show: true,
+                            },
+                            // Oś X
+                            xAxis: {
+                                type: x_type,
+                                name: chart_data.x_label ? chart_data.x_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: chart_data.x_min ? chart_data.x_min : min_value,
+                                max: chart_data.x_max ? chart_data.x_max : max_value,
+                            },
+                            // Oś Y
+                            yAxis: {
+                                type: 'value',
+                                name: chart_data.y_label ? chart_data.y_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: chart_data.y_min ? chart_data.y_min : min_value,
+                                max: chart_data.y_max ? chart_data.y_max : max_value,
+                            },
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'axis',
+                                // formatter: callback,
+                            },
+                            // Toolbox
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: "none"
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            // Dane
+                            series: series_data
+                        }
+                    } else if (chart_data.chart_type === 'scatter') {
+                        var callback = (args) => {
+                            return args.marker + args.seriesName + ' (' + args.dataIndex + ')<br />' + '(' + args.data.join(', ') + ')'
+                        }
+
+                        let x_type = 'value';
+                        chart_data.x_data.forEach(data => {
+                            if (!onlyNumbers(data)) {
+                                x_type = 'category'
+                            }
+                        })
+
+                        let data = []
+
+                        if (chart_data.x_data.length === 1) {
+                            chart_data.y_data.forEach((data_y, index) => {
+                                let data_for_series = []
+                                chart_data.x_data[0].forEach((value, idx) => {
+                                    data_for_series.push([value, data_y[idx]])
+                                })
+                                data.push(data_for_series)
+                            })
+                        } else {
+                            chart_data.y_data.forEach((data_y, index) => {
+                                let data_for_series = []
+                                chart_data.x_data[index].forEach((value, idx) => {
+                                    data_for_series.push([value, data_y[idx]])
+                                })
+                                data.push(data_for_series)
+                            })
+                        }
+
+                        let series_data = [];
+
+                        if (data.length >= 2) {
+                            data.forEach((val, index) => {
+                                series_data.push(
+                                    {
+                                        name: chart_data.y_data_names && chart_data.y_data_names.length > 0 ? chart_data.y_data_names[index] : iterationData.iteration_name + ' (' + (index + 1) + ')',
+                                        data: val,
+                                        type: chart_data.chart_type,
+                                        showSymbol: false,
+                                        emphasis: {
+                                            focus: 'series'
+                                        },
+                                    },
+                                )
+                            })
+                        } else {
+                            series_data.push(
+                                {
+                                    name: chart_data.y_data_names && chart_data.y_data_names.length > 0 ? chart_data.y_data_names[0] : iterationData.iteration_name,
+                                    data: data[0],
+                                    type: chart_data.chart_type,
+                                    showSymbol: false,
+                                    emphasis: {
+                                        focus: 'series'
+                                    },
+                                },
+                            )
+                        }
+
+                        options = {
+                            // Tytuł i podtytuł wykresu
+                            title: {
+                                text: chart_data.chart_title ? chart_data.chart_title : '',
+                                subtext: chart_data.chart_subtitle ? chart_data.chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
+                            },
+                            // Legenda
+                            legend: {
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
+                            },
+                            // Siatka
+                            grid: {
+                                show: true,
+                            },
+                            // Oś X
+                            xAxis: {
+                                type: x_type,
+                                name: chart_data.x_label ? chart_data.x_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: chart_data.x_min ? chart_data.x_min : min_value,
+                                max: chart_data.x_max ? chart_data.x_max : max_value,
+                            },
+                            // Oś Y
+                            yAxis: {
+                                type: 'value',
+                                name: chart_data.y_label ? chart_data.y_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                                min: chart_data.y_min ? chart_data.y_min : min_value,
+                                max: chart_data.y_max ? chart_data.y_max : max_value,
+                            },
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: callback,
+                            },
+                            // Toolbox
                             toolbox: {
                                 feature: {
                                     dataZoom: {
@@ -201,163 +440,244 @@ function Iteration(props) {
                                     saveAsImage: {},
                                 }
                             },
-                            title: {
-                                left: 'center',
-                                text: chart_data.chart_name ? chart_data.chart_name : '',
-                            },
-                            tooltip: {
-                                trigger: 'item',
-                                formatter: callback,
-                            },
-                            legend: {
-                                top: 'bottom'
-                            },
-                            yAxis: {
-                                type: 'value',
-                                name: chart_data.y_label,
-                                nameLocation: 'center',
-                                nameGap: 30,
-                            },
-                            xAxis: {
-                                type: 'value',
-                                name: chart_data.x_label,
-                                nameLocation: 'center',
-                                nameGap: 30,
-                            },
-                            series: [
-                                {
-                                    name: iterationData.iteration_name,
-                                    data: data,
-                                    type: chart_data.chart_type,
-                                },
-                            ]
+                            // Dane
+                            series: series_data
                         }
-                        custom_charts.push(
-                            <div className="card p-2">
-                                <ReactEcharts option={options} theme="customed"/>
-                            </div>
-                        )
-                    } else if (chart_data.chart_type === 'line') {
-
-                        let data = []
-
-                        var callback = (args) => {
-                            return args[0].marker + args[0].seriesName + ' (' + args[0].dataIndex +')<br />' + '(' + args[0].data.join(', ') + ')'
-                        }
-
-                        chart_data.x_data.forEach((value, index) => {
-                            data.push([chart_data.x_data[index], chart_data.y_data[index]])
-                        })
-
-                        options = {
-                            toolbox: {
-                                feature: {
-                                    dataZoom: {
-                                        show: true,
-                                        yAxisIndex: "none"
-                                    },
-                                    brush: {
-                                        type: 'polygon',
-                                    },
-                                    restore: {
-                                        show: true,
-                                    },
-                                    saveAsImage: {},
-                                }
-                            },
-                            title: {
-                                left: 'center',
-                                text: chart_data.chart_name ? chart_data.chart_name : '',
-                            },
-                            tooltip: {
-                                trigger: 'axis',
-                                formatter: callback,
-                            },
-                            legend: {
-                                top: 'bottom'
-                            },
-                            yAxis: {
-                                type: 'value',
-                                name: chart_data.y_label,
-                                nameLocation: 'center',
-                                nameGap: 30,
-                            },
-                            xAxis: {
-                                type: 'value',
-                                name: chart_data.x_label,
-                                nameLocation: 'center',
-                                nameGap: 30,
-                            },
-                            series: [
-                                {
-                                    name: iterationData.iteration_name,
-                                    data: data,
-                                    type: chart_data.chart_type,
-                                    showSymbol: false
-                                },
-                            ]
-                        }
-                        custom_charts.push(
-                            <div className="card p-2">
-                                <ReactEcharts option={options} theme="customed"/>
-                            </div>
-                        )
                     } else if (chart_data.chart_type === 'bar') {
+
+                        let series_data = [];
+
+                        if (chart_data.y_data.length >= 2) {
+                            chart_data.y_data.forEach((val, index) => {
+                                series_data.push(
+                                    {
+                                        name: chart_data.x_data ? chart_data.x_data[0][index] : iterationData.iteration_name + ' (' + (index + 1) + ')',
+                                        data: val,
+                                        type: chart_data.chart_type,
+                                        showSymbol: false,
+                                        emphasis: {
+                                            focus: 'series'
+                                        },
+                                    },
+                                )
+                            })
+                        } else {
+                            series_data.push(
+                                {
+                                    name: iterationData.iteration_name,
+                                    data: chart_data.y_data[0],
+                                    type: chart_data.chart_type,
+                                    showSymbol: false,
+                                    emphasis: {
+                                        focus: 'series'
+                                    },
+                                },
+                            )
+                        }
+
                         options = {
-                            toolbox: {
-                                feature: {
-                                    dataZoom: {
-                                        show: true,
-                                        yAxisIndex: "none"
-                                    },
-                                    brush: {
-                                        type: 'polygon',
-                                    },
-                                    restore: {
-                                        show: true,
-                                    },
-                                    saveAsImage: {},
-                                }
-                            },
+                            // Tytuł i podtytuł wykresu
                             title: {
-                                left: 'center',
-                                text: chart_data.chart_name ? chart_data.chart_name : '',
+                                text: chart_data.chart_title ? chart_data.chart_title : '',
+                                subtext: chart_data.chart_subtitle ? chart_data.chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
                             },
-                            tooltip: {
-                                trigger: 'item',
-                            },
+                            // Legenda
                             legend: {
-                                top: 'bottom'
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
                             },
-                            yAxis: {
-                                type: 'value',
-                                name: chart_data.y_label,
-                                nameLocation: 'center',
-                                nameGap: 30,
+                            // Siatka
+                            grid: {
+                                show: true,
                             },
+                            // Oś X
                             xAxis: {
                                 type: 'category',
-                                data: chart_data.x_data,
-                                name: chart_data.x_label,
+                                data: chart_data.x_data[0],
+                                name: chart_data.x_label ? chart_data.x_label : '',
                                 nameLocation: 'center',
                                 nameGap: 30,
                             },
-                            series: [
-                                {
-                                    name: iterationData.iteration_name,
-                                    data: chart_data.y_data,
-                                    type: chart_data.chart_type,
-                                },
-                            ]
+                            // Oś Y
+                            yAxis: {
+                                type: 'value',
+                                name: chart_data.y_label ? chart_data.y_label : '',
+                                nameLocation: 'center',
+                                nameGap: 30,
+                            },
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'item'
+                            },
+                            // Toolbox
+                            toolbox: {
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        yAxisIndex: "none"
+                                    },
+                                    brush: {
+                                        type: 'polygon',
+                                    },
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            // Dane
+                            series: series_data
                         }
-                        custom_charts.push(
-                            <div className="card p-2">
-                                <ReactEcharts option={options} theme="customed"/>
-                            </div>
-                        )
-                    }
-                })
+                    } else if (chart_data.chart_type === 'pie') {
+                        var callback = (args) => {
+                            return args.marker + args.seriesName + ' (' + args.dataIndex + ')<br />' + '(' + args.data.join(', ') + ')'
+                        }
 
+                        let data = [];
+
+                        chart_data.x_data[0].forEach((name, index) => {
+                            data.push(
+                                {
+                                    value: chart_data.y_data[0][index],
+                                    name: name
+                                }
+                            )
+                        })
+
+                        let series_data = [];
+
+                        series_data.push(
+                            {
+                                data: data,
+                                type: chart_data.chart_type,
+                                radius: '50%',
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                            },
+                        )
+
+                        options = {
+                            // Tytuł i podtytuł wykresu
+                            title: {
+                                text: chart_data.chart_title ? chart_data.chart_title : '',
+                                subtext: chart_data.chart_subtitle ? chart_data.chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
+                            },
+                            // Legenda
+                            legend: {
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
+                            },
+                            // Siatka
+                            grid: {
+                                show: false,
+                            },
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'item',
+                            },
+                            // Toolbox
+                            toolbox: {
+                                feature: {
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            // Dane
+                            series: series_data
+                        }
+                    } else if (chart_data.chart_type === "boxplot") {
+                        options = {
+                            // Tytuł i podtytuł wykresu
+                            title: {
+                                text: chart_data.chart_title ? chart_data.chart_title : '',
+                                subtext: chart_data.chart_subtitle ? chart_data.chart_subtitle : '',
+                                left: "center",
+                                textStyle: {
+                                    fontSize: 18,
+                                },
+                                subtextStyle: {
+                                    fontSize: 16
+                                },
+                            },
+                            // Legenda
+                            legend: {
+                                top: 'bottom',
+                                type: 'scroll',
+                                show: true,
+                                orient: 'horizontal',
+                            },
+                            // Siatka
+                            grid: {
+                                show: false,
+                            },
+                            // Tooltip
+                            tooltip: {
+                                trigger: 'item',
+                            },
+                            // Oś X
+                            xAxis: {
+                                type: 'value',
+                            },
+                            // Oś Y
+                            yAxis: {
+                                type: 'category',
+                                data: chart_data.x_data[0],
+                            },
+                            // Toolbox
+                            toolbox: {
+                                feature: {
+                                    restore: {
+                                        show: true,
+                                    },
+                                    saveAsImage: {},
+                                }
+                            },
+                            // Dane
+                            series: {
+                                type: 'boxplot',
+                                data: chart_data.y_data,
+                                itemStyle: {
+                                    color: '#b8c5f2'
+                                },
+                                encode: {
+                                    tooltip: [1, 2, 3, 4, 5],
+                                    x: [1, 2, 3, 4, 5],
+                                    y: 0,
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                            }
+                        }
+                    }
+                    custom_charts.push(
+                        <div className="card p-2">
+                            <ReactEcharts option={options}/>
+                        </div>
+                    )
+
+                })
             }
 
             return [parameters_names, parameters_values, metrics_names, metrics_values, metrics_chart_options, custom_charts]
@@ -373,61 +693,101 @@ function Iteration(props) {
                 iterationData.image_charts.forEach((image_chart, index) => {
                     if (image_chart.encoded_image.startsWith('/')) {
                         image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
+                                background: "#fff",
+                                borderRadius: 5 + "px",
+                                boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)",
+                                marginBottom: 30 + "px",
+                                cursor: "pointer"
+                            }}>
                                 <img onClick={() => setLightBox(prevState => {
                                     return {
                                         isOpen: !prevState.isOpen,
                                         key: (index + 1)
                                     }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                     src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push("data:image/jpeg;base64," + image_chart.encoded_image)
                     } else if (image_chart.encoded_image.startsWith('i')) {
                         image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
+                                background: "#fff",
+                                borderRadius: 5 + "px",
+                                boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)",
+                                marginBottom: 30 + "px",
+                                cursor: "pointer"
+                            }}>
                                 <img onClick={() => setLightBox(prevState => {
                                     return {
                                         isOpen: !prevState.isOpen,
                                         key: (index + 1)
                                     }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                     src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push("data:image/png;base64," + image_chart.encoded_image)
                     } else if (image_chart.encoded_image.startsWith('R')) {
                         image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
+                                background: "#fff",
+                                borderRadius: 5 + "px",
+                                boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)",
+                                marginBottom: 30 + "px",
+                                cursor: "pointer"
+                            }}>
                                 <img onClick={() => setLightBox(prevState => {
                                     return {
                                         isOpen: !prevState.isOpen,
                                         key: (index + 1)
                                     }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                     src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push("data:image/gif;base64," + image_chart.encoded_image)
                     } else if (image_chart.encoded_image.startsWith('Q')) {
                         image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
+                                background: "#fff",
+                                borderRadius: 5 + "px",
+                                boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)",
+                                marginBottom: 30 + "px",
+                                cursor: "pointer"
+                            }}>
                                 <img onClick={() => setLightBox(prevState => {
                                     return {
                                         isOpen: !prevState.isOpen,
                                         key: (index + 1)
                                     }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                     src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push("data:image/bmp;base64," + image_chart.encoded_image)
                     } else if (image_chart.encoded_image.startsWith('U')) {
                         image_charts.push(
-                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{background: "#fff",borderRadius: 5 + "px", boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)", marginBottom: 30 + "px", cursor: "pointer"}}>
+                            <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
+                                background: "#fff",
+                                borderRadius: 5 + "px",
+                                boxShadow: "0px 0 30px rgba(1, 41, 112, 0.1)",
+                                marginBottom: 30 + "px",
+                                cursor: "pointer"
+                            }}>
                                 <img onClick={() => setLightBox(prevState => {
                                     return {
                                         isOpen: !prevState.isOpen,
                                         key: (index + 1)
                                     }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}} src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name} title={image_chart.name} />
+                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                     src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push("data:image/webp;base64," + image_chart.encoded_image)
@@ -437,7 +797,7 @@ function Iteration(props) {
             }
         }
         return [null, null]
-    },[iterationData, lightBox])
+    }, [iterationData, lightBox])
 
     console.log(iterationData)
     console.log(image_charts_sources)
@@ -536,7 +896,7 @@ function Iteration(props) {
 
                     <h5><span className="fw-semibold">Dataset details</span></h5>
 
-                    { iterationData.dataset ?
+                    {iterationData.dataset ?
                         <div className="card p-2">
                             <div className="table-responsive">
                                 <table className="table">
@@ -578,7 +938,8 @@ function Iteration(props) {
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        {parameters_names && parameters_values.map(value => <td key={value}>{value}</td>)}
+                                        {parameters_names && parameters_values.map(value => <td
+                                            key={value}>{value}</td>)}
                                     </tr>
                                     </tbody>
                                 </table>
