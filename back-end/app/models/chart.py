@@ -101,17 +101,21 @@ class InteractiveChart(BaseModel):
                     detail="Length of x_data and y_data must be equal"
                 )
         elif chart_type == 'boxplot':
-            if len(x_data_list) != len(y_data_list):
+            if len(x_data_list) != 1:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Length of x_data and y_data must be equal"
+                    detail="x_data can only have one list of data"
                 )
-            for y_data in y_data_list:
-                if len(y_data) != 6:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Length of y_data must contain 6 values: min, q1, median, q3, max, outliers"
-                    )
+            if len(x_data_list[0]) != len(y_data_list):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Error: For each element in x_data, there must be a list of y_data"
+                )
+            if any(len(y_data) != 5 for y_data in y_data_list):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Length of y_data must contain 5 values: min, q1, median, q3, max"
+                )
 
         y_data_names = values.get('y_data_names', [])
         if len(y_data_names):
