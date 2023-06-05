@@ -1,7 +1,7 @@
 import getpass
-from pydantic import Field, BaseModel, validator
+from pydantic import Field, BaseModel
 from datetime import datetime
-from typing import Optional, Dict, List
+from typing import Optional, List
 from beanie import PydanticObjectId
 from app.models.chart import InteractiveChart
 from app.models.image_chart import ImageChart

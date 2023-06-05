@@ -134,10 +134,6 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
         if not unique_charts_names:
             raise chart_name_in_iteration_not_unique_exception()
 
-    if iteration.image_charts:
-        for image_chart in iteration.image_charts:
-            image_chart.encode_image_from_path()
-
     if iteration.dataset:
         dataset = await Dataset.get(iteration.dataset.id)
         if not dataset:

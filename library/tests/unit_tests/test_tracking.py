@@ -1,4 +1,7 @@
+import os
+
 import pytest
+import base64
 
 import mlops.tracking
 from app.config.config import settings as app_settings
@@ -271,3 +274,52 @@ async def test_start_iteration_with_dataset(setup):
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
     assert result['dataset']['name'] == 'test_dataset'
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_image_charts(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    input_image_path = os.path.join(os.path.dirname(__file__), "..", "test_files", "test_image_chart.png")
+    print(input_image_path)
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_image_chart('test_chart', input_image_path)
+
+    result = iteration.end_iteration()
+
+    assert result['image_charts'][0]['name'] == 'test_chart'
+    assert result['image_charts'][0]['encoded_image'] != ''
+
+    output_image_path = os.path.join(os.path.dirname(__file__), "..", "test_files", "output_image_chart.png")
+    with open(output_image_path, "wb") as output_image:
+        output_image.write(base64.b64decode(result["image_charts"][0]["encoded_image"]))
+
+    assert open(input_image_path, "rb").read() == open(output_image_path, "rb").read()
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_image_charts_failure(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                            experiment_id=experiment['id']) as iteration:
+            iteration.log_model_name('test_iteration.py')
+            iteration.log_parameter('test_parameter', 100)
+            iteration.log_metric('test_accuracy', 0.98)
+            iteration.log_image_chart('test_chart', "fake_image_path")
+
+        result = iteration.end_iteration()
+
+    assert str(exc_info.value) == 'Provided image path does not exist.'
