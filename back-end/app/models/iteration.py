@@ -55,8 +55,8 @@ class Iteration(BaseModel):
     path_to_model: Optional[str] = Field(default='', description="Path to model")
     model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
-    interactive_charts: Optional[List[InteractiveChart]] = Field(default=None, description="Interactive charts list")
-    image_charts: Optional[List[ImageChart]] = Field(default=None, description="Image charts list")
+    interactive_charts: Optional[List[InteractiveChart]] = Field(default=[], description="Interactive charts list")
+    image_charts: Optional[List[ImageChart]] = Field(default=[], description="Image charts list")
 
     def __repr__(self) -> str:
         return f"<Iteration {self.iteration_name}>"
@@ -89,18 +89,20 @@ class Iteration(BaseModel):
                 },
                 "interactive_charts": [
                     {
-                        "chart_name": "Chart 1",
-                        "chart_type": "line",
-                        "x_data": [1, 2, 3],
-                        "y_data": [1, 2, 3],
-                        "x_axis_name": "Age",
-                        "y_axis_name": "Survived"
+                        "name": "Chart name used for logical identification",
+                        "chart_title": "Chart title",
+                        "chart_type": "scatter",
+                        "x_data": [[1, 2, 3]],
+                        "y_data": [[1, 2, 3]],
+                        "x_label": "X label",
+                        "y_label": "Y label",
+                        "comparable": False
                     }
                 ],
                 "image_charts": [
                     {
                         "name": "Chart 1",
-                        "image_path": "image.png"
+                        "encoded_image": "..."
                     }
                 ]
             }
