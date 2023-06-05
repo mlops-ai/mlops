@@ -5,8 +5,6 @@ services:
     build:
       context: ./back-end
       dockerfile: Dockerfile
-    volumes:
-      - ./back-end:/app
     depends_on:
       - mongo
     env_file:
@@ -21,9 +19,6 @@ services:
     build:
       context: ./front-end
       dockerfile: Dockerfile
-    volumes:
-      - ./front-end:/app
-      - /app/node_modules
     env_file:
       - .env
     environment:

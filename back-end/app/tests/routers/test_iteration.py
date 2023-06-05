@@ -738,7 +738,7 @@ async def test_add_iteration_with_scatter_plots(client: AsyncClient):
             },
             {
                 "chart_type": "scatter",
-                "name": "scatter_plot-1",
+                "name": "scatter_plot-2",
                 "chart_title": "The number of deaths at different ages 2",
                 "chart_subtitle": "Source: World Bank",
                 "x_data": [[25, 45, 65], [15, 35, 55]],
@@ -757,7 +757,7 @@ async def test_add_iteration_with_scatter_plots(client: AsyncClient):
     assert response.json()["interactive_charts"][0]["chart_title"] == "The number of deaths at different ages"
     assert response.json()["interactive_charts"][0]["chart_subtitle"] == "Source: World Bank"
     assert response.json()["interactive_charts"][0]["x_data"] == [[20, 40, 60], [10, 30, 50]]
-    assert response.json()["interactive_charts"][1]["name"] == "scatter_plot-1"
+    assert response.json()["interactive_charts"][1]["name"] == "scatter_plot-2"
     assert response.json()["interactive_charts"][1]["chart_title"] == "The number of deaths at different ages 2"
     assert response.json()["interactive_charts"][1]["chart_subtitle"] == "Source: World Bank"
     assert response.json()["interactive_charts"][1]["x_data"] == [[25, 45, 65], [15, 35, 55]]
