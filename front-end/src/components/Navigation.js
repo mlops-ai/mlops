@@ -10,20 +10,20 @@ import NavItem from "./sidebar/NavItem";
 /**
  * Navigation component.
  * */
-function Navigation(props) {
+function Navigation() {
     let path = useLocation().pathname;
 
     /**
      * Function for toggle sidebar.
      * */
-    function toggleSidebar(e) {
+    function toggleSidebar() {
         document.body.classList.toggle('toggle-sidebar');
     }
 
     /**
      * Function for toggle searchbar.
      * */
-    function toggleSearchbar(e) {
+    function toggleSearchbar() {
         document.getElementById('search-bar').classList.toggle('search-bar-show');
     }
 

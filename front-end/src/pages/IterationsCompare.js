@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import LoadingData from "../components/LoadingData";
-import moment from "moment/moment";
+
 import * as echarts from 'echarts';
 import {
     TooltipComponent,
@@ -14,7 +14,7 @@ import {BarChart} from 'echarts/charts';
 import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
 import custom_theme from "../js/customed.json";
-import {toast} from "react-toastify";
+
 import Toast from "../components/Toast";
 import Masonry from "react-masonry-css";
 
@@ -32,7 +32,7 @@ echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollCompo
  * Iterations compare page component for displaying information about multiple runs and models.
  * */
 
-function IterationsCompare(props) {
+function IterationsCompare() {
 
     console.log("[FOR DEBUGGING PURPOSES]: ITERATION COMPARE VIEW !")
 
@@ -127,7 +127,7 @@ function IterationsCompare(props) {
                     navigate('/projects/' + project_id + '/experiments')
                 }
             })
-            .catch((response) => {
+            .catch(() => {
                 navigate('/projects')
             });
 
@@ -338,8 +338,8 @@ function IterationsCompare(props) {
 
             let custom_charts_unpacked = []
 
-            custom_charts_packed.forEach((chart_pack, index) => {
-                chart_pack.forEach((chart_single, idx) => {
+            custom_charts_packed.forEach((chart_pack) => {
+                chart_pack.forEach((chart_single) => {
                     custom_charts_unpacked.push(chart_single)
                 })
             })
@@ -395,7 +395,7 @@ function IterationsCompare(props) {
                         charts.forEach((chart_data) => {
                             let data = []
                             if (chart_data.x_data.length === 1) {
-                                chart_data.y_data.forEach((data_y, index) => {
+                                chart_data.y_data.forEach((data_y) => {
                                     let data_for_series = []
                                     chart_data.x_data[0].forEach((value, idx) => {
                                         data_for_series.push([value, data_y[idx]])
@@ -534,7 +534,7 @@ function IterationsCompare(props) {
                         charts.forEach((chart_data) => {
                             let data = []
                             if (chart_data.x_data.length === 1) {
-                                chart_data.y_data.forEach((data_y, index) => {
+                                chart_data.y_data.forEach((data_y) => {
                                     let data_for_series = []
                                     chart_data.x_data[0].forEach((value, idx) => {
                                         data_for_series.push([value, data_y[idx]])
@@ -844,12 +844,11 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
+                                <img onClick={() => setStatus({
                                         isOpen: true,
                                         key: image_charts_counts[idx] + index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                    })}
+                                     className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
@@ -869,11 +868,9 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
@@ -894,11 +891,9 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
@@ -919,11 +914,9 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
@@ -944,11 +937,9 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
@@ -969,11 +960,9 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/svg+xml;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>

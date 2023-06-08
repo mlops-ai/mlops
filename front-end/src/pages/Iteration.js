@@ -244,7 +244,7 @@ function Iteration() {
                     return response
                 }
                 return Promise.reject(response);
-            }).then((response) => {
+            }).then(() => {
 
             delete_spinner.style.display = "none"
             delete_button.disabled = false
@@ -407,7 +407,7 @@ function Iteration() {
 
                 // console.log(iterationData)
 
-                iterationData.interactive_charts.forEach((chart_data, index) => {
+                iterationData.interactive_charts.forEach((chart_data) => {
                     let options;
                     if (chart_data.chart_type === "line") {
 
@@ -421,7 +421,7 @@ function Iteration() {
                         let data = []
 
                         if (chart_data.x_data.length === 1) {
-                            chart_data.y_data.forEach((data_y, index) => {
+                            chart_data.y_data.forEach((data_y) => {
                                 let data_for_series = []
                                 chart_data.x_data[0].forEach((value, idx) => {
                                     data_for_series.push([value, data_y[idx]])
@@ -549,7 +549,7 @@ function Iteration() {
                         let data = []
 
                         if (chart_data.x_data.length === 1) {
-                            chart_data.y_data.forEach((data_y, index) => {
+                            chart_data.y_data.forEach((data_y) => {
                                 let data_for_series = []
                                 chart_data.x_data[0].forEach((value, idx) => {
                                     data_for_series.push([value, data_y[idx]])
@@ -757,9 +757,6 @@ function Iteration() {
                             series: series_data
                         }
                     } else if (chart_data.chart_type === 'pie') {
-                        var callback = (args) => {
-                            return args.marker + args.seriesName + ' (' + args.dataIndex + ')<br />' + '(' + args.data.join(', ') + ')'
-                        }
 
                         let data = [];
 
@@ -928,12 +925,10 @@ function Iteration() {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: index
+                                })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
@@ -953,12 +948,10 @@ function Iteration() {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: index
+                                })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
@@ -978,12 +971,10 @@ function Iteration() {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: index
+                                })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
@@ -1003,12 +994,10 @@ function Iteration() {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: index
+                                })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
@@ -1028,12 +1017,10 @@ function Iteration() {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: index
+                                })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
@@ -1053,12 +1040,10 @@ function Iteration() {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
+                                <img onClick={() => setStatus({
                                         isOpen: true,
                                         key: index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                    })} className="img-fluid" style={{maxHeight: 400 + "px"}}
                                      src={"data:image/svg+xml;base64," + image_chart.encoded_image}
                                      alt={image_chart.name}
                                      title={image_chart.name}/>

@@ -1,7 +1,7 @@
 import React from "react";
 import {ToastContainer} from "react-toastify";
 
-function Toast(props) {
+function Toast() {
     return (
         <ToastContainer
             position="bottom-center"

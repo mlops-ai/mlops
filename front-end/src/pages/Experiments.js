@@ -5,14 +5,13 @@ import Iterations from "../components/Iterations";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingData from "../components/LoadingData";
-import custom_theme from "../js/customed.json";
 import {OptionsContext} from "../App";
 
 /**
  * Experiments component for displaying list of experiments and iterations grid.
  */
 
-function Experiments(props) {
+function Experiments() {
 
     console.log("[FOR DEBUGGING PURPOSES]: EXPERIMENTS !")
 
@@ -193,7 +192,7 @@ function Experiments(props) {
                 let active_ids = []
 
                 if (intersection && intersection.length > 0) {
-                    data.experiments = data.experiments.map((experiment, index) => {
+                    data.experiments = data.experiments.map((experiment) => {
                         if (intersection.includes(experiment.id)) {
                             return {
                                 ...experiment,
@@ -244,7 +243,7 @@ function Experiments(props) {
                     }
                 )
             })
-            .catch((response) => {
+            .catch(() => {
                 navigate('/projects')
             });
     }, [location.pathname]);
@@ -431,7 +430,7 @@ function Experiments(props) {
                     return response
                 }
                 return Promise.reject(response);
-            }).then((response) => {
+            }).then(() => {
 
             delete_spinner.style.display = "none"
             delete_button.disabled = false
@@ -683,7 +682,7 @@ function Experiments(props) {
     /**
      * Handle hiding and showing experiments list panel.
      * */
-    function handleHideExperiments(event) {
+    function handleHideExperiments() {
         setExperimentList((prevState) => {
             return !prevState
         })
@@ -998,7 +997,7 @@ function Experiments(props) {
                     return response
                 }
                 return Promise.reject(response);
-            }).then((response) => {
+            }).then(() => {
 
             delete_spinner.style.display = "none"
             delete_button.disabled = false
@@ -1118,7 +1117,7 @@ function Experiments(props) {
         if (projectData) {
             return projectData.experiments.filter((experiment) => experiment.checked)
         }
-        return
+        return null
     }, [projectData]);
 
     /**
