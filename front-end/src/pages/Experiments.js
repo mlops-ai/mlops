@@ -713,6 +713,15 @@ function Experiments(props) {
     }, [projectData]);
 
     /**
+     * Function for string captitalization.
+     * */
+    const capitalizeFirstLetter = str => {
+        return (
+            str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+        );
+    }
+
+    /**
      * Variable containing iterations grid component.
      * UseMemo is used for optimization purposes.
      * */
@@ -759,6 +768,17 @@ function Experiments(props) {
                                 content_copy
                             </span>
                         </span>
+                        { projectData.status === 'completed' ?
+                            <span className={"badge finished"}>Finished</span>
+
+                            :
+
+                            <span className={"badge " + projectData.status.replace('_', '-')}>{capitalizeFirstLetter(projectData.status.replace(/_/g, ' '))}</span>
+                        }
+
+                        { projectData.archived && <span className="badge archived" style={{marginLeft: 4 + "px"}}>Archived</span>}
+
+
                     </h1>
                     <nav>
                         <ol className="breadcrumb">
@@ -787,15 +807,19 @@ function Experiments(props) {
                                 <h5 className="d-flex align-items-center justify-content-between">
                                     <span className="fw-semibold">Experiments</span>
                                     <div className="d-flex align-items-center">
-                                <span className="material-symbols-rounded icon-border" title="Add experiment"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#add-experiment">
-                                    add
-                                </span>
-                                        <span className="material-symbols-rounded icon-border" title="Hide experiments"
-                                              onClick={handleHideExperiments}>
-                                    chevron_left
-                                </span>
+                                <div className="experiments-list-action-button">
+                                    <span className="material-symbols-rounded icon-border d-block" title="Add experiment"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#add-experiment">
+                                        add
+                                    </span>
+                                </div>
+                                <div className="experiments-list-action-button">
+                                    <span className="material-symbols-rounded icon-border d-block" title="Hide experiments"
+                                          onClick={handleHideExperiments}>
+                                        chevron_left
+                                    </span>
+                                </div>
                                     </div>
                                 </h5>
                                 {projectData.experiments.length === 0 ?
@@ -837,10 +861,12 @@ function Experiments(props) {
                             :
 
                             <div className="col-xl-1 col-lg-1 m-0">
-                                <span className="material-symbols-rounded icon-border ms-0" title="Show experiments"
-                                      onClick={handleHideExperiments}>
-                                    chevron_right
-                                </span>
+                                <div className="experiments-list-action-button">
+                                    <span className="material-symbols-rounded icon-border d-block m-0" title="Show experiments"
+                                          onClick={handleHideExperiments}>
+                                        chevron_right
+                                    </span>
+                                </div>
                             </div>
                         }
 

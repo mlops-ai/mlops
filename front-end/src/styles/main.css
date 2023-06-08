@@ -14,6 +14,7 @@
     --font-lato: "Lato", sans-serif;
     --font-roboto: "Roboto", sans-serif;
     --color-primary: #012970;
+    --color-primary-hover: #012970cc;
     --color-secondary: #444444;
     --color-light: #899bbd;
     --action-hover: #f2f4ff;
@@ -819,6 +820,12 @@ a:hover {
 * Experiments
 * */
 
+
+.experiments-list-action-button .icon-border {
+    width: 28px;
+    height: 28px;
+}
+
 .icon-border {
     border: 2px solid var(--color-primary);
     border-radius: 50%;
@@ -1085,7 +1092,7 @@ button.p-tree-toggler:has(+.p-treenode-label) {
 .project-info-id {
     color: var(--color-gray-600);
     font-size: 20px;
-    margin: 0 12px;
+    margin: 0 8px 0 12px;
 }
 
 .project-info-id .material-symbols-rounded {
