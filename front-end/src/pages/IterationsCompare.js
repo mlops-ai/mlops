@@ -819,7 +819,7 @@ function IterationsCompare(props) {
             let charts_count = 0
             let image_charts_counts = []
             let image_charts_list = iterationsData.iterations.map(iteration => {
-                if (iteration.image_charts) {
+                if (iteration.image_charts && iteration.image_charts.length !== 0) {
                     let filtered_charts = iteration.image_charts.filter(chart => chart.comparable)
                     charts_count += filtered_charts.length
                     image_charts_counts.push(charts_count)
@@ -1000,8 +1000,7 @@ function IterationsCompare(props) {
         return [null, null]
     }, [iterationsData])
 
-    // console.log(image_charts_sources)
-    // console.log(status)
+    console.log(image_charts)
 
     /**
      * Component rendering.

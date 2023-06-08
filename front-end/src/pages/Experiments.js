@@ -37,6 +37,10 @@ function Experiments(props) {
     const closeModalRef = useRef();
     const closeDeleteModalRef = useRef();
     const closeEditModalRef = useRef();
+    const closeDeleteModalRefProject = useRef();
+    const closeArchiveModalRefProject = useRef();
+    const closeRestoreModalRefProject = useRef();
+    const closeEditModalRefProject = useRef();
 
     /**
      * React content hook for refreshing options list after changing data in database.
@@ -86,6 +90,38 @@ function Experiments(props) {
         id: "",
         name: "",
         description: ""
+    });
+
+    /**
+     * Handle editable project data change.
+     * */
+    function handleCurrentDataEditableProject(event) {
+        setCurrentProjectDataEditable(prevCurrentProjectDataEditable => {
+            return {
+                ...prevCurrentProjectDataEditable,
+                [event.target.name]: event.target.value
+            }
+        })
+    }
+
+    /**
+     * State used for storing current project data (edited, deleted ...).
+     */
+    const [currentProjectData, setCurrentProjectData] = useState({
+        title: "",
+        description: "",
+        status: "",
+        archived: ""
+    });
+
+    /**
+     * State used for storing current project editable data (edited).
+     */
+    const [currentProjectDataEditable, setCurrentProjectDataEditable] = useState({
+        title: "",
+        description: "",
+        status: "",
+        archived: ""
     });
 
     /**
@@ -191,11 +227,384 @@ function Experiments(props) {
                     }
                 }
                 setProjectData(data)
+                setCurrentProjectData(
+                    {
+                        title: data.title,
+                        description: data.description,
+                        status: data.status,
+                        archived: data.archived
+                    }
+                )
+                setCurrentProjectDataEditable(
+                    {
+                        title: data.title,
+                        description: data.description,
+                        status: data.status,
+                        archived: data.archived
+                    }
+                )
             })
             .catch((response) => {
                 navigate('/projects')
             });
     }, [location.pathname]);
+
+    /**
+     * Function handling editing project request.
+     * */
+    function handleEditProject(event) {
+        event.preventDefault();
+
+        let edit_spinner = document.getElementById('edit-project-spinner')
+        let edit_button = document.getElementById('edit-project-action')
+
+        edit_button.disabled = true
+        edit_spinner.style.display = "inline"
+
+        /**
+         * Validate data.
+         * */
+        let title = currentProjectDataEditable.title.trim()
+        let description = currentProjectDataEditable.description.trim()
+
+        if (title.length === 0) {
+            toast.error("Project title cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(title.length > 0 && title.length <= 40)) {
+            toast.error("Project title cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(description.length <= 150)) {
+            toast.error("Project description cannot be longer than 150 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        let body;
+
+        if (title !== currentProjectData.title.trim()) {
+            body = {title: title, description: description, status: currentProjectDataEditable.status};
+        } else {
+            body = {description: description, status: currentProjectDataEditable.status};
+        }
+
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        };
+
+        fetch('http://localhost:8000/projects/' + project_id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            setRefresher(prevRefresher => prevRefresher + 1)
+
+            setCurrentProjectData(
+                {
+                    status: json.status,
+                    title: json.title,
+                    archived: json.archived,
+                    description: json.description
+                }
+            )
+
+            setCurrentProjectDataEditable(
+                {
+                    status: json.status,
+                    title: json.title,
+                    archived: json.archived,
+                    description: json.description
+                }
+            )
+
+            setProjectData(prevState => {
+                return {
+                    ...prevState,
+                    status: json.status,
+                    title: json.title,
+                    archived: json.archived,
+                    description: json.description
+                }
+            })
+
+            toast.success('Project updated successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            closeEditModalRefProject.current.click();
+
+        }).catch((response) => {
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
+     * Function handling deleting project request.
+     * */
+    function handleDeleteProject(event) {
+        event.preventDefault();
+
+        let delete_spinner = document.getElementById('delete-project-spinner')
+        let delete_button = document.getElementById('delete-project-action')
+
+        delete_button.disabled = true
+        delete_spinner.style.display = "inline"
+
+        const requestOptions = {
+            method: 'DELETE'
+        };
+
+        fetch('http://localhost:8000/projects/' + project_id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response
+                }
+                return Promise.reject(response);
+            }).then((response) => {
+
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+
+            setRefresher(prevRefresher => prevRefresher + 1)
+
+            toast.success('Project deleted successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            navigate('/projects')
+
+            closeDeleteModalRefProject.current.click();
+
+        }).catch((response) => {
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+            response.body && response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
+     * Function handling archiving project request.
+     * */
+    function handleArchiveProject(event) {
+        event.preventDefault();
+
+        let archive_spinner = document.getElementById('archive-project-spinner')
+        let archive_button = document.getElementById('archive-project-action')
+
+        archive_button.disabled = true
+        archive_spinner.style.display = "inline"
+
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({archived: true})
+        };
+
+        fetch('http://localhost:8000/projects/' + project_id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+
+            setProjectData(prevState => {
+                return {
+                    ...prevState,
+                    archived: json.archived
+                }
+            })
+
+            toast.success('Project archived successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            archive_spinner.style.display = "none"
+            archive_button.disabled = false
+
+            closeArchiveModalRefProject.current.click();
+        }).catch((response) => {
+
+            archive_spinner.style.display = "none"
+            archive_button.disabled = false
+
+            response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
+     * Function handling restoring project request.
+     * */
+    function handleRestoreProject(event) {
+        event.preventDefault();
+
+        let restore_spinner = document.getElementById('restore-project-spinner')
+        let restore_button = document.getElementById('restore-project-action')
+
+        restore_button.disabled = true
+        restore_spinner.style.display = "inline"
+
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({archived: false})
+        };
+
+        fetch('http://localhost:8000/projects/' + project_id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+
+            setProjectData(prevState => {
+                return {
+                    ...prevState,
+                    archived: json.archived
+                }
+            })
+
+            toast.success('Project restored successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            restore_spinner.style.display = "none"
+            restore_button.disabled = false
+
+            closeRestoreModalRefProject.current.click();
+        }).catch((response) => {
+            restore_spinner.style.display = "none"
+            restore_button.disabled = false
+            response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
 
     /**
      * Handle multiple experiment display on checkbox click action.
@@ -744,8 +1153,9 @@ function Experiments(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1 className="d-flex align-items-center">
-                        <span className="fw-semibold">
+                    <h1 className="d-flex align-items-center justify-content-between">
+                        <span className="d-flex align-items-center flex-wrap">
+                            <span className="fw-semibold">
                             {projectData.title}
                         </span>
                         <span className="project-info-id d-flex align-items-center" style={{fontWeight: "normal"}}>
@@ -768,17 +1178,110 @@ function Experiments(props) {
                                 content_copy
                             </span>
                         </span>
-                        { projectData.status === 'completed' ?
-                            <span className={"badge finished"}>Finished</span>
+                            { projectData.status === 'completed' ?
+                                <span className={"badge finished"}>Finished</span>
 
-                            :
+                                :
 
-                            <span className={"badge " + projectData.status.replace('_', '-')}>{capitalizeFirstLetter(projectData.status.replace(/_/g, ' '))}</span>
-                        }
+                                <span className={"badge " + projectData.status.replace('_', '-')}>{capitalizeFirstLetter(projectData.status.replace(/_/g, ' '))}</span>
+                            }
 
-                        { projectData.archived && <span className="badge archived" style={{marginLeft: 4 + "px"}}>Archived</span>}
+                            { projectData.archived && <span className="badge archived" style={{marginLeft: 4 + "px"}}>Archived</span>}
+                        </span>
 
+                        <div className="more-action on-bg">
+                            <span className="more-action-button material-symbols-rounded" data-bs-toggle="dropdown"
+                                  title="Project actions">
+                                more_vert
+                            </span>
+                            {!projectData.archived ?
+                                <ul className="dropdown-menu dropdown-menu-end">
 
+                                    <li className="dropdown-header">
+
+                                        <h6>Project menu</h6>
+
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                    <li>
+                                        <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                           data-bs-target="#edit-project">
+                                        <span className="material-symbols-rounded">
+                                            edit
+                                        </span>
+                                            Edit project
+                                        </a>
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                    <li>
+                                        <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                           data-bs-target="#delete-project">
+                                        <span className="material-symbols-rounded">
+                                            delete
+                                        </span>
+                                            Delete project
+                                        </a>
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                    <li>
+                                        <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                           data-bs-target="#archive-project">
+                                            <span className="material-symbols-rounded">
+                                                archive
+                                            </span>
+                                            Archive project
+                                        </a>
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                </ul>
+
+                                :
+
+                                <ul className="dropdown-menu dropdown-menu-end">
+
+                                    <li className="dropdown-header">
+
+                                        <h6>Project menu</h6>
+
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                    <li>
+                                        <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                           data-bs-target="#delete-project">
+                                        <span className="material-symbols-rounded">
+                                            delete
+                                        </span>
+                                            Delete project
+                                        </a>
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                    <li>
+                                        <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                           data-bs-target="#restore-project">
+                                            <span className="material-symbols-rounded">
+                                                unarchive
+                                            </span>
+                                            Restore project
+                                        </a>
+                                    </li>
+
+                                    <div className="dropdown-divider"></div>
+
+                                </ul>
+                            }
+                        </div>
                     </h1>
                     <nav>
                         <ol className="breadcrumb">
@@ -1163,6 +1666,201 @@ function Experiments(props) {
                     </div>
 
                     {/*
+                        MODAL - MENU EDYCJI PROJEKTU
+                    */}
+
+                    <div className="modal fade" id="edit-project" tabIndex="-1" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <form onSubmit={handleEditProject}>
+                                    <div className="modal-header">
+                                        <h5 className="modal-title">Edit project</h5>
+                                        <button ref={closeEditModalRefProject} type="button" className="btn-close"
+                                                data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <div className="mb-3">
+                                            <label htmlFor="project-name" className="form-label">
+                                                Project name
+                                            </label>
+                                            <input type="text" className="form-control shadow-none" id="project-name"
+                                                   name="title"
+                                                   placeholder="Project name ..."
+                                                   required={true} minLength="1"
+                                                   maxLength="40"
+                                                   onChange={handleCurrentDataEditableProject}
+                                                   value={currentProjectDataEditable.title}
+                                            />
+                                            <small className="form-text text-muted" style={{fontSize: 13 + "px"}}>
+                                                Required (max. 40 characters)
+                                            </small>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label htmlFor="project-description" className="form-label">
+                                                Project description
+                                            </label>
+                                            <textarea className="form-control shadow-none" id="project-description"
+                                                      name="description"
+                                                      rows="3" placeholder="Project description ..."
+                                                      style={{resize: "none"}} maxLength="150"
+                                                      onChange={handleCurrentDataEditableProject}
+                                                      value={currentProjectDataEditable.description}>
+                                            </textarea>
+                                            <small className="form-text text-muted" style={{fontSize: 13 + "px"}}>
+                                                Optional (max. 150 characters)
+                                            </small>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label htmlFor="project-status" className="form-label">
+                                                Project status
+                                            </label>
+                                            <select className="form-select shadow-none"
+                                                    aria-label="Default select example" id="project-status"
+                                                    name="status" onChange={handleCurrentDataEditableProject}
+                                                    value={currentProjectDataEditable.status}>
+                                                <option value="not_started">Not Started</option>
+                                                <option value="in_progress">In Progress</option>
+                                                <option value="completed">Finished</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        {(currentProjectDataEditable.title !== currentProjectData.title && currentProjectDataEditable.title !== "") || currentProjectDataEditable.description !== currentProjectData.description || currentProjectDataEditable.status !== currentProjectData.status ?
+                                            <button id="edit-project-action" className="btn btn-primary float-end">
+                                                <span className="d-flex align-items-center">
+                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
+                                                    Update project
+                                                </span>
+                                            </button>
+
+                                            :
+
+                                            <button id="edit-project-action" className="btn btn-primary float-end"
+                                                    disabled={true}>
+                                                <span className="d-flex align-items-center">
+                                                    <i id="edit-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                       style={{display: "none"}}></i>
+                                                    Update project
+                                                </span>
+                                            </button>
+                                        }
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/*
+                        MODAL - USUWANIE PROJEKTU
+                    */}
+
+                    <div className="modal fade" id="delete-project" tabIndex="-1" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Delete Project <span
+                                        className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
+                                    <button ref={closeDeleteModalRefProject} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body d-flex align-items-center justify-content-between">
+                                    <span className="material-symbols-rounded text-danger"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                        warning
+                                    </span>
+                                    <span>Deleting a project involves deleting all the experiments and&nbsp;models in it permanently. Are you sure you want to continue?</span>
+                                </div>
+                                <div className="modal-footer">
+                                    <form onSubmit={handleDeleteProject}>
+                                        <button id="delete-project-action" className="btn btn-danger float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="delete-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
+                                                Delete project
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/*
+                        MODAL - ARCHIWIZACJA PROJEKTU
+                    */}
+
+                    <div className="modal fade" id="archive-project" tabIndex="-1" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Archive Project <span
+                                        className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
+                                    <button ref={closeArchiveModalRefProject} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body d-flex align-items-center justify-content-between">
+                                    <span className="material-symbols-rounded text-secondary"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                        archive
+                                    </span>
+                                    <span>Archiving a project will move it to the archive tab. You will not be able to edit or refer to it, but you can restore it at any time. Do you want to continue?</span>
+                                </div>
+                                <div className="modal-footer">
+                                    <form onSubmit={handleArchiveProject}>
+                                        <button id="archive-project-action" className="btn btn-secondary float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="archive-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
+                                                Archive project
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/*
+                        MODAL - PRZYWRÓCENIE PROJEKTU
+                    */}
+
+                    <div className="modal fade" id="restore-project" tabIndex="-1" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Restore Project <span
+                                        className="fst-italic fw-semibold">{currentProjectData.title}</span></h5>
+                                    <button ref={closeRestoreModalRefProject} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body d-flex align-items-center justify-content-between">
+                                    <span className="material-symbols-rounded text-secondary"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                        unarchive
+                                    </span>
+                                    <span>Restoring a project will bring it back to the active projects tab. Do you want to continue?</span>
+                                </div>
+                                <div className="modal-footer">
+                                    <form onSubmit={handleRestoreProject}>
+                                        <button id="restore-project-action" className="btn btn-secondary float-end">
+                                            <span className="d-flex align-items-center">
+                                                <i id="restore-project-spinner" className="fa fa-spinner fa-spin me-1"
+                                                   style={{display: "none"}}></i>
+                                                Restore project
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/*
                         TOAST - KONTENER DLA POWIADOMIEŃ
                     */}
 
@@ -1187,7 +1885,7 @@ function Experiments(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1>Experiments & Models</h1>
+                    <h1>...</h1>
                     <nav>
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item">Projects</li>

@@ -676,21 +676,21 @@ a:hover {
 * Card - projects
 * */
 
-.card-view .more-action svg {
+.more-action svg {
     color: var(--color-gray-600);
 }
 
-.card-view .more-action svg:hover {
+.more-action svg:hover {
     transition: 0.5s;
     cursor: pointer;
     color: var(--color-primary);
 }
 
-.card-view .more-action .dropdown-menu {
+.more-action .dropdown-menu {
     min-width: 200px;
 }
 
-.card-view .more-action :is(span.material-symbols-rounded, svg) {
+.more-action :is(span.material-symbols-rounded, svg) {
     font-size: 18px;
     margin-right: 4px;
 }
@@ -769,6 +769,11 @@ a:hover {
 .more-action .more-action-button.material-symbols-rounded:hover {
     color: var(--color-primary);
     background-color: var(--action-hover);
+}
+
+.more-action.on-bg .more-action-button.material-symbols-rounded:hover {
+    color: var(--color-primary);
+    background-color:#EAEFF9;
 }
 
 .no-projects, .no-datasets {

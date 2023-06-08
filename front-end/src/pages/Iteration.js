@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation, useNavigate, useParams} from "react-router-dom";
 import LoadingData from "../components/LoadingData";
 import moment from "moment/moment";
@@ -21,6 +21,7 @@ import Masonry from "react-masonry-css";
 
 import Lightbox from "react-awesome-lightbox";
 import "react-awesome-lightbox/build/style.css";
+import {OptionsContext} from "../App";
 
 /**
  * Echarts register theme and initial configuration.
@@ -32,9 +33,20 @@ echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollCompo
  * Iteration page component for displaying information about single run and model.
  * */
 
-function Iteration(props) {
+function Iteration() {
 
     console.log("[FOR DEBUGGING PURPOSES]: ITERATION VIEW !")
+
+    /**
+     * React ref hooks for close modal buttons.
+     */
+    const closeDeleteModalRef = useRef();
+    const closeEditModalRef = useRef();
+
+    /**
+     * React content hook for refreshing options list after changing data in database.
+     * */
+    const [refresher, setRefresher] = useContext(OptionsContext);
 
     /**
      * State used for storing lightbox data (image charts viewer).
@@ -78,6 +90,200 @@ function Iteration(props) {
     let location = useLocation();
 
     /**
+     * State used for storing current iteration data (edited, deleted ...).
+     */
+    const [currentIterationData, setCurrentIterationData] = useState({
+        iteration_name: ""
+    });
+
+    /**
+     * State used for storing current iteration editable data (edited).
+     */
+    const [currentIterationDataEditable, setCurrentIterationDataEditable] = useState({
+        iteration_name: ""
+    });
+
+    /**
+     * Handle editable iteration data change.
+     * */
+    function handleCurrentDataEditable(event) {
+        setCurrentIterationDataEditable(prevCurrentIterationDataEditable => {
+            return {
+                ...prevCurrentIterationDataEditable,
+                [event.target.name]: event.target.value
+            }
+        })
+    }
+
+    /**
+     * Function handling editing iteration request.
+     * */
+    function handleEditIteration(event) {
+        event.preventDefault();
+
+        let edit_spinner = document.getElementById('edit-iteration-spinner')
+        let edit_button = document.getElementById('edit-iteration-action')
+
+        edit_button.disabled = true
+        edit_spinner.style.display = "inline"
+
+        /**
+         * Validate data.
+         * */
+        let name = currentIterationDataEditable.iteration_name.trim()
+
+        if (name.length === 0) {
+            toast.error("Iteration name cannot be empty!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        if (!(name.length > 0 && name.length <= 40)) {
+            toast.error("Iteration name cannot be longer than 40 characters!", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            return
+        }
+
+        let body = {iteration_name: name};
+
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        };
+
+        fetch('http://localhost:8000/projects/' + project_id + '/experiments/' + experiment_id + '/iterations/' + iteration_id + '?iteration_name=' + name, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json()
+                }
+                return Promise.reject(response);
+            }).then((json) => {
+
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+
+            setIterationData(json)
+
+            setRefresher(prevRefresher => prevRefresher + 1)
+
+            toast.success('Iteration updated successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            closeEditModalRef.current.click();
+
+        }).catch((response) => {
+            edit_spinner.style.display = "none"
+            edit_button.disabled = false
+            response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
+     * Function handling deleting iterations request.
+     * */
+    function handleDeleteIterations(event) {
+        event.preventDefault();
+
+        let delete_spinner = document.getElementById('delete-iterations-spinner')
+        let delete_button = document.getElementById('delete-iterations-action')
+
+        delete_button.disabled = true
+        delete_spinner.style.display = "inline"
+
+        const requestOptions = {
+            method: 'DELETE'
+        };
+
+        fetch('http://localhost:8000/projects/' + project_id + '/experiments/' + experiment_id + '/iterations/' + iteration_id, requestOptions)
+            .then((response) => {
+                if (response.ok) {
+                    return response
+                }
+                return Promise.reject(response);
+            }).then((response) => {
+
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+
+            toast.success('Iteration/s deleted successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            closeDeleteModalRef.current.click();
+
+            setRefresher(prevRefresher => prevRefresher + 1)
+            navigate('/projects/' + project_id + '/experiments?experiments=' + experiment_id)
+
+        }).catch((response) => {
+            delete_spinner.style.display = "none"
+            delete_button.disabled = false
+            response.body && response.json().then((json: any) => {
+                toast.error(json.detail, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                });
+            })
+        });
+    }
+
+    /**
      * REST API request for iteration data based on url params (:project_id, :experiment_id, :iteration_id).
      * If project, experiment or iteration based on url params don't exist, user will be redirected to main page.
      * */
@@ -92,8 +298,18 @@ function Iteration(props) {
             })
             .then(data => {
                 setIterationData(data)
+                setCurrentIterationData(
+                    {
+                        iteration_name: data.iteration_name
+                    }
+                )
+                setCurrentIterationDataEditable(
+                    {
+                        iteration_name: data.iteration_name
+                    }
+                )
             })
-            .catch((response) => {
+            .catch(() => {
                 navigate('/projects')
             });
 
@@ -843,7 +1059,8 @@ function Iteration(props) {
                                         key: index
                                     }
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/svg+xml;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/svg+xml;base64," + image_chart.encoded_image}
+                                     alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
                         )
@@ -861,9 +1078,7 @@ function Iteration(props) {
         return [null, null]
     }, [iterationData])
 
-    // console.log(iterationData)
-    // console.log(image_charts_sources)
-    // console.log(status)
+    console.log(iterationData)
 
     /**
      * Component rendering.
@@ -875,39 +1090,91 @@ function Iteration(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1 className="d-flex align-items-center">
-                        <span className="fw-semibold">
-                            {iterationData.iteration_name}
-                        </span>
-                        <span className="project-info-id d-flex align-items-center" style={{fontWeight: "normal"}}>
-                            @{iterationData.id}
-                            <span className="material-symbols-rounded" title="Copy iteration id" onClick={
-                                () => {
-                                    toast.success('Copied to clipboard!', {
-                                        position: "bottom-center",
-                                        autoClose: 1000,
-                                        hideProgressBar: true,
-                                        closeOnClick: true,
-                                        pauseOnHover: false,
-                                        draggable: true,
-                                        progress: undefined,
-                                        theme: "light",
-                                    });
-                                    navigator.clipboard.writeText(iterationData.id)
-                                }
-                            }>
-                                content_copy
+                    <h1 className="d-flex align-items-center justify-content-between">
+                        <span className="d-flex align-items-center flex-wrap">
+                            <span className="fw-semibold">
+                                {iterationData.iteration_name}
+                            </span>
+                            <span className="project-info-id d-flex align-items-center" style={{fontWeight: "normal"}}>
+                                @{iterationData.id}
+                                <span className="material-symbols-rounded" title="Copy iteration id" onClick={
+                                    () => {
+                                        toast.success('Copied to clipboard!', {
+                                            position: "bottom-center",
+                                            autoClose: 1000,
+                                            hideProgressBar: true,
+                                            closeOnClick: true,
+                                            pauseOnHover: false,
+                                            draggable: true,
+                                            progress: undefined,
+                                            theme: "light",
+                                        });
+                                        navigator.clipboard.writeText(iterationData.id)
+                                    }
+                                }>
+                                    content_copy
+                                </span>
                             </span>
                         </span>
+                        <div className="more-action on-bg">
+                                <span className="more-action-button material-symbols-rounded" data-bs-toggle="dropdown"
+                                      title="Iteration actions">
+                                    more_vert
+                                </span>
+                            <ul className="dropdown-menu dropdown-menu-end">
+
+                                <li className="dropdown-header">
+
+                                    <h6>Iteration menu</h6>
+
+                                </li>
+
+                                <div className="dropdown-divider"></div>
+
+                                <li>
+                                    <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                       data-bs-target="#edit-iteration">
+                                        <span className="material-symbols-rounded">
+                                            edit
+                                        </span>
+                                        Rename iteration
+                                    </a>
+                                </li>
+
+                                <div className="dropdown-divider"></div>
+
+                                <li>
+                                    <a className="dropdown-item d-flex align-items-center" data-bs-toggle="modal"
+                                       data-bs-target="#delete-iteration">
+                                        <span className="material-symbols-rounded">
+                                            delete
+                                        </span>
+                                        Delete iteration
+                                    </a>
+                                </li>
+
+                                <div className="dropdown-divider"></div>
+
+                            </ul>
+                        </div>
                     </h1>
                     <nav>
                         <ol className="breadcrumb">
-                            <li className="breadcrumb-item"><a href="/projects">Projects</a></li>
-                            <li className="breadcrumb-item">{iterationData.project_title}</li>
-                            <li className="breadcrumb-item"><a
-                                href={"/projects/" + project_id + "/experiments"}>Experiments</a></li>
-                            <li className="breadcrumb-item">{iterationData.experiment_name}</li>
-                            <li className="breadcrumb-item">Iteration</li>
+                            <li className="breadcrumb-item">
+                                <a href="/projects">
+                                    Projects
+                                </a>
+                            </li>
+                            <li className="breadcrumb-item">
+                                <a href={"/projects/" + project_id + "/experiments"}>
+                                    {iterationData.project_title}
+                                </a>
+                            </li>
+                            <li className="breadcrumb-item">
+                                <a href={"/projects/" + project_id + "/experiments?experiments=" + experiment_id}>
+                                    {iterationData.experiment_name}
+                                </a>
+                            </li>
                             <li className="breadcrumb-item active">{iterationData.iteration_name}</li>
                         </ol>
                     </nav>
@@ -915,7 +1182,6 @@ function Iteration(props) {
 
                 <section className="iteration-view section content-data">
                     <h5><span className="fw-semibold">Iteration details</span></h5>
-                    <p><span className="fst-italic">Tu mógłby być opis iteracji!</span></p>
                     <div className="card p-2 table-responsive">
                         <div className="table-responsive">
                             <table className="table">
@@ -967,14 +1233,12 @@ function Iteration(props) {
                                     <tr>
                                         <th>Dataset Name</th>
                                         <th>Dataset Version</th>
-                                        <th>Dataset Path</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr>
                                         <td>{iterationData.dataset.name}</td>
                                         <td>{iterationData.dataset.version !== "" ? iterationData.dataset.version : '-'}</td>
-                                        <td>{iterationData.dataset.path_to_dataset !== "" ? iterationData.dataset.path_to_dataset : '-'}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -1077,16 +1341,105 @@ function Iteration(props) {
 
                     {status.isOpen &&
                         <Lightbox
-                              images={image_charts_sources}
-                              onClose={() => setStatus(prevState => {
-                                  return {...prevState, isOpen: false}
-                              })}
-                              startIndex={status.key}
-                              doubleClickZoom={0}
+                            images={image_charts_sources}
+                            onClose={() => setStatus(prevState => {
+                                return {...prevState, isOpen: false}
+                            })}
+                            startIndex={status.key}
+                            doubleClickZoom={0}
                         />
                     }
 
+
                 </section>
+
+                <div className="modal fade" id="edit-iteration" tabIndex="-1" aria-hidden="true">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <form onSubmit={handleEditIteration}>
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Rename iteration</h5>
+                                    <button ref={closeEditModalRef} type="button" className="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="mb-3">
+                                        <label htmlFor="iteration-name" className="form-label">
+                                            Iteration name
+                                        </label>
+                                        <input type="text" className="form-control shadow-none" id="iteration-name"
+                                               name="iteration_name"
+                                               placeholder="Iteration name ..."
+                                               required={true} minLength="1"
+                                               maxLength="40"
+                                               onChange={handleCurrentDataEditable}
+                                               value={currentIterationDataEditable.iteration_name}
+                                        />
+                                        <small className="form-text text-muted" style={{fontSize: 13 + "px"}}>
+                                            Required (max. 40 characters)
+                                        </small>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    {currentIterationDataEditable.iteration_name !== currentIterationData.iteration_name && currentIterationDataEditable.iteration_name !== "" ?
+                                        <button id="edit-iteration-action" className="btn btn-primary float-end">
+                                        <span className="d-flex align-items-center">
+                                            <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1"
+                                               style={{display: "none"}}></i>
+                                            Rename
+                                        </span>
+                                        </button>
+
+                                        :
+
+                                        <button id="edit-iteration-action" className="btn btn-primary float-end"
+                                                disabled={true}>
+                                        <span className="d-flex align-items-center">
+                                            <i id="edit-iteration-spinner" className="fa fa-spinner fa-spin me-1"
+                                               style={{display: "none"}}></i>
+                                            Rename
+                                        </span>
+                                        </button>
+
+                                    }
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modal fade" id="delete-iteration" tabIndex="-1" aria-hidden="true">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Delete Iteration <span
+                                    className="fst-italic fw-semibold">{iterationData.iteration_name}</span></h5>
+                                <button ref={closeDeleteModalRef} type="button" className="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body d-flex align-items-center justify-content-between">
+                                    <span className="material-symbols-rounded text-danger"
+                                          style={{fontSize: 40 + "px", paddingRight: 8 + "px"}}>
+                                        warning
+                                    </span>
+                                <span>Iteration will be deleted permamently. Are you sure you want to continue?</span>
+                            </div>
+                            <div className="modal-footer">
+                                <form onSubmit={handleDeleteIterations}>
+                                    <button className="btn btn-danger float-end" id="delete-iterations-action">
+                                    <span className="d-flex align-items-center">
+                                        <i id="delete-iterations-spinner" className="fa fa-spinner fa-spin me-1"
+                                           style={{display: "none"}}></i>
+                                        Delete iteration
+                                    </span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <Toast/>
 
@@ -1097,14 +1450,12 @@ function Iteration(props) {
             <main id="content">
 
                 <div className="page-path">
-                    <h1>Iteration</h1>
+                    <h1>...</h1>
                     <nav>
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href="/projects">Projects</a></li>
                             <li className="breadcrumb-item">...</li>
-                            <li className="breadcrumb-item">Experiments</li>
                             <li className="breadcrumb-item">...</li>
-                            <li className="breadcrumb-item">Iteration</li>
                             <li className="breadcrumb-item active">...</li>
                         </ol>
                     </nav>
