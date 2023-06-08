@@ -846,7 +846,7 @@ a:hover {
 .icon-border {
     border: 2px solid var(--color-primary);
     border-radius: 50%;
-    font-weight: bold;
+    font-weight: bolder !important;
     color: var(--color-primary);
     cursor: pointer;
     margin-left: 6px;

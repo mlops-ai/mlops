@@ -13,7 +13,6 @@ import {
 import {BarChart} from 'echarts/charts';
 import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
-import custom_theme from "../js/customed.json";
 import {toast} from "react-toastify";
 import Toast from "../components/Toast";
 
@@ -26,7 +25,6 @@ import {OptionsContext} from "../App";
 /**
  * Echarts register theme and initial configuration.
  * */
-echarts.registerTheme('customed', custom_theme)
 echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollComponent, LegendPlainComponent, BarChart, CanvasRenderer]);
 
 /**
@@ -1057,13 +1055,12 @@ function Iteration() {
                         )
                     }
                 })
+
                 return [image_charts, image_charts_sources]
             }
         }
         return [null, null]
     }, [iterationData])
-
-    console.log(iterationData)
 
     /**
      * Component rendering.
@@ -1325,14 +1322,31 @@ function Iteration() {
                     }
 
                     {status.isOpen &&
-                        <Lightbox
-                            images={image_charts_sources}
-                            onClose={() => setStatus(prevState => {
-                                return {...prevState, isOpen: false}
-                            })}
-                            startIndex={status.key}
-                            doubleClickZoom={0}
-                        />
+                        <>
+                        {image_charts_sources.length === 1 ?
+
+                            <Lightbox
+                                image={image_charts_sources[0].url}
+                                title={image_charts_sources[0].title}
+                                onClose={() => setStatus(prevState => {
+                                    return {...prevState, isOpen: false}
+                                })}
+                                doubleClickZoom={0}
+                            />
+
+                            :
+
+                            <Lightbox
+                                images={image_charts_sources}
+                                onClose={() => setStatus(prevState => {
+                                    return {...prevState, isOpen: false}
+                                })}
+                                startIndex={status.key}
+                                doubleClickZoom={0}
+                            />
+
+                        }
+                        </>
                     }
 
 

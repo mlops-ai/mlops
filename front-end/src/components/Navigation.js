@@ -75,14 +75,14 @@ function Navigation() {
 
                     <NavItem
                         location={path}
-                        href={'https://github.com'}
+                        href={'https://github.com/kajetsz/mlops'}
                         name={'Github'}
                         icon={
                             <Github/>
                         }/>
 
                     <li className="nav-item">
-                        <a className="nav-link" href="#">
+                        <a className="nav-link" href="https://github.com/kajetsz/mlops/wiki">
                     <span className="material-symbols-rounded">
                         article
                     </span>

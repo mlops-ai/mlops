@@ -13,7 +13,6 @@ import {
 import {BarChart} from 'echarts/charts';
 import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
-import custom_theme from "../js/customed.json";
 
 import Toast from "../components/Toast";
 import Masonry from "react-masonry-css";
@@ -25,7 +24,6 @@ import "react-awesome-lightbox/build/style.css";
 /**
  * Echarts register theme and initial configuration.
  * */
-echarts.registerTheme('customed', custom_theme)
 echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollComponent, LegendPlainComponent, BarChart, CanvasRenderer]);
 
 /**
@@ -989,7 +987,7 @@ function IterationsCompare() {
         return [null, null]
     }, [iterationsData])
 
-    console.log(image_charts)
+    console.log(status)
 
     /**
      * Component rendering.

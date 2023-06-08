@@ -10,8 +10,8 @@ function AppLogo(props) {
      * Component rendering.
      * */
     return (
-        <div className="d-flex align-items-center justify-content-between">
-            <a href="/" className="app-logo d-flex align-items-center justify-content-center">
+        <div className="d-flex align-items-center">
+            <a href="/" className="app-logo d-flex align-items-center">
                 <img src={logo} alt="MLOps application logo"/>
                 <span className="app-name d-none d-lg-block">MLOps</span>
             </a>
