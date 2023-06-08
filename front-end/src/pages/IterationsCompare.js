@@ -830,10 +830,35 @@ function IterationsCompare() {
 
             image_charts_counts.unshift(0)
 
+            let duplicate_idx = 0
+
+            let sources = []
+
             image_charts_list.forEach((iteration_charts, idx) => {
                 let chart_list = []
+
                 iteration_charts.charts.forEach((image_chart, index) => {
-                    if (image_chart.encoded_image.startsWith('/')) {
+
+                    let encoded_image = image_chart.encoded_image
+
+                    if (sources.includes(encoded_image)) {
+                        if (duplicate_idx < 10) {
+                            encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
+                            if (encoded_image === image_chart.encoded_image) {
+                                duplicate_idx += 1
+                                encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
+                            }
+                        } else {
+                            encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
+                            if (encoded_image === image_chart.encoded_image) {
+                                duplicate_idx += 1
+                                encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
+                            }
+                        }
+                        duplicate_idx += 1
+                    }
+
+                    if (encoded_image.startsWith('/')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -847,17 +872,18 @@ function IterationsCompare() {
                                         key: image_charts_counts[idx] + index
                                     })}
                                      className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/jpeg;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/jpeg;base64," + image_chart.encoded_image,
+                                url: "data:image/jpeg;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('i')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('i')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -870,17 +896,18 @@ function IterationsCompare() {
                                     isOpen: true,
                                     key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/png;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/png;base64," + image_chart.encoded_image,
+                                url: "data:image/png;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('R')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('R')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -893,17 +920,18 @@ function IterationsCompare() {
                                     isOpen: true,
                                     key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/gif;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/gif;base64," + image_chart.encoded_image,
+                                url: "data:image/gif;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('Q')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('Q')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -916,17 +944,18 @@ function IterationsCompare() {
                                     isOpen: true,
                                     key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/bmp;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/bmp;base64," + image_chart.encoded_image,
+                                url: "data:image/bmp;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('U')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('U')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -939,17 +968,18 @@ function IterationsCompare() {
                                     isOpen: true,
                                     key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/webp;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/webp;base64," + image_chart.encoded_image,
+                                url: "data:image/webp;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('P')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('P')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -962,16 +992,17 @@ function IterationsCompare() {
                                     isOpen: true,
                                     key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/svg+xml;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/svg+xml;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/svg+xml;base64," + image_chart.encoded_image,
+                                url: "data:image/svg+xml;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
+                        sources.push(encoded_image)
                     }
                 })
 
@@ -988,6 +1019,7 @@ function IterationsCompare() {
     }, [iterationsData])
 
     console.log(status)
+    console.log([...new Set(image_charts_sources)])
 
     /**
      * Component rendering.

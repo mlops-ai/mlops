@@ -911,10 +911,34 @@ function Iteration() {
             let image_charts = []
             let image_charts_sources = []
 
+            let duplicate_idx = 0
+
             if (iterationData.image_charts) {
                 let filtered_image_charts = iterationData.image_charts.filter(chart => chart.comparable)
+
+                let sources = []
+
                 filtered_image_charts.forEach((image_chart, index) => {
-                    if (image_chart.encoded_image.startsWith('/')) {
+                    let encoded_image = image_chart.encoded_image
+
+                    if (sources.includes(encoded_image)) {
+                        if (duplicate_idx < 10) {
+                            encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
+                            if (encoded_image === image_chart.encoded_image) {
+                                duplicate_idx += 1
+                                encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
+                            }
+                        } else {
+                            encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
+                            if (encoded_image === image_chart.encoded_image) {
+                                duplicate_idx += 1
+                                encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
+                            }
+                        }
+                        duplicate_idx += 1
+                    }
+
+                    if (encoded_image.startsWith('/')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -927,17 +951,18 @@ function Iteration() {
                                     isOpen: true,
                                     key: index
                                 })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/jpeg;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/jpeg;base64," + image_chart.encoded_image,
+                                url: "data:image/jpeg;base64," + encoded_image,
                                 title: image_chart.name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('i')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('i')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -950,17 +975,18 @@ function Iteration() {
                                     isOpen: true,
                                     key: index
                                 })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/png;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/png;base64," + image_chart.encoded_image,
+                                url: "data:image/png;base64," + encoded_image,
                                 title: image_chart.name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('R')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('R')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -973,17 +999,18 @@ function Iteration() {
                                     isOpen: true,
                                     key: index
                                 })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/gif;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/gif;base64," + image_chart.encoded_image,
+                                url: "data:image/gif;base64," + encoded_image,
                                 title: image_chart.name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('Q')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('Q')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -996,17 +1023,18 @@ function Iteration() {
                                     isOpen: true,
                                     key: index
                                 })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/bmp;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/bmp;base64," + image_chart.encoded_image,
+                                url: "data:image/bmp;base64," + encoded_image,
                                 title: image_chart.name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('U')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('U')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -1019,17 +1047,18 @@ function Iteration() {
                                     isOpen: true,
                                     key: index
                                 })}  className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/webp;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/webp;base64," + image_chart.encoded_image,
+                                url: "data:image/webp;base64," + encoded_image,
                                 title: image_chart.name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('P')) {
+                        sources.push(encoded_image)
+                    } else if (encoded_image.startsWith('P')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -1042,7 +1071,7 @@ function Iteration() {
                                         isOpen: true,
                                         key: index
                                     })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/svg+xml;base64," + image_chart.encoded_image}
+                                     src={"data:image/svg+xml;base64," + encoded_image}
                                      alt={image_chart.name}
                                      title={image_chart.name}/>
                             </div>
@@ -1053,6 +1082,7 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
+                        sources.push(encoded_image)
                     }
                 })
 
