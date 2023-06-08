@@ -212,7 +212,7 @@ class Iteration:
             "path_to_model": self.path_to_model,
             "model_name": self.model_name,
             "dataset": dataset,
-            "image_charts": self.image_charts
+            "image_charts": self.image_charts,
             "interactive_charts": interactive_charts
         }
 

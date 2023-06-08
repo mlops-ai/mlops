@@ -333,7 +333,7 @@ async def test_start_iteration_with_chart(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    chart = Chart(chart_name="Chart 1", chart_type="line", x_data=[1, 2, 3], y_data=[1, 2, 3], x_label="Age", y_label="Survived")
+    chart = Chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
