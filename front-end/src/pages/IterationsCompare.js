@@ -17,8 +17,8 @@ import ReactEcharts from "echarts-for-react";
 import Toast from "../components/Toast";
 import Masonry from "react-masonry-css";
 
-import Lightbox from "react-awesome-lightbox";
-import "react-awesome-lightbox/build/style.css";
+import Lightbox from "../components/MyLightBox";
+import "../styles/light-box.css";
 
 
 /**
@@ -323,7 +323,14 @@ function IterationsCompare() {
             /**
              * Custom charts
              * */
-            let custom_charts_packed = iterationsData.iterations.map(iteration => {
+            let custom_charts_available = iterationsData.iterations.filter(iteration => {
+                if (iteration.interactive_charts && iteration.interactive_charts.length > 0) {
+                    return true
+                }
+                return false
+            })
+
+            let custom_charts_packed = custom_charts_available.map(iteration => {
                 return iteration.interactive_charts.map(chart => {
                     return {
                         ...chart,
@@ -331,8 +338,6 @@ function IterationsCompare() {
                     }
                 })
             })
-
-            // console.log(iterationsData)
 
             let custom_charts_unpacked = []
 
@@ -349,8 +354,6 @@ function IterationsCompare() {
                 arr[chart.name].push(chart);
                 return arr;
             }, Object.create(null));
-
-            console.log(custom_charts_grouped)
 
             function checkTypes(array, firstType) {
                 return array.every(chart => {
@@ -823,40 +826,18 @@ function IterationsCompare() {
                     image_charts_counts.push(charts_count)
                     return {charts: filtered_charts, iteration_name: iteration.iteration_name}
                 }
-                return []
+                return {charts: [], iteration_name: ''}
             })
 
-            image_charts_list = image_charts_list.filter(charts => charts.length !== 0)
+            image_charts_list = image_charts_list.filter(charts => charts.charts.length !== 0)
 
             image_charts_counts.unshift(0)
-
-            let duplicate_idx = 0
-
-            let sources = []
 
             image_charts_list.forEach((iteration_charts, idx) => {
                 let chart_list = []
 
                 iteration_charts.charts.forEach((image_chart, index) => {
-
                     let encoded_image = image_chart.encoded_image
-
-                    if (sources.includes(encoded_image)) {
-                        if (duplicate_idx < 10) {
-                            encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
-                            if (encoded_image === image_chart.encoded_image) {
-                                duplicate_idx += 1
-                                encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
-                            }
-                        } else {
-                            encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
-                            if (encoded_image === image_chart.encoded_image) {
-                                duplicate_idx += 1
-                                encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
-                            }
-                        }
-                        duplicate_idx += 1
-                    }
 
                     if (encoded_image.startsWith('/')) {
                         chart_list.push(
@@ -882,7 +863,6 @@ function IterationsCompare() {
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('i')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -906,7 +886,6 @@ function IterationsCompare() {
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('R')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -930,7 +909,6 @@ function IterationsCompare() {
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('Q')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -954,7 +932,6 @@ function IterationsCompare() {
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('U')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -978,7 +955,6 @@ function IterationsCompare() {
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('P')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -1002,7 +978,6 @@ function IterationsCompare() {
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                        sources.push(encoded_image)
                     }
                 })
 
@@ -1019,7 +994,6 @@ function IterationsCompare() {
     }, [iterationsData])
 
     console.log(status)
-    console.log([...new Set(image_charts_sources)])
 
     /**
      * Component rendering.
@@ -1227,7 +1201,7 @@ function IterationsCompare() {
                         <p><span className="fst-italic">No image charts to show!</span></p>
                     }
 
-                    {status.isOpen &&
+                    {image_charts && image_charts.length > 0 && status.isOpen &&
                         <Lightbox
                             images={image_charts_sources}
                             onClose={() => setStatus(prevState => {
