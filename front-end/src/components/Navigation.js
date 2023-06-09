@@ -37,7 +37,7 @@ function Navigation() {
                 <AppLogo toogleSidebar={toggleSidebar}/>
 
                 {/*<Searchbar />*/}
-                <Searchbar />
+                <Searchbar/>
 
                 <RightPanel toggleSearchbar={toggleSearchbar}/>
 
@@ -91,11 +91,11 @@ function Navigation() {
                     </li>
 
                     <li className="nav-item">
-                        <a className="nav-link" href="#">
-                    <span className="material-symbols-rounded">
-                        help
-                    </span>
-                            <span>FAQ</span>
+                        <a className="nav-link" href="https://github.com/kajetsz/mlops/issues">
+                        <span className="material-symbols-rounded">
+                            report
+                        </span>
+                            <span>Report issue</span>
                         </a>
                     </li>
 
