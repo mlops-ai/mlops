@@ -308,7 +308,7 @@ async def test_start_iteration_with_image_charts(setup):
 
 
 @pytest.mark.asyncio
-async def test_start_iteration_with_image_charts_failure(setup):
+async def test_start_iteration_with_image_charts_failure_invalid_path(setup):
     await drop_database()
 
     project = mlops.tracking.create_project(title='test_project')
@@ -324,7 +324,27 @@ async def test_start_iteration_with_image_charts_failure(setup):
 
         result = iteration.end_iteration()
 
-    assert str(exc_info.value) == 'Provided image path does not exist.'
+    assert str(exc_info.value) == "[Errno 2] No such file or directory: 'fake_image_path'"
+
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_image_charts_failure_missing_argument(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    with pytest.raises(TypeError) as exc_info:
+        with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                            experiment_id=experiment['id']) as iteration:
+            iteration.log_model_name('test_iteration.py')
+            iteration.log_parameter('test_parameter', 100)
+            iteration.log_metric('test_accuracy', 0.98)
+            iteration.log_image_chart(name='test_chart')
+
+        result = iteration.end_iteration()
+
+    assert str(exc_info.value) == "log_image_chart() missing 1 required positional argument: 'image_path'"
 
 
 @pytest.mark.asyncio

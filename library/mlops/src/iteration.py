@@ -4,14 +4,11 @@ import base64
 
 from mlops.config.config import settings
 from mlops.exceptions.tracking import request_failed_exception
-from mlops.src.dataset import Dataset
 import requests
-from mlops.exceptions.iteration import iteration_request_failed_exception
 from mlops.src.chart import Chart
 from mlops.exceptions.iteration import (
     iteration_request_failed_exception,
-    model_path_not_exist_exception,
-    image_path_not_exist_exception
+    model_path_not_exist_exception
 )
 
 
@@ -33,7 +30,6 @@ class Iteration:
         self.charts: list = []
         self.dataset_name: str = None
         self.has_dataset: bool = False
-        self.exception_occurred: bool = False
         self.image_charts: list = []
 
     def format_path(self):
@@ -50,21 +46,7 @@ class Iteration:
         if os.path.exists(self.path_to_model) or self.path_to_model == "":
             return True
         else:
-            self.exception_occurred = True
             raise model_path_not_exist_exception()
-
-    def path_to_image_chart_exists(self, path) -> bool:
-        """
-        Checking if path to image chart exists.
-
-        Returns:
-            True if path to image chart exists, Exception otherwise.
-        """
-        if os.path.exists(path):
-            return True
-        else:
-            self.exception_occurred = True
-            raise image_path_not_exist_exception()
 
     def log_model_name(self, model_name: str):
         """
@@ -175,7 +157,6 @@ class Iteration:
             image_path: path to the image chart
             name: name of the image chart
         """
-        self.path_to_image_chart_exists(image_path)
         with open(image_path, "rb") as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -188,11 +169,6 @@ class Iteration:
         Returns:
             iteration: json data of created iteration
         """
-        if self.exception_occurred:
-            return  # prevent sending data to API if exception occurred before, on logging
-
-        interactive_charts = {}
-
         self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}

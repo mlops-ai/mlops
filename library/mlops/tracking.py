@@ -7,8 +7,6 @@ from mlops.exceptions.tracking import project_id_is_none_exception, experiment_i
     failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_exception
 from typing import ContextManager
 
-from mlops.exceptions.iteration import model_path_not_exist_exception
-
 
 def get_project(project_id: str = None) -> dict:
     """
@@ -257,7 +255,13 @@ def start_iteration(iteration_name: str, project_id: str = None,
         project_id=project_id,
         experiment_id=experiment_id
     )
+    exception_occurred = False
+
     try:
         yield iteration
+    except Exception as e:
+        exception_occurred = True
+        raise e
     finally:
-        iteration.end_iteration()
+        if not exception_occurred:
+            iteration.end_iteration()

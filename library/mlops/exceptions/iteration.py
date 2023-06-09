@@ -8,7 +8,3 @@ def iteration_request_failed_exception(response: Response):
 
 def model_path_not_exist_exception():
     return FileNotFoundError("Provided model path does not exist.")
-
-
-def image_path_not_exist_exception():
-    return FileNotFoundError("Provided image path does not exist.")
