@@ -18,7 +18,8 @@ import Toast from "../components/Toast";
 
 import Masonry from "react-masonry-css";
 
-import Lightbox from "react-awesome-lightbox";
+// import Lightbox from "react-awesome-lightbox";
+import Lightbox from "../components/MyLightBox";
 import "react-awesome-lightbox/build/style.css";
 import {OptionsContext} from "../App";
 
@@ -911,32 +912,11 @@ function Iteration() {
             let image_charts = []
             let image_charts_sources = []
 
-            let duplicate_idx = 0
-
             if (iterationData.image_charts) {
                 let filtered_image_charts = iterationData.image_charts.filter(chart => chart.comparable)
 
-                let sources = []
-
                 filtered_image_charts.forEach((image_chart, index) => {
                     let encoded_image = image_chart.encoded_image
-
-                    if (sources.includes(encoded_image)) {
-                        if (duplicate_idx < 10) {
-                            encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
-                            if (encoded_image === image_chart.encoded_image) {
-                                duplicate_idx += 1
-                                encoded_image = encoded_image.slice(0, -1) + duplicate_idx.toString()
-                            }
-                        } else {
-                            encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
-                            if (encoded_image === image_chart.encoded_image) {
-                                duplicate_idx += 1
-                                encoded_image = encoded_image.slice(0, -2) + duplicate_idx.toString()
-                            }
-                        }
-                        duplicate_idx += 1
-                    }
 
                     if (encoded_image.startsWith('/')) {
                         image_charts.push(
@@ -961,7 +941,6 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('i')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -985,7 +964,6 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('R')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -1009,7 +987,6 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('Q')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -1033,7 +1010,6 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('U')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -1057,7 +1033,6 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
-                        sources.push(encoded_image)
                     } else if (encoded_image.startsWith('P')) {
                         image_charts.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
@@ -1082,7 +1057,6 @@ function Iteration() {
                                 title: image_chart.name
                             }
                         )
-                        sources.push(encoded_image)
                     }
                 })
 
@@ -1351,32 +1325,15 @@ function Iteration() {
                         <p><span className="fst-italic">No image charts to show!</span></p>
                     }
 
-                    {status.isOpen &&
-                        <>
-                        {image_charts_sources.length === 1 ?
-
-                            <Lightbox
-                                image={image_charts_sources[0].url}
-                                title={image_charts_sources[0].title}
-                                onClose={() => setStatus(prevState => {
-                                    return {...prevState, isOpen: false}
-                                })}
-                                doubleClickZoom={0}
-                            />
-
-                            :
-
-                            <Lightbox
-                                images={image_charts_sources}
-                                onClose={() => setStatus(prevState => {
-                                    return {...prevState, isOpen: false}
-                                })}
-                                startIndex={status.key}
-                                doubleClickZoom={0}
-                            />
-
-                        }
-                        </>
+                    {image_charts && image_charts.length > 0 && status.isOpen &&
+                        <Lightbox
+                            images={image_charts_sources}
+                            onClose={() => setStatus(prevState => {
+                                return {...prevState, isOpen: false}
+                            })}
+                            startIndex={status.key}
+                            doubleClickZoom={0}
+                        />
                     }
 
 
