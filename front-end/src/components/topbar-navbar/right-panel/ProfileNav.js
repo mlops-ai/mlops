@@ -1,7 +1,7 @@
 import React from "react";
 import photo4 from "../../../assets/images/photo-1.jpg";
 
-function ProfileNav(props) {
+function ProfileNav() {
     return (
         <li className="dropdown pe-3">
 

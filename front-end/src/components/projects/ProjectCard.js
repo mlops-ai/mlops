@@ -1,4 +1,3 @@
-import {ThreeDots} from "react-bootstrap-icons";
 import React from "react";
 
 /**

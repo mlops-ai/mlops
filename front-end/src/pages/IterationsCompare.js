@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import LoadingData from "../components/LoadingData";
-import moment from "moment/moment";
+
 import * as echarts from 'echarts';
 import {
     TooltipComponent,
@@ -13,26 +13,24 @@ import {
 import {BarChart} from 'echarts/charts';
 import {CanvasRenderer} from 'echarts/renderers';
 import ReactEcharts from "echarts-for-react";
-import custom_theme from "../js/customed.json";
-import {toast} from "react-toastify";
+
 import Toast from "../components/Toast";
 import Masonry from "react-masonry-css";
 
-import Lightbox from "react-awesome-lightbox";
-import "react-awesome-lightbox/build/style.css";
+import Lightbox from "../components/MyLightBox";
+import "../styles/light-box.css";
 
 
 /**
  * Echarts register theme and initial configuration.
  * */
-echarts.registerTheme('customed', custom_theme)
 echarts.use([TooltipComponent, GridComponent, LegendComponent, LegendScrollComponent, LegendPlainComponent, BarChart, CanvasRenderer]);
 
 /**
  * Iterations compare page component for displaying information about multiple runs and models.
  * */
 
-function IterationsCompare(props) {
+function IterationsCompare() {
 
     console.log("[FOR DEBUGGING PURPOSES]: ITERATION COMPARE VIEW !")
 
@@ -127,7 +125,7 @@ function IterationsCompare(props) {
                     navigate('/projects/' + project_id + '/experiments')
                 }
             })
-            .catch((response) => {
+            .catch(() => {
                 navigate('/projects')
             });
 
@@ -325,7 +323,14 @@ function IterationsCompare(props) {
             /**
              * Custom charts
              * */
-            let custom_charts_packed = iterationsData.iterations.map(iteration => {
+            let custom_charts_available = iterationsData.iterations.filter(iteration => {
+                if (iteration.interactive_charts && iteration.interactive_charts.length > 0) {
+                    return true
+                }
+                return false
+            })
+
+            let custom_charts_packed = custom_charts_available.map(iteration => {
                 return iteration.interactive_charts.map(chart => {
                     return {
                         ...chart,
@@ -334,12 +339,10 @@ function IterationsCompare(props) {
                 })
             })
 
-            // console.log(iterationsData)
-
             let custom_charts_unpacked = []
 
-            custom_charts_packed.forEach((chart_pack, index) => {
-                chart_pack.forEach((chart_single, idx) => {
+            custom_charts_packed.forEach((chart_pack) => {
+                chart_pack.forEach((chart_single) => {
                     custom_charts_unpacked.push(chart_single)
                 })
             })
@@ -351,8 +354,6 @@ function IterationsCompare(props) {
                 arr[chart.name].push(chart);
                 return arr;
             }, Object.create(null));
-
-            console.log(custom_charts_grouped)
 
             function checkTypes(array, firstType) {
                 return array.every(chart => {
@@ -395,7 +396,7 @@ function IterationsCompare(props) {
                         charts.forEach((chart_data) => {
                             let data = []
                             if (chart_data.x_data.length === 1) {
-                                chart_data.y_data.forEach((data_y, index) => {
+                                chart_data.y_data.forEach((data_y) => {
                                     let data_for_series = []
                                     chart_data.x_data[0].forEach((value, idx) => {
                                         data_for_series.push([value, data_y[idx]])
@@ -534,7 +535,7 @@ function IterationsCompare(props) {
                         charts.forEach((chart_data) => {
                             let data = []
                             if (chart_data.x_data.length === 1) {
-                                chart_data.y_data.forEach((data_y, index) => {
+                                chart_data.y_data.forEach((data_y) => {
                                     let data_for_series = []
                                     chart_data.x_data[0].forEach((value, idx) => {
                                         data_for_series.push([value, data_y[idx]])
@@ -819,23 +820,26 @@ function IterationsCompare(props) {
             let charts_count = 0
             let image_charts_counts = []
             let image_charts_list = iterationsData.iterations.map(iteration => {
-                if (iteration.image_charts) {
+                if (iteration.image_charts && iteration.image_charts.length !== 0) {
                     let filtered_charts = iteration.image_charts.filter(chart => chart.comparable)
                     charts_count += filtered_charts.length
                     image_charts_counts.push(charts_count)
                     return {charts: filtered_charts, iteration_name: iteration.iteration_name}
                 }
-                return []
+                return {charts: [], iteration_name: ''}
             })
 
-            image_charts_list = image_charts_list.filter(charts => charts.length !== 0)
+            image_charts_list = image_charts_list.filter(charts => charts.charts.length !== 0)
 
             image_charts_counts.unshift(0)
 
             image_charts_list.forEach((iteration_charts, idx) => {
                 let chart_list = []
+
                 iteration_charts.charts.forEach((image_chart, index) => {
-                    if (image_chart.encoded_image.startsWith('/')) {
+                    let encoded_image = image_chart.encoded_image
+
+                    if (encoded_image.startsWith('/')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -844,23 +848,22 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
+                                <img onClick={() => setStatus({
                                         isOpen: true,
                                         key: image_charts_counts[idx] + index
-                                    }
-                                })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/jpeg;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                    })}
+                                     className="img-fluid" style={{maxHeight: 400 + "px"}}
+                                     src={"data:image/jpeg;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/jpeg;base64," + image_chart.encoded_image,
+                                url: "data:image/jpeg;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('i')) {
+                    } else if (encoded_image.startsWith('i')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -869,23 +872,21 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/png;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/png;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/png;base64," + image_chart.encoded_image,
+                                url: "data:image/png;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('R')) {
+                    } else if (encoded_image.startsWith('R')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -894,23 +895,21 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/gif;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/gif;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/gif;base64," + image_chart.encoded_image,
+                                url: "data:image/gif;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('Q')) {
+                    } else if (encoded_image.startsWith('Q')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -919,23 +918,21 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/bmp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/bmp;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/bmp;base64," + image_chart.encoded_image,
+                                url: "data:image/bmp;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('U')) {
+                    } else if (encoded_image.startsWith('U')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -944,23 +941,21 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/webp;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/webp;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/webp;base64," + image_chart.encoded_image,
+                                url: "data:image/webp;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
-                    } else if (image_chart.encoded_image.startsWith('P')) {
+                    } else if (encoded_image.startsWith('P')) {
                         chart_list.push(
                             <div className="d-flex align-items-center justify-content-center w-100 p-2" style={{
                                 background: "#fff",
@@ -969,19 +964,17 @@ function IterationsCompare(props) {
                                 marginBottom: 30 + "px",
                                 cursor: "pointer"
                             }}>
-                                <img onClick={() => setStatus(prevState => {
-                                    return {
-                                        isOpen: true,
-                                        key: image_charts_counts[idx] + index
-                                    }
+                                <img onClick={() => setStatus({
+                                    isOpen: true,
+                                    key: image_charts_counts[idx] + index
                                 })} className="img-fluid" style={{maxHeight: 400 + "px"}}
-                                     src={"data:image/svg+xml;base64," + image_chart.encoded_image} alt={image_chart.name}
+                                     src={"data:image/svg+xml;base64," + encoded_image} alt={image_chart.name}
                                      title={image_chart.name + " @" + iteration_charts.iteration_name}/>
                             </div>
                         )
                         image_charts_sources.push(
                             {
-                                url: "data:image/svg+xml;base64," + image_chart.encoded_image,
+                                url: "data:image/svg+xml;base64," + encoded_image,
                                 title: image_chart.name + " @" + iteration_charts.iteration_name
                             }
                         )
@@ -1000,8 +993,7 @@ function IterationsCompare(props) {
         return [null, null]
     }, [iterationsData])
 
-    // console.log(image_charts_sources)
-    // console.log(status)
+    console.log(status)
 
     /**
      * Component rendering.
@@ -1209,7 +1201,7 @@ function IterationsCompare(props) {
                         <p><span className="fst-italic">No image charts to show!</span></p>
                     }
 
-                    {status.isOpen &&
+                    {image_charts && image_charts.length > 0 && status.isOpen &&
                         <Lightbox
                             images={image_charts_sources}
                             onClose={() => setStatus(prevState => {

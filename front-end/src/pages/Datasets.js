@@ -1,18 +1,16 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import LoadingData from "../components/LoadingData";
 
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 import Toast from "../components/Toast";
 import DatasetCard from "../components/datasets/DatasetCard";
-import moment from "moment/moment";
-import Masonry from "react-masonry-css";
 
 /**
  * Datasets page component for displaying datasets.
  * */
-function Datasets(props) {
+function Datasets() {
     console.log("[FOR DEBUGGING PURPOSES]: DATASETS !")
 
     /**
@@ -450,7 +448,7 @@ function Datasets(props) {
                     return response
                 }
                 return Promise.reject(response);
-            }).then((response) => {
+            }).then(() => {
 
             delete_spinner.style.display = "none"
             delete_button.disabled = false

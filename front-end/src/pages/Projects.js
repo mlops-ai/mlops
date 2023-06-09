@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
 
 import Masonry from "react-masonry-css";
 
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -15,7 +15,7 @@ import {OptionsContext} from "../App";
  * Project page component for displaying projects.
  * */
 
-function Projects(props) {
+function Projects() {
 
     console.log("[FOR DEBUGGING PURPOSES]: PROJECTS !")
 
@@ -411,7 +411,7 @@ function Projects(props) {
                     return response
                 }
                 return Promise.reject(response);
-            }).then((response) => {
+            }).then(() => {
 
             delete_spinner.style.display = "none"
             delete_button.disabled = false

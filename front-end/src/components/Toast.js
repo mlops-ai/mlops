@@ -1,7 +1,7 @@
 import React from "react";
 import {ToastContainer} from "react-toastify";
 
-function Toast(props) {
+function Toast() {
     return (
         <ToastContainer
             position="bottom-center"
@@ -10,7 +10,6 @@ function Toast(props) {
             newestOnTop={false}
             closeOnClick
             rtl={false}
-            pauseOnFocusLoss
             draggable
             pauseOnHover={false}
             theme="light"

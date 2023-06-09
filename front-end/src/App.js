@@ -5,7 +5,9 @@ import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.min.js';
 import './styles/main.css';
+import './styles/material-symbols-rounded.css';
 
 import Navigation from "./components/Navigation";
 
@@ -31,9 +33,6 @@ function App() {
 
     return (
         <BrowserRouter>
-            <Helmet>
-                {/*<script src="./js/main.js" type="text/babel"></script>*/}
-            </Helmet>
             <OptionsContext.Provider value={[refresher, setRefresher]}>
                 <Navigation />
                 <Routes>

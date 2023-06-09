@@ -1,6 +1,6 @@
 import React from "react";
 
-function Notifications(props) {
+function Notifications() {
     return (
         <li className="dropdown">
 

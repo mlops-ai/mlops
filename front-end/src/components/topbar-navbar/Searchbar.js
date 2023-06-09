@@ -1,6 +1,6 @@
-import React, {useEffect, useState, useMemo, useCallback, useContext} from "react";
-import Select, { components } from "react-select";
-import {useLocation, useNavigate} from "react-router-dom";
+import React, {useEffect, useState, useContext} from "react";
+import { components } from "react-select";
+import {useNavigate} from "react-router-dom";
 import {toast} from "react-toastify";
 import AsyncSelect from "react-select/async";
 import {OptionsContext} from "../../App";
@@ -8,7 +8,7 @@ import {OptionsContext} from "../../App";
 /**
  * Searchbar component for searching projects, experiments and iterations.
  * */
-function Searchbar(props) {
+function Searchbar() {
 
     console.log("[FOR DEBUGGING PURPOSES]: SEARCHBAR !")
 
@@ -16,11 +16,6 @@ function Searchbar(props) {
      * Function used for redirecting.
      * */
     let navigate = useNavigate();
-
-    /**
-     * React location hook.
-     * */
-    let location = useLocation();
 
     /**
      * State used for storing options data.
