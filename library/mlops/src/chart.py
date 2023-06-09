@@ -16,9 +16,16 @@ class Chart:
         - **chart_type (str)**: Chart type.
         - **x_data(List[float])**: X data.
         - **y_data (List[float])**: Y data.
+        - **y_data_names (List[str])**: List of y data names
         - **x_label (Optional[str])**: X label.
         - **y_label (Optional[str])**: Y label.
+        - **x_min (Optional float)**: Minimal value of x.
+        - **y_min (Optional float)**: Minimal value of y.
+        - **x_max (Optional float)**: Maximum value of x.
+        - **y_max (Optional float)**: Maximum value of y.
+        - **comperable (Optional bool)**: Determines whether chart can be compared with other charts
         """
+
         self.chart_name = chart_name
         self.chart_title = chart_title
         self.chart_subtitle = chart_subtitle

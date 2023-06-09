@@ -8,6 +8,7 @@ from app.config.config import settings as app_settings
 from mlops.config.config import settings as lib_settings
 from app.database.init_mongo_db import drop_database
 from mlops.src.chart import Chart
+from mlops.exceptions.iteration import iteration_request_failed_exception
 
 
 # Fixture to set up test environment
@@ -348,12 +349,92 @@ async def test_start_iteration_with_image_charts_failure_missing_argument(setup)
 
 
 @pytest.mark.asyncio
-async def test_start_iteration_with_chart(setup):
+async def test_start_iteration_with_line_chart(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    chart = Chart(chart_name="Chart 1", chart_type="line", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_chart(chart)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_pie_chart(setup):
     await drop_database()
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
     chart = Chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_chart(chart)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_bar_chart(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    chart = Chart(chart_name="Chart 1", chart_type="bar", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_chart(chart)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_scatter_chart(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    chart = Chart(chart_name="Chart 1", chart_type="scatter", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+
+    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                        experiment_id=experiment['id']) as iteration:
+        iteration.log_model_name('test_iteration.py')
+        iteration.log_parameter('test_parameter', 100)
+        iteration.log_metric('test_accuracy', 0.98)
+        iteration.log_chart(chart)
+
+    result = iteration.end_iteration()
+
+    assert result['iteration_name'] == 'test_iteration'
+    assert result['parameters'] == {'test_parameter': 100}
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_box_chart(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    chart = Chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3, 4, 5],[1, 2, 3, 4, 5],[1, 2, 3, 4, 5]],y_data_names=["1","2","3"], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
