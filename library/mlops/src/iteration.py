@@ -4,6 +4,10 @@ import base64
 
 from mlops.config.config import settings
 from mlops.exceptions.tracking import request_failed_exception
+from mlops.src.dataset import Dataset
+import requests
+from mlops.exceptions.iteration import iteration_request_failed_exception
+from mlops.src.chart import Chart
 from mlops.exceptions.iteration import (
     iteration_request_failed_exception,
     model_path_not_exist_exception,
@@ -26,6 +30,7 @@ class Iteration:
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
+        self.charts: list = []
         self.dataset_name: str = None
         self.has_dataset: bool = False
         self.exception_occurred: bool = False
@@ -138,6 +143,30 @@ class Iteration:
         else:
             raise request_failed_exception(app_response)
 
+    def log_chart(self, chart: Chart):
+        """
+        Logging a single chart
+
+        Args:
+            chart: instance of mlops Chart
+        """
+
+        self.charts.append(chart)
+
+    def transform_charts_to_dictionary(self):
+        """
+
+        Returns:
+
+        """
+
+        interactive_charts = []
+
+        for chart in self.charts:
+            interactive_charts.append(chart.get_chart_dictionary())
+
+        return interactive_charts
+
     def log_image_chart(self, name: str, image_path: str):
         """
         Logging image chart
@@ -162,10 +191,18 @@ class Iteration:
         if self.exception_occurred:
             return  # prevent sending data to API if exception occurred before, on logging
 
+        interactive_charts = {}
+
+        self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:
             dataset = None
+
+        if self.charts:
+            interactive_charts = self.transform_charts_to_dictionary()
+        else:
+            interactive_charts = None
 
         data = {
             "user_name": self.user_name,
@@ -175,7 +212,8 @@ class Iteration:
             "path_to_model": self.path_to_model,
             "model_name": self.model_name,
             "dataset": dataset,
-            "image_charts": self.image_charts
+            "image_charts": self.image_charts,
+            "interactive_charts": interactive_charts
         }
 
         app_response = requests.post(
