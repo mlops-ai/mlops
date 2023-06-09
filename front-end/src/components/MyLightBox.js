@@ -1,4 +1,6 @@
 import React from "react";
+import { saveAs } from "file-saver";
+
 const DEFAULT_ZOOM_STEP  = 0.3;
 const DEFAULT_LARGE_ZOOM = 4;
 function getXY(e){
@@ -67,6 +69,11 @@ export default class Lightbox extends React.Component {
         const y    = (_xy.y - _ccy) * -1 * _z;
         this.setState({x, y, zoom: _z});
     }
+
+    saveChart = () => {
+        saveAs(this.props?.images[this.state.current].url, this.props?.images[this.state.current].title + '.png')
+    }
+
     navigateImage = (direction, e) =>{
         this.stopSideEffect(e);
         let current = 0;
@@ -217,6 +224,11 @@ export default class Lightbox extends React.Component {
                              className={`lb-button lb-icon-reset lb-hide-mobile reload ${_reset?"":"lb-disabled"}`}
                              onClick={this.reset}></div>
                     </Cond>
+                    <div title="Save Chart" className="lb-button d-flex align-items-center justify-content-center" onClick={e=> this.saveChart()} style={{width: 50 + "px", height: 50 + "px"}}>
+                        <span className="material-symbols-rounded fw-bold" style={{color: '#fff'}}>
+                            download
+                        </span>
+                    </div>
                     <Cond condition = {multi}>
                         <div title="Previous" className="lb-button lb-icon-arrow prev lb-hide-mobile" onClick={e=>this.navigateImage("prev", e)}></div>
                         <div title="Next" className="lb-button lb-icon-arrow next lb-hide-mobile" onClick={e=>this.navigateImage("next", e)}></div>

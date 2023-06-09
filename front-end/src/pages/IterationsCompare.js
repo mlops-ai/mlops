@@ -18,8 +18,7 @@ import Toast from "../components/Toast";
 import Masonry from "react-masonry-css";
 
 import Lightbox from "../components/MyLightBox";
-// import Lightbox from "react-awesome-lightbox";
-import "react-awesome-lightbox/build/style.css";
+import "../styles/light-box.css";
 
 
 /**

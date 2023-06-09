@@ -18,9 +18,9 @@ import Toast from "../components/Toast";
 
 import Masonry from "react-masonry-css";
 
-// import Lightbox from "react-awesome-lightbox";
 import Lightbox from "../components/MyLightBox";
-import "react-awesome-lightbox/build/style.css";
+import "../styles/light-box.css";
+
 import {OptionsContext} from "../App";
 
 /**
