@@ -4,10 +4,11 @@ import base64
 
 from mlops.config.config import settings
 from mlops.exceptions.tracking import request_failed_exception
+import requests
+from mlops.src.chart import Chart
 from mlops.exceptions.iteration import (
     iteration_request_failed_exception,
-    model_path_not_exist_exception,
-    image_path_not_exist_exception
+    model_path_not_exist_exception
 )
 
 
@@ -26,9 +27,9 @@ class Iteration:
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
+        self.charts: list = []
         self.dataset_name: str = None
         self.has_dataset: bool = False
-        self.exception_occurred: bool = False
         self.image_charts: list = []
 
     def format_path(self):
@@ -45,21 +46,7 @@ class Iteration:
         if os.path.exists(self.path_to_model) or self.path_to_model == "":
             return True
         else:
-            self.exception_occurred = True
             raise model_path_not_exist_exception()
-
-    def path_to_image_chart_exists(self, path) -> bool:
-        """
-        Checking if path to image chart exists.
-
-        Returns:
-            True if path to image chart exists, Exception otherwise.
-        """
-        if os.path.exists(path):
-            return True
-        else:
-            self.exception_occurred = True
-            raise image_path_not_exist_exception()
 
     def log_model_name(self, model_name: str):
         """
@@ -138,6 +125,50 @@ class Iteration:
         else:
             raise request_failed_exception(app_response)
 
+    def log_chart(self, chart_name: str, chart_type: str, chart_title: str, chart_subtitle: str = None,
+                  x_data: list = [list],
+                  y_data: list = [list], y_data_names: [str] = [], x_label: str = "x", y_label: str = "y",
+                  x_min: float = None, x_max: float = None, y_min: float = None, y_max: float = None,
+                  comparable: bool = False):
+        """
+        Logging a single chart
+
+        Args:
+            **chart_name (str)**: Chart name.
+            **chart_type (str)**: Chart type.
+            **x_data(List[float])**: X data.
+            **y_data (List[float])**: Y data.
+            **y_data_names (List[str])**: List of y data names
+            **x_label (Optional[str])**: X label.
+            **y_label (Optional[str])**: Y label.
+            **x_min (Optional float)**: Minimal value of x.
+            **y_min (Optional float)**: Minimal value of y.
+            **x_max (Optional float)**: Maximum value of x.
+            **y_max (Optional float)**: Maximum value of y.
+            **comparable (Optional bool)**: Determines whether chart can be compared with other charts
+        """
+
+        chart = Chart(chart_name=chart_name, chart_type=chart_type, chart_title=chart_title,
+                      chart_subtitle=chart_subtitle, x_data=x_data,
+                      y_data=y_data, y_data_names=y_data_names, x_label=x_label, y_label=y_label,
+                      x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, comparable=comparable)
+
+        self.charts.append(chart)
+
+    def transform_charts_to_dictionary(self):
+        """
+
+        Returns:
+
+        """
+
+        interactive_charts = []
+
+        for chart in self.charts:
+            interactive_charts.append(chart.get_chart_dictionary())
+
+        return interactive_charts
+
     def log_image_chart(self, name: str, image_path: str):
         """
         Logging image chart
@@ -146,7 +177,6 @@ class Iteration:
             image_path: path to the image chart
             name: name of the image chart
         """
-        self.path_to_image_chart_exists(image_path)
         with open(image_path, "rb") as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -159,13 +189,16 @@ class Iteration:
         Returns:
             iteration: json data of created iteration
         """
-        if self.exception_occurred:
-            return  # prevent sending data to API if exception occurred before, on logging
-
+        self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:
             dataset = None
+
+        if self.charts:
+            interactive_charts = self.transform_charts_to_dictionary()
+        else:
+            interactive_charts = None
 
         data = {
             "user_name": self.user_name,
@@ -175,7 +208,8 @@ class Iteration:
             "path_to_model": self.path_to_model,
             "model_name": self.model_name,
             "dataset": dataset,
-            "image_charts": self.image_charts
+            "image_charts": self.image_charts,
+            "interactive_charts": interactive_charts
         }
 
         app_response = requests.post(

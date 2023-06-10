@@ -4,7 +4,6 @@ import mlops.tracking
 from app.config.config import settings as app_settings
 from app.database.init_mongo_db import drop_database
 from mlops.src.iteration import Iteration
-from mlops.src.dataset import Dataset
 
 
 @pytest.fixture(scope="module")
