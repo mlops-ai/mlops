@@ -8,6 +8,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.min.js';
 import './styles/main.css';
 import './styles/material-symbols-rounded.css';
+import './styles/all.min.css';
 
 import Navigation from "./components/Navigation";
 
