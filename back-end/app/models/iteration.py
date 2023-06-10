@@ -53,7 +53,7 @@ class Iteration(BaseModel):
     metrics: Optional[dict] = Field(default=None, description="Iteration metrics")
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
-    model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
+    model_name: Optional[str] = Field(default="model", description="Model name", min_length=1, max_length=100)
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
     interactive_charts: Optional[List[InteractiveChart]] = Field(default=[], description="Interactive charts list")
     image_charts: Optional[List[ImageChart]] = Field(default=[], description="Image charts list")

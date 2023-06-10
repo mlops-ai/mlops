@@ -354,14 +354,13 @@ async def test_start_iteration_with_line_chart(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    chart = Chart(chart_name="Chart 1", chart_type="line", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart)
+        iteration.log_chart(chart_name="Chart 1", chart_type="line", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
@@ -374,14 +373,13 @@ async def test_start_iteration_with_pie_chart(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    chart = Chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart)
+        iteration.log_chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
@@ -394,14 +392,13 @@ async def test_start_iteration_with_bar_chart(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    chart = Chart(chart_name="Chart 1", chart_type="bar", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart)
+        iteration.log_chart(chart_name="Chart 1", chart_type="bar", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
@@ -414,14 +411,13 @@ async def test_start_iteration_with_scatter_chart(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    chart = Chart(chart_name="Chart 1", chart_type="scatter", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart)
+        iteration.log_chart(chart_name="Chart 1", chart_type="scatter", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
@@ -434,16 +430,53 @@ async def test_start_iteration_with_box_chart(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    chart = Chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3, 4, 5],[1, 2, 3, 4, 5],[1, 2, 3, 4, 5]],y_data_names=["1","2","3"], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart)
+        iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3, 4, 5],[1, 2, 3, 4, 5],[1, 2, 3, 4, 5]],y_data_names=["1","2","3"], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_box_chart_failed(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    with pytest.raises(Exception) as exc_info:
+        with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                            experiment_id=experiment['id']) as iteration:
+            iteration.log_model_name('test_iteration.py')
+            iteration.log_parameter('test_parameter', 100)
+            iteration.log_metric('test_accuracy', 0.98)
+            iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+
+        result = iteration.end_iteration()
+
+    assert str(exc_info.value) == "Iteration not created. Request failed with status code 400: Error: For each element in x_data, there must be a list of y_data"
+
+@pytest.mark.asyncio
+async def test_start_iteration_with_box_chart_failed_with_wrong_y_data_format(setup):
+    await drop_database()
+
+    project = mlops.tracking.create_project(title='test_project')
+    experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+
+    with pytest.raises(Exception) as exc_info:
+        with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                            experiment_id=experiment['id']) as iteration:
+            iteration.log_model_name('test_iteration.py')
+            iteration.log_parameter('test_parameter', 100)
+            iteration.log_metric('test_accuracy', 0.98)
+            iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3],[1, 2, 3],[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+
+        result = iteration.end_iteration()
+
+    assert str(exc_info.value) == "Iteration not created. Request failed with status code 400: Length of y_data must contain 5 values: min, q1, median, q3, max"

@@ -125,13 +125,33 @@ class Iteration:
         else:
             raise request_failed_exception(app_response)
 
-    def log_chart(self, chart: Chart):
+    def log_chart(self, chart_name: str, chart_type: str, chart_title: str, chart_subtitle: str = None,
+                  x_data: list = [list],
+                  y_data: list = [list], y_data_names: [str] = [], x_label: str = "x", y_label: str = "y",
+                  x_min: float = None, x_max: float = None, y_min: float = None, y_max: float = None,
+                  comparable: bool = False):
         """
         Logging a single chart
 
         Args:
-            chart: instance of mlops Chart
+            **chart_name (str)**: Chart name.
+            **chart_type (str)**: Chart type.
+            **x_data(List[float])**: X data.
+            **y_data (List[float])**: Y data.
+            **y_data_names (List[str])**: List of y data names
+            **x_label (Optional[str])**: X label.
+            **y_label (Optional[str])**: Y label.
+            **x_min (Optional float)**: Minimal value of x.
+            **y_min (Optional float)**: Minimal value of y.
+            **x_max (Optional float)**: Maximum value of x.
+            **y_max (Optional float)**: Maximum value of y.
+            **comparable (Optional bool)**: Determines whether chart can be compared with other charts
         """
+
+        chart = Chart(chart_name=chart_name, chart_type=chart_type, chart_title=chart_title,
+                      chart_subtitle=chart_subtitle, x_data=x_data,
+                      y_data=y_data, y_data_names=y_data_names, x_label=x_label, y_label=y_label,
+                      x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, comparable=comparable)
 
         self.charts.append(chart)
 
