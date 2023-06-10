@@ -853,11 +853,13 @@ function Iteration() {
                             // Oś X
                             xAxis: {
                                 type: 'value',
+                                name: chart_data.x_label ? chart_data.x_label : ''
                             },
                             // Oś Y
                             yAxis: {
                                 type: 'category',
                                 data: chart_data.x_data[0],
+                                name: chart_data.y_label ? chart_data.y_label : ''
                             },
                             // Toolbox
                             toolbox: {
