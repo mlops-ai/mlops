@@ -1,10 +1,15 @@
-import mlops.tracking
+import requests
+import os
+import base64
+
 from mlops.config.config import settings
 from mlops.exceptions.tracking import request_failed_exception
-from mlops.src.dataset import Dataset
 import requests
-from mlops.exceptions.iteration import iteration_request_failed_exception
-
+from mlops.src.chart import Chart
+from mlops.exceptions.iteration import (
+    iteration_request_failed_exception,
+    model_path_not_exist_exception
+)
 
 
 class Iteration:
@@ -22,10 +27,26 @@ class Iteration:
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
+        self.charts: list = []
+        self.dataset_name: str = None
+        self.has_dataset: bool = False
+        self.image_charts: list = []
 
     def format_path(self):
         self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
             '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('/', '\\')
+
+    def path_to_model_exists(self) -> bool:
+        """
+        Checking if path to model exists.
+
+        Returns:
+            True if path to model exists, Exception otherwise.
+        """
+        if os.path.exists(self.path_to_model) or self.path_to_model == "":
+            return True
+        else:
+            raise model_path_not_exist_exception()
 
     def log_model_name(self, model_name: str):
         """
@@ -43,8 +64,9 @@ class Iteration:
         Args:
             path_to_model: input path to model
         """
-
         self.path_to_model = path_to_model
+        self.format_path()
+        self.path_to_model_exists()
 
     def log_metric(self, metric_name: str, value):
         """
@@ -99,23 +121,84 @@ class Iteration:
         if app_response.status_code == 200:
             self.dataset_name = response_json["dataset_name"]
             self.dataset_id = dataset_id
-            self.hasDataset = True
+            self.has_dataset = True
         else:
             raise request_failed_exception(app_response)
 
-    def end_iteration(self) -> dict:
+    def log_chart(self, chart_name: str, chart_type: str, chart_title: str, chart_subtitle: str = None,
+                  x_data: list = [list],
+                  y_data: list = [list], y_data_names: [str] = [], x_label: str = "x", y_label: str = "y",
+                  x_min: float = None, x_max: float = None, y_min: float = None, y_max: float = None,
+                  comparable: bool = False):
+        """
+        Logging a single chart
+
+        Args:
+            **chart_name (str)**: Chart name.
+            **chart_type (str)**: Chart type.
+            **x_data(List[float])**: X data.
+            **y_data (List[float])**: Y data.
+            **y_data_names (List[str])**: List of y data names
+            **x_label (Optional[str])**: X label.
+            **y_label (Optional[str])**: Y label.
+            **x_min (Optional float)**: Minimal value of x.
+            **y_min (Optional float)**: Minimal value of y.
+            **x_max (Optional float)**: Maximum value of x.
+            **y_max (Optional float)**: Maximum value of y.
+            **comparable (Optional bool)**: Determines whether chart can be compared with other charts
+        """
+
+        chart = Chart(chart_name=chart_name, chart_type=chart_type, chart_title=chart_title,
+                      chart_subtitle=chart_subtitle, x_data=x_data,
+                      y_data=y_data, y_data_names=y_data_names, x_label=x_label, y_label=y_label,
+                      x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, comparable=comparable)
+
+        self.charts.append(chart)
+
+    def transform_charts_to_dictionary(self):
+        """
+
+        Returns:
+
+        """
+
+        interactive_charts = []
+
+        for chart in self.charts:
+            interactive_charts.append(chart.get_chart_dictionary())
+
+        return interactive_charts
+
+    def log_image_chart(self, name: str, image_path: str):
+        """
+        Logging image chart
+
+        Args:
+            image_path: path to the image chart
+            name: name of the image chart
+        """
+        with open(image_path, "rb") as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+        self.image_charts.append({"name": name, "encoded_image": encoded_image})
+
+    def end_iteration(self) -> dict or None:
         """
         End iteration and send data to API.
 
         Returns:
             iteration: json data of created iteration
         """
-
         self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:
             dataset = None
+
+        if self.charts:
+            interactive_charts = self.transform_charts_to_dictionary()
+        else:
+            interactive_charts = None
 
         data = {
             "user_name": self.user_name,
@@ -124,7 +207,9 @@ class Iteration:
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
             "model_name": self.model_name,
-            "dataset": dataset
+            "dataset": dataset,
+            "image_charts": self.image_charts,
+            "interactive_charts": interactive_charts
         }
 
         app_response = requests.post(

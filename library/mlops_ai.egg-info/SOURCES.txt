@@ -9,6 +9,7 @@ mlops/exceptions/__init__.py
 mlops/exceptions/iteration.py
 mlops/exceptions/tracking.py
 mlops/src/__init__.py
+mlops/src/chart.py
 mlops/src/dataset.py
 mlops/src/iteration.py
 mlops_ai.egg-info/PKG-INFO
