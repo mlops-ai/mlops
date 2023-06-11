@@ -205,40 +205,6 @@ def set_active_experiment(experiment_id: str) -> str:
     return f"Active experiment set to: {settings.active_experiment_id}"
 
 
-@contextmanager
-def start_iteration(iteration_name: str, project_id: str = None,
-                    experiment_id: str = None) -> ContextManager[Iteration]:
-    """
-    Function for creating mlops iteration
-
-    Args:
-        iteration_name: name of the created iteration
-        project_id: if passed id of the project, else active project_id from settings
-        experiment_id: if passed id of the experiment, else active experiment_id from settings
-
-    Returns:
-        Iteration.end_iteration() method output
-    """
-
-    project_id = settings.active_project_id if not project_id else project_id
-    experiment_id = settings.active_experiment_id if not experiment_id else experiment_id
-
-    if project_id is None:
-        raise project_id_is_none_exception()
-    if experiment_id is None:
-        raise experiment_id_is_none_exception()
-
-    iteration = Iteration(
-        iteration_name=iteration_name,
-        project_id=project_id,
-        experiment_id=experiment_id
-    )
-    try:
-        yield iteration
-    finally:
-        iteration.end_iteration()
-
-
 def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
                    tags: str = None, version: str = None) -> dict:
     """
@@ -261,3 +227,41 @@ def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description:
 
     return app_response
 
+
+@contextmanager
+def start_iteration(iteration_name: str, project_id: str = None,
+                    experiment_id: str = None) -> ContextManager[Iteration]:
+    """
+    Function for creating mlops iteration
+
+    Args:
+        iteration_name: name of the created iteration
+        project_id: if passed id of the project, else active project_id from settings
+        experiment_id: if passed id of the experiment, else active experiment_id from settings
+
+    Returns:
+        Iteration.end_iteration() method output
+    """
+    project_id = settings.active_project_id if not project_id else project_id
+    experiment_id = settings.active_experiment_id if not experiment_id else experiment_id
+
+    if project_id is None:
+        raise project_id_is_none_exception()
+    if experiment_id is None:
+        raise experiment_id_is_none_exception()
+
+    iteration = Iteration(
+        iteration_name=iteration_name,
+        project_id=project_id,
+        experiment_id=experiment_id
+    )
+    exception_occurred = False
+
+    try:
+        yield iteration
+    except Exception as e:
+        exception_occurred = True
+        raise e
+    finally:
+        if not exception_occurred:
+            iteration.end_iteration()
