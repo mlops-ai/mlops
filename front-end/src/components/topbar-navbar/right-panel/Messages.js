@@ -2,7 +2,7 @@ import React from "react";
 import photo3 from "../../../assets/images/photo-4.jpg";
 import photo2 from "../../../assets/images/photo-3.jpg";
 
-function Messages(props) {
+function Messages() {
     return (
         <li className="dropdown">
 

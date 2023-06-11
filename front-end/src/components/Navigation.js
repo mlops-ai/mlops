@@ -10,20 +10,20 @@ import NavItem from "./sidebar/NavItem";
 /**
  * Navigation component.
  * */
-function Navigation(props) {
+function Navigation() {
     let path = useLocation().pathname;
 
     /**
      * Function for toggle sidebar.
      * */
-    function toggleSidebar(e) {
+    function toggleSidebar() {
         document.body.classList.toggle('toggle-sidebar');
     }
 
     /**
      * Function for toggle searchbar.
      * */
-    function toggleSearchbar(e) {
+    function toggleSearchbar() {
         document.getElementById('search-bar').classList.toggle('search-bar-show');
     }
 
@@ -36,7 +36,8 @@ function Navigation(props) {
 
                 <AppLogo toogleSidebar={toggleSidebar}/>
 
-                <Searchbar />
+                {/*<Searchbar />*/}
+                <Searchbar/>
 
                 <RightPanel toggleSearchbar={toggleSearchbar}/>
 
@@ -74,14 +75,14 @@ function Navigation(props) {
 
                     <NavItem
                         location={path}
-                        href={'https://github.com'}
+                        href={'https://github.com/kajetsz/mlops'}
                         name={'Github'}
                         icon={
                             <Github/>
                         }/>
 
                     <li className="nav-item">
-                        <a className="nav-link" href="#">
+                        <a className="nav-link" href="https://github.com/kajetsz/mlops/wiki">
                     <span className="material-symbols-rounded">
                         article
                     </span>
@@ -90,11 +91,11 @@ function Navigation(props) {
                     </li>
 
                     <li className="nav-item">
-                        <a className="nav-link" href="#">
-                    <span className="material-symbols-rounded">
-                        help
-                    </span>
-                            <span>FAQ</span>
+                        <a className="nav-link" href="https://github.com/kajetsz/mlops/issues">
+                        <span className="material-symbols-rounded">
+                            report
+                        </span>
+                            <span>Report issue</span>
                         </a>
                     </li>
 

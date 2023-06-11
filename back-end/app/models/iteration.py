@@ -1,11 +1,10 @@
-import os
 import getpass
-from pydantic import Field, BaseModel, validator
+from pydantic import Field, BaseModel
 from datetime import datetime
-from typing import Optional, Dict, List
+from typing import Optional, List
 from beanie import PydanticObjectId
-from app.models.dataset import Dataset
 from app.models.chart import InteractiveChart
+from app.models.image_chart import ImageChart
 
 
 class DatasetInIteration(BaseModel):
@@ -54,24 +53,10 @@ class Iteration(BaseModel):
     metrics: Optional[dict] = Field(default=None, description="Iteration metrics")
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
-    model_name: Optional[str] = Field(default=None, description="Model name", min_length=1, max_length=100)
+    model_name: Optional[str] = Field(default="model", description="Model name", min_length=1, max_length=100)
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
-    interactive_charts: Optional[List[InteractiveChart]] = Field(default=None, description="Interactive charts list")
-
-    @validator('path_to_model')
-    def path_to_model_exists(cls, path):
-        if not path:
-            return path
-        path = r'{}'.format(path)
-        if os.path.isfile(path):
-            return path
-        else:
-            # Change the current working directory to the root directory
-            os.chdir('/')
-            if os.path.isfile(path):
-                return path
-            else:
-                raise ValueError('File does not exist')
+    interactive_charts: Optional[List[InteractiveChart]] = Field(default=[], description="Interactive charts list")
+    image_charts: Optional[List[ImageChart]] = Field(default=[], description="Image charts list")
 
     def __repr__(self) -> str:
         return f"<Iteration {self.iteration_name}>"
@@ -104,12 +89,20 @@ class Iteration(BaseModel):
                 },
                 "interactive_charts": [
                     {
-                        "chart_name": "Chart 1",
-                        "chart_type": "line",
-                        "x_data": [1, 2, 3],
-                        "y_data": [1, 2, 3],
-                        "x_axis_name": "Age",
-                        "y_axis_name": "Survived"
+                        "name": "Chart name used for logical identification",
+                        "chart_title": "Chart title",
+                        "chart_type": "scatter",
+                        "x_data": [[1, 2, 3]],
+                        "y_data": [[1, 2, 3]],
+                        "x_label": "X label",
+                        "y_label": "Y label",
+                        "comparable": False
+                    }
+                ],
+                "image_charts": [
+                    {
+                        "name": "Chart 1",
+                        "encoded_image": "..."
                     }
                 ]
             }

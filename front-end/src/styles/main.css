@@ -14,6 +14,7 @@
     --font-lato: "Lato", sans-serif;
     --font-roboto: "Roboto", sans-serif;
     --color-primary: #012970;
+    --color-primary-hover: #012970cc;
     --color-secondary: #444444;
     --color-light: #899bbd;
     --action-hover: #f2f4ff;
@@ -86,7 +87,7 @@ a:hover {
     transition: all 0.5s;
     z-index: 997;
     height: 60px;
-    box-shadow: 0px 2px 20px rgba(1, 41, 112, 0.1);
+    box-shadow: 0 2px 20px rgba(1, 41, 112, 0.1);
     background-color: var(--bg-secondary);
     padding-left: 20px;
 }
@@ -132,6 +133,19 @@ a:hover {
     border-radius: 20px;
 }
 
+.topbar-navbar .toggle-searchbar-btn {
+    border-radius: 20px;
+    user-select: none;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-size: 32px;
+    padding: 6px;
+}
+
+.topbar-navbar .toggle-searchbar-btn:hover {
+    background-color: var(--action-hover);
+}
+
 .topbar-navbar .toggle-sidebar-btn:hover {
     background-color: var(--action-hover);
 }
@@ -141,7 +155,8 @@ a:hover {
     * */
 
 .topbar-navbar .search-bar {
-    min-width: 420px;
+    min-width: 560px;
+    max-width: 560px;
     padding: 0 20px;
 }
 
@@ -152,11 +167,13 @@ a:hover {
         left: 0;
         right: 0;
         padding: 20px;
-        box-shadow: 0px 0px 15px 0px rgba(1, 41, 112, 0.1);
+        box-shadow: 0 0 15px 0 rgba(1, 41, 112, 0.1);
         background: white;
         z-index: 9999;
         visibility: hidden;
         opacity: 0;
+        max-width: 100%;
+        min-width: 420px;
     }
 
     .topbar-navbar .search-bar-show {
@@ -166,12 +183,12 @@ a:hover {
     }
 }
 
+
 .topbar-navbar .search-form {
     width: 100%;
 }
 
 .topbar-navbar .search-form #search-input {
-    border: 0;
     font-size: 14px;
     color: var(--color-primary);
     border: 1.5px solid rgba(1, 41, 112, 0.2);
@@ -218,7 +235,6 @@ a:hover {
     color: var(--color-primary);
     margin-right: 16px;
     position: relative;
-    height: 28px;
 }
 
 .right-panel .panel-icon :is(i.bi, span.material-symbols-rounded, svg) {
@@ -362,7 +378,7 @@ a:hover {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #aab7cf transparent;
-    box-shadow: 0px 0px 20px rgba(1, 41, 112, 0.1);
+    box-shadow: 0 0 20px rgba(1, 41, 112, 0.1);
     background-color: #fff;
 }
 
@@ -617,7 +633,7 @@ a:hover {
     margin-bottom: 30px;
     border: none;
     border-radius: 5px;
-    box-shadow: 0px 0 30px rgba(1, 41, 112, 0.1);
+    box-shadow: 0 0 30px rgba(1, 41, 112, 0.1);
 }
 
 :is(.card-header, .card-footer) {
@@ -672,21 +688,21 @@ a:hover {
 * Card - projects
 * */
 
-.card-view .more-action svg {
+.more-action svg {
     color: var(--color-gray-600);
 }
 
-.card-view .more-action svg:hover {
+.more-action svg:hover {
     transition: 0.5s;
     cursor: pointer;
     color: var(--color-primary);
 }
 
-.card-view .more-action .dropdown-menu {
+.more-action .dropdown-menu {
     min-width: 200px;
 }
 
-.card-view .more-action :is(span.material-symbols-rounded, svg) {
+.more-action :is(span.material-symbols-rounded, svg) {
     font-size: 18px;
     margin-right: 4px;
 }
@@ -767,6 +783,11 @@ a:hover {
     background-color: var(--action-hover);
 }
 
+.more-action.on-bg .more-action-button.material-symbols-rounded:hover {
+    color: var(--color-primary);
+    background-color:#EAEFF9;
+}
+
 .no-projects, .no-datasets {
     padding: 128px;
 }
@@ -816,10 +837,16 @@ a:hover {
 * Experiments
 * */
 
+
+.experiments-list-action-button .icon-border {
+    width: 28px;
+    height: 28px;
+}
+
 .icon-border {
     border: 2px solid var(--color-primary);
     border-radius: 50%;
-    font-weight: bold;
+    font-weight: bolder !important;
     color: var(--color-primary);
     cursor: pointer;
     margin-left: 6px;
@@ -1072,7 +1099,7 @@ button.p-tree-toggler:has(+.p-treenode-label) {
 }
 
 .button-container div > button:last-of-type {
-    margin-right: 0px;
+    margin-right: 0;
 }
 
 .iterations-button > span {
@@ -1082,7 +1109,7 @@ button.p-tree-toggler:has(+.p-treenode-label) {
 .project-info-id {
     color: var(--color-gray-600);
     font-size: 20px;
-    margin: 0 12px;
+    margin: 0 8px 0 12px;
 }
 
 .project-info-id .material-symbols-rounded {
@@ -1109,7 +1136,7 @@ button[data-bs-dismiss="modal"]:hover {
 }
 
 .card-dataset .badge:first-of-type {
-    margin-left: 0px !important;
+    margin-left: 0 !important;
 }
 
 .dataset-title span {
@@ -1139,3 +1166,20 @@ button[data-bs-dismiss="modal"]:hover {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+.search-bar-main {
+    border: 1.5px solid rgba(1, 41, 112, 0.2);
+    border-radius: 6px;
+}
+
+.search-bar-main:hover, .search-bar-main:focus {
+    border: 1.5px solid var(--color-primary);
+    border-radius: 6px;
+}
+.css-13cymwt-control {
+    border: none;
+    max-height: 32px;
+}
+/*.css-t3ipsp-control, .css-t3ipsp-control:hover, .css-t3ipsp-control:focus, .css-13cymwt-control, .css-13cymwt-control{*/
+/*    border: 1.5px solid var(--color-primary);*/
+/*}*/

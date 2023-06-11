@@ -241,7 +241,7 @@ async def delete_iteration_from_dataset_deleting_iteration(iteration: Iteration)
 
 async def is_chart_name_unique(iteration: Iteration) -> bool:
     """
-    Check if chart name is unique in iteration.
+    Check if chart logical name is unique in iteration.
 
     Args:
     - **iteration (Iteration)**: Iteration
@@ -249,7 +249,7 @@ async def is_chart_name_unique(iteration: Iteration) -> bool:
     Returns:
     - **bool**: True if chart name is unique, False otherwise
     """
-    chart_names = [chart.chart_name for chart in iteration.interactive_charts]
+    chart_names = [chart.name for chart in iteration.interactive_charts]
     if len(chart_names) != len(set(chart_names)):
         return False
     return True

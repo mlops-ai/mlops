@@ -4,7 +4,6 @@ import mlops.tracking
 from app.config.config import settings as app_settings
 from app.database.init_mongo_db import drop_database
 from mlops.src.iteration import Iteration
-from mlops.src.dataset import Dataset
 
 
 @pytest.fixture(scope="module")
@@ -22,7 +21,7 @@ def test_format_unix_path(setup):
         experiment_id='test_experiment'
     )
 
-    iteration.log_path_to_model('../mlops/library/tests/test_tracking.py')
+    iteration.path_to_model = '../mlops/library/tests/test_tracking.py'
 
     iteration.format_path()
 
@@ -36,7 +35,7 @@ def test_format_good_path(setup):
         experiment_id='test_experiment'
     )
 
-    iteration.log_path_to_model('..\\mlops\\library\\tests\\test_tracking.py')
+    iteration.path_to_model = '..\\mlops\\library\\tests\\test_tracking.py'
 
     iteration.format_path()
 
@@ -50,7 +49,7 @@ def test_format_path_with_special_characters(setup):
         experiment_id='test_experiment'
     )
 
-    iteration.log_path_to_model('..\rlops\fibrary\tests\test_tracking.py')
+    iteration.path_to_model = '..\rlops\fibrary\tests\test_tracking.py'
 
     iteration.format_path()
 
@@ -64,7 +63,7 @@ def test_single_backslash_path_formatting(setup):
         experiment_id='test_experiment'
     )
 
-    iteration.log_path_to_model('..\mlops\library\tests\test_tracking.py')
+    iteration.path_to_model = '..\mlops\library\tests\test_tracking.py'
 
     iteration.format_path()
 
@@ -72,7 +71,8 @@ def test_single_backslash_path_formatting(setup):
 
 
 def test_log_dataset(setup):
-    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset')
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset="https://www.kaggle.com/c/titanic/data")
 
     iteration = Iteration(
         iteration_name='test_iteration',
@@ -82,4 +82,4 @@ def test_log_dataset(setup):
 
     iteration.log_dataset(dataset["_id"])
 
-    assert iteration.dataset.dataset_name == 'test_dataset'
+    assert iteration.dataset_name == 'test_dataset'

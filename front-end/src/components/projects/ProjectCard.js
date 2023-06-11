@@ -1,4 +1,3 @@
-import {ThreeDots} from "react-bootstrap-icons";
 import React from "react";
 
 /**
@@ -67,7 +66,7 @@ function ProjectCard(props) {
                             </div>
                             <div className="more-action ps-3">
                                 <span className="more-action-button material-symbols-rounded" data-bs-toggle="dropdown" title="Project actions">
-                                    more_horiz
+                                    more_vert
                                 </span>
 
                                 {!props.projectIsArchived ?

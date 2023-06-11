@@ -5,14 +5,13 @@ services:
     build:
       context: ./back-end
       dockerfile: Dockerfile
-    volumes:
-      - ./back-end:/app
     depends_on:
       - mongo
     env_file:
       - .env
     environment:
       - MONGODB_URL=${MONGODB_URL_DEPLOY}
+      - TZ=${TZ}
     ports:
       - ${FASTAPI_PORT}:${FASTAPI_PORT}
 
@@ -20,11 +19,10 @@ services:
     build:
       context: ./front-end
       dockerfile: Dockerfile
-    volumes:
-      - ./front-end:/app
-      - /app/node_modules
     env_file:
       - .env
+    environment:
+      - TZ=${TZ}
     ports:
       - ${REACT_PORT}:${REACT_PORT}
 
@@ -36,4 +34,6 @@ services:
       - ./back-end/.env
     ports:
       - ${MONGODB_PORT}:${MONGODB_PORT}
+    environment:
+     - TZ=${TZ}
     command: mongod --quiet --logpath /dev/null
