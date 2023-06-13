@@ -146,7 +146,7 @@ function IterationsCompare() {
             let ids = []
             let names = []
             let creation_dates = []
-            let last_modification = []
+            // let last_modification = []
             let experiment_names = []
             let users = []
 
@@ -175,7 +175,7 @@ function IterationsCompare() {
                 names.push(<td><a style={{display: "block", textOverflow: "ellipsis", overflow: "hidden"}} href={"/projects/" + iteration.project_id + "/experiments/" + iteration.experiment_id + "/iterations/" + iteration.id}>{iteration.iteration_name}</a></td>);
                 names_text.push(iteration.iteration_name);
                 creation_dates.push(<td>{moment(new Date(iteration.created_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>);
-                last_modification.push(<td>{moment(new Date(iteration.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>);
+                // last_modification.push(<td>{moment(new Date(iteration.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>);
                 experiment_names.push(<td><a style={{display: "block", textOverflow: "ellipsis", overflow: "hidden"}} href={"/projects/" + iteration.project_id + "/experiments?experiments=" + iteration.experiment_id}>{iteration.experiment_name}</a></td>);
                 users.push(<td>{iteration.user_name}</td>);
 
@@ -782,7 +782,7 @@ function IterationsCompare() {
                     names: names,
                     creation_dates: creation_dates,
                     experiment_names: experiment_names,
-                    last_modification: last_modification,
+                    // last_modification: last_modification,
                     users: users
                 },
                 {
@@ -1044,10 +1044,10 @@ function IterationsCompare() {
                                     <th>Creation&nbsp;Date:</th>
                                     {iterations_details.creation_dates}
                                 </tr>
-                                <tr>
-                                    <th>Last&nbsp;Modification:</th>
-                                    {iterations_details.last_modification}
-                                </tr>
+                                {/*<tr>*/}
+                                {/*    <th>Last&nbsp;Modification:</th>*/}
+                                {/*    {iterations_details.last_modification}*/}
+                                {/*</tr>*/}
                                 <tr>
                                     <th>Experiment Name:</th>
                                     {iterations_details.experiment_names}

@@ -471,7 +471,7 @@ function Iterations(props) {
                     headerName: 'Dataset Name',
                     cellRenderer: (props) => {
                         if (props.data["dataset"] && props.data["dataset"]["name"]) {
-                            return props.data["dataset"]["name"]
+                            return <a href={'/datasets'} target={"_blank"}>{props.data["dataset"]["name"]}</a>
                         }
                         return '-'
                     }
@@ -539,7 +539,7 @@ function Iterations(props) {
                     headerName: 'Dataset Name',
                     cellRenderer: (props) => {
                         if (props.data["dataset"] && props.data["dataset"]["name"]) {
-                            return props.data["dataset"]["name"]
+                            return <a href={'/datasets'} target={"_blank"}>{props.data["dataset"]["name"]}</a>
                         }
                         return '-'
                     }

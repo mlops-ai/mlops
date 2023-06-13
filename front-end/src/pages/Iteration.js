@@ -1176,14 +1176,14 @@ function Iteration() {
                                 <thead>
                                 <tr>
                                     <th>Creation Date</th>
-                                    <th>Last Modification</th>
+                                    {/*<th>Last Modification</th>*/}
                                     <th>User</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr>
                                     <td>{moment(new Date(iterationData.created_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>
-                                    <td>{moment(new Date(iterationData.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>
+                                    {/*<td>{moment(new Date(iterationData.updated_at)).format("DD-MM-YYYY, HH:mm:ss")}</td>*/}
                                     <td>{iterationData.user_name}</td>
                                 </tr>
                                 </tbody>
