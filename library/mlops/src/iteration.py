@@ -22,7 +22,7 @@ class Iteration:
         self.project_id: str = project_id
         self.experiment_id: str = experiment_id
         self.user_name: str = settings.user_name
-        self.model_name: str = None
+        self.model_name: str = "model"
         self.path_to_model: str = ""
         self.parameters: dict = {}
         self.metrics: dict = {}

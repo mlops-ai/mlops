@@ -10,8 +10,8 @@ front-end/package-lock.json
 
 # Docker
 /data
-**/*.env
-back-end/*.env
+# **/*.env
+# back-end/*.env
 
 # Notebooks
 /.ipynb_checkpoints
