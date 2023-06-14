@@ -17,7 +17,6 @@ import Experiments from "./pages/Experiments";
 import Iteration from "./pages/Iteration";
 import Datasets from "./pages/Datasets";
 import IterationsCompare from "./pages/IterationsCompare";
-import Searchbar from "./components/topbar-navbar/Searchbar";
 import {createContext, useContext, useState} from "react";
 
 export const OptionsContext = createContext()
@@ -43,7 +42,6 @@ function App() {
                     <Route path='/projects/:project_id/experiments/:experiment_id/iterations/:iteration_id' exact element={<Iteration /> } />
                     <Route path="/projects/:project_id/iterations-compare" exact element={<IterationsCompare />} />
                     <Route path='/datasets' exact element={<Datasets />} />
-                    <Route path='/searchbar' exact element={<Searchbar />} />
                 </Routes>
             </OptionsContext.Provider>
         </BrowserRouter>
