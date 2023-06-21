@@ -1,5 +1,7 @@
+<img src="https://github.com/kajetsz/mlops/blob/develop/front-end/src/assets/logos/mlops.png" alt="MLOps logo" height="100">
+
 # mlops
-Open-source tool for **tracking** & **monitoring** machine learning models.
+Open-source tool for **tracking** & **monitoring** machine learning models. 
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=for-the-badge&logo=FastAPI&logoColor=white)
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
@@ -80,9 +82,9 @@ Feel free to contact us in case of any questions or suggestions.
 
 ## References
 
-This project was created as a final BE project of Computer Science course at the
+This project was created as a final BE project of Computer Science course at
 [Faculty of Mathematics and Computer Science](https://wmi.amu.edu.pl/en) 
-of the [Adam Mickiewicz University](https://amu.edu.pl/en). 
+of [Adam Mickiewicz University](https://amu.edu.pl/en). 
 
 ## To-Do
 
