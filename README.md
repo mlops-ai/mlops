@@ -92,4 +92,5 @@ Application is still under development.
 Here is a list of features we plan to implement in the future:
 - [ ] Add support for the whole monitoring module
 - [ ] Add support for mail alerts
+- [ ] AWS ECR integration
 - [ ] Add support for multiple users (optionally)
