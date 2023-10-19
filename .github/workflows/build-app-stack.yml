@@ -16,9 +16,12 @@ jobs:
     - name: Build Docker containers using compose
       run: docker-compose up -d
 
+    - name: Wait for application to initialize
+      run: sleep 30
+
     - name: Check Application Health
       run: curl -I http://localhost:3000/projects
 
-    - name: Tear down Docker Compose
+    - name: Stop the containers
       run: docker-compose down
       
