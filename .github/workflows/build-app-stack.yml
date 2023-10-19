@@ -17,9 +17,9 @@ jobs:
       run: docker-compose up -d
 
     - name: Wait for application to initialize
-      run: sleep 30
+      run: sleep 10
 
-    - name: Check Application Health
+    - name: Check application health
       run: curl -I http://localhost:3000/projects
 
     - name: Stop the containers
