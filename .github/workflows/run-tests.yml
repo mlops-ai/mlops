@@ -8,15 +8,15 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
-    # strategy:
-    #   matrix:
-    #     os: [ubuntu-latest, windows-latest]    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]    
 
     steps:
     - uses: actions/checkout@v3
     
     - name: TODO
-      run: echo "TODO :)"
+      run: echo "TODO"
       
