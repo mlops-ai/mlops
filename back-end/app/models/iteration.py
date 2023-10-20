@@ -31,7 +31,7 @@ class Iteration(BaseModel):
     - **project_id (PydanticObjectId)**: Project id.
     - **experiment_name (str)**: Experiment name.
     - **project_title (str)**: Project title.
-    - **user_name (str)**: User name.
+    - **user_name (str)**: Username.
     - **iteration_name (str)**: Iteration title.
     - **created_at (datetime)**: Iteration creation date.
     - **metrics (Optional[dict])**: Iteration metrics.
