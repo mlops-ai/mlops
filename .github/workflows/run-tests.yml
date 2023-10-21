@@ -8,11 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]    
+    runs-on: ubuntu-latest  
 
     steps:
     - uses: actions/checkout@v3
@@ -36,6 +32,7 @@ jobs:
         else
           echo "TESTING=True" >> .env
         fi
+        cat .env
 
     - name: Start FastAPI server in the background
       run: |
