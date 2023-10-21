@@ -1,14 +1,15 @@
 import os
+import sys
+sys.path.append('../../back-end')
+sys.path.append('..')
 
 import pytest
 import base64
 
 import mlops.tracking
-from app.config.config import settings as app_settings
 from mlops.config.config import settings as lib_settings
+from app.config.config import settings as app_settings
 from app.database.init_mongo_db import drop_database
-from mlops.src.chart import Chart
-from mlops.exceptions.iteration import iteration_request_failed_exception
 
 
 # Fixture to set up test environment
@@ -230,12 +231,12 @@ async def test_start_iteration_with_path_to_model(setup):
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration')
-        iteration.log_path_to_model('../../mlops/tracking.py')
+        iteration.log_path_to_model('../mlops/tracking.py')
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
-    assert result['path_to_model'] == '..\\..\\mlops\\tracking.py'
+    assert result['path_to_model'] == '..\\mlops\\tracking.py'
 
 
 @pytest.mark.asyncio
