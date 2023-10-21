@@ -17,6 +17,29 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: TODO
-      run: echo "TODO"
-      
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        cd back-end
+        pip install -r requirements.txt
+
+    - name: Enable testing mode
+      run: |
+        if [ -f .env ]; then
+          sed -i 's/TESTING=False/TESTING=True/' .env
+        else
+          echo "TESTING=True" >> .env
+        fi
+
+    - name: Start FastAPI server in the background
+      run: uvicorn app.app:app --reload &   
+
+    - name: Run backend tests
+      run: |
+          cd app/tests
+          pytest
