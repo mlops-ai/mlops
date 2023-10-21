@@ -11,12 +11,10 @@ jobs:
     runs-on: ubuntu-latest  
 
     services:
-      mongodb:
-        image: mongo:latest
+      mongo:
+        image: mongo
         ports:
           - 27017:27017
-        options: >-
-          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'" --health-interval 10s --health-timeout 5s --health-retries 3
 
     steps:
     - uses: actions/checkout@v3
