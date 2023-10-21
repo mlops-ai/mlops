@@ -27,9 +27,11 @@ jobs:
         python -m pip install --upgrade pip
         cd back-end
         pip install -r requirements.txt
+        ls
 
     - name: Enable testing mode
       run: |
+        ls
         if [ -f .env ]; then
           sed -i 's/TESTING=False/TESTING=True/' .env
         else
@@ -37,7 +39,9 @@ jobs:
         fi
 
     - name: Start FastAPI server in the background
-      run: uvicorn app.app:app --reload &   
+      run: |
+        ls
+        uvicorn app.app:app --reload &   
 
     - name: Run backend tests
       run: |
