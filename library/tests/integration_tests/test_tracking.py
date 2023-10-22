@@ -227,6 +227,9 @@ async def test_start_iteration_with_path_to_model(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
+    print("XD\n")
+    print(os.listdir('.'))
+    print(os.path.join(os.path.dirname(__file__), "test_tracking.py"))
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
