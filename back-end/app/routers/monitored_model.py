@@ -3,9 +3,10 @@ from typing import List
 from beanie import PydanticObjectId
 from fastapi import APIRouter, status
 
-from app.models.monitored_model import MonitoredModel
+from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
 from app.routers.exceptions.monitored_model import monitored_model_not_found_exception, \
-    monitored_model_name_not_unique_exception
+    monitored_model_name_not_unique_exception, monitored_model_has_no_iteration_exception, \
+    monitored_model_has_iteration_exception
 
 monitored_model_router = APIRouter()
 
@@ -136,12 +137,17 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
     if not unique_name:
         raise monitored_model_name_not_unique_exception()
 
+    if monitored_model.iteration is None and monitored_model.model_status not in ('idle', 'archived'):
+        raise monitored_model_has_no_iteration_exception()
+    elif monitored_model.iteration is not None and monitored_model.model_status == 'idle':
+        raise monitored_model_has_iteration_exception()
+
     monitored_model = await monitored_model.insert()
     return monitored_model
 
 
 @monitored_model_router.put("/{id}", response_model=MonitoredModel, status_code=status.HTTP_200_OK)
-async def update_monitored_model(id: PydanticObjectId, monitored_model: MonitoredModel) -> MonitoredModel:
+async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: UpdateMonitoredModel) -> MonitoredModel:
     """
     Update monitored model.
 
@@ -156,14 +162,26 @@ async def update_monitored_model(id: PydanticObjectId, monitored_model: Monitore
     if not db_monitored_model:
         raise monitored_model_not_found_exception()
 
-    unique_name = await is_name_unique(monitored_model.model_name)
+    unique_name = await is_name_unique(updated_monitored_model.model_name)
     if not unique_name:
         raise monitored_model_name_not_unique_exception()
 
-    db_monitored_model.model_name = monitored_model.model_name
-    db_monitored_model.model_description = monitored_model.model_description
-    db_monitored_model.model_status = monitored_model.model_status
-    #db_monitored_model.ml_model = monitored_model.ml_model
+    if updated_monitored_model.iteration is not None and updated_monitored_model.iteration != '':
+        if updated_monitored_model.model_status == 'idle':
+            raise monitored_model_has_iteration_exception()
+        elif updated_monitored_model.model_status is None:
+            if db_monitored_model.model_status == 'idle':
+                raise monitored_model_has_iteration_exception()
+    elif updated_monitored_model.iteration is None:
+        if db_monitored_model.iteration is not None:
+            if updated_monitored_model.model_status not in ('active', 'archived'):
+                raise monitored_model_has_iteration_exception()
+        else:
+            if updated_monitored_model.model_status not in ('idle', 'archived'):
+                raise monitored_model_has_no_iteration_exception()
+
+    await db_monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
+    # db_monitored_model.ml_model = monitored_model.ml_model
 
     await db_monitored_model.save()
     return db_monitored_model

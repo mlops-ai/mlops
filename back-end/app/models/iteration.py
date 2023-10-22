@@ -37,7 +37,6 @@ class Iteration(BaseModel):
     - **metrics (Optional[dict])**: Iteration metrics.
     - **parameters (Optional[dict])**: Iteration parameters.
     - **path_to_model (Optional[str])**: Path to model.
-    - **model_name (Optional[str])**: Model name.
     - **dataset (Optional[DatasetInIteration])**: Dataset.
     - **interactive_charts (Optional[List[InteractiveChart]])**: Interactive charts list.
     """
@@ -53,7 +52,6 @@ class Iteration(BaseModel):
     metrics: Optional[dict] = Field(default=None, description="Iteration metrics")
     parameters: Optional[dict] = Field(default=None, description="Iteration parameters")
     path_to_model: Optional[str] = Field(default='', description="Path to model")
-    model_name: Optional[str] = Field(default="model", description="Model name", min_length=1, max_length=100)
     dataset: Optional[DatasetInIteration] = Field(default=None, description="Dataset")
     interactive_charts: Optional[List[InteractiveChart]] = Field(default=[], description="Interactive charts list")
     image_charts: Optional[List[ImageChart]] = Field(default=[], description="Image charts list")
@@ -83,7 +81,6 @@ class Iteration(BaseModel):
                 "metrics": {"accuracy": 0.9},
                 "parameters": {"batch_size": 32},
                 "path_to_model": "model.pkl",
-                "model_name": "model",
                 "dataset": {
                     "id": "5f9b3b7e9c9d6c0a3c7b3b7e"
                 },

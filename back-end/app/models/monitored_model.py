@@ -78,3 +78,46 @@ class MonitoredModel(Document):
                 }
             }
         }
+
+
+class UpdateMonitoredModel(MonitoredModel):
+    """
+    Class for update monitored model.
+
+    Attributes:
+    - **model_name (str)**: Monitored model name.
+    - **model_description (str)**: Monitored model description.
+    - **model_status (str)**: Monitored model status.
+    - **iteration (Iteration)**: Related Iteration.
+    """
+
+    model_name: Optional[str]
+    model_description: Optional[str]
+    model_status: Optional[str]
+    iteration: Optional[Iteration]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "model_name": "Titanic",
+                "description": "Titanic model",
+                "status": "archived",
+                "iteration": {
+                    "id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+                    "experiment_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+                    "project_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+                    "experiment_name": "Experiment 1",
+                    "project_title": "Project 1",
+                    "user_name": getpass.getuser(),
+                    "iteration_name": "Iteration 1",
+                    "path_to_model": "model.pkl",
+                    "model_name": "model",
+                    "image_charts": [
+                        {
+                            "name": "Chart 1",
+                            "encoded_image": "..."
+                        }
+                    ]
+                }
+            }
+        }

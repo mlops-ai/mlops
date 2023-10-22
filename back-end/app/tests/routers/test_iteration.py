@@ -69,8 +69,7 @@ async def test_add_iteration(client: AsyncClient):
     iteration = {
         "iteration_name": "Test iteration",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
-        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
-        "model_name": "Test model name"
+        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001}
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -105,8 +104,7 @@ async def test_add_iteration2(client: AsyncClient):
         "iteration_name": "Test iteration 2",
         "metrics": {"accuracy": 0.9, "precision": 0.8, "recall": 0.7, "f1": 0.6},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.001},
-        "path_to_model": test_file_path,
-        "model_name": "Test model name"
+        "path_to_model": test_file_path
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -193,8 +191,7 @@ async def test_change_iteration_name(client: AsyncClient):
     iteration = {
         "iteration_name": "Test iteration to change",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
-        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
-        "model_name": "Test model name to change"
+        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001}
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)

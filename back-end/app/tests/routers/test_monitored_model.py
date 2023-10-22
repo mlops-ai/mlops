@@ -44,6 +44,7 @@ async def test_create_monitored_model(client: AsyncClient):
     monitored_model = {
         "model_name": "Test monitored model",
         "model_description": "Test monitored model description",
+        "model_status": "active",
         "iteration": iteration
     }
 
@@ -51,7 +52,7 @@ async def test_create_monitored_model(client: AsyncClient):
     assert response.status_code == 201
     assert response.json()["model_name"] == monitored_model["model_name"]
     assert response.json()["model_description"] == monitored_model["model_description"]
-    assert response.json()["model_status"] == "idle"
+    assert response.json()["model_status"] == "active"
 
 
 @pytest.mark.asyncio
@@ -77,6 +78,7 @@ async def test_model_name_unique(client: AsyncClient):
     monitored_model = {
         "model_name": "Test monitored model",
         "model_description": "Test monitored model description",
+        "model_status": "archived",
         "iteration": iteration
     }
 
@@ -198,7 +200,7 @@ async def test_get_active_monitored_models(client: AsyncClient):
     """
     response = await client.get("/monitored-models/active")
     assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert len(response.json()) == 2
 
 
 @pytest.mark.asyncio
@@ -214,7 +216,7 @@ async def test_get_idle_monitored_models(client: AsyncClient):
     """
     response = await client.get("/monitored-models/idle")
     assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert len(response.json()) == 0
 
 
 @pytest.mark.asyncio
@@ -273,3 +275,83 @@ async def test_update_monitored_model(client: AsyncClient):
     assert response.status_code == 200
     assert response.json()["model_name"] == monitored_model_changed["model_name"]
     assert response.json()["model_status"] == monitored_model_changed["model_status"]
+
+
+@pytest.mark.asyncio
+async def test_update_monitored_model_with_changing_status(client: AsyncClient):
+    monitored_model_name = 'Test monitored model 4 changed'
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    id = response.json()["_id"]
+
+    monitored_model_changed = {
+        "model_name": "Test monitored model 4 changed changed",
+        "model_description": "Test monitored model description changed",
+        "model_status": "archived"
+    }
+
+    iteration = {
+        "iteration_name": "Test iteration",
+        "experiment_name": "Test experiment",
+        "project_title": "Test project",
+        "experiment_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+        "project_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+        "user_name": "Test user"
+    }
+
+    response = await client.put(f"/monitored-models/{id}", json=monitored_model_changed)
+
+    assert response.status_code == 200
+    assert response.json()["model_name"] == monitored_model_changed["model_name"]
+    assert response.json()["model_status"] == monitored_model_changed["model_status"]
+    assert response.json()["iteration"]['experiment_id'] == iteration['experiment_id']
+
+
+@pytest.mark.asyncio
+async def test_update_monitored_model_with_changing_status_to_idle(client: AsyncClient):
+    monitored_model_name = 'Test monitored model 4 changed changed'
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    id = response.json()["_id"]
+
+    monitored_model_changed = {
+        "model_status": "idle"
+    }
+
+    response = await client.put(f"/monitored-models/{id}", json=monitored_model_changed)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Monitored model has iteration. Model status must be 'active' or 'archived'."
+
+
+@pytest.mark.asyncio
+async def test_update_monitored_model_with_changing_status_to_active(client: AsyncClient):
+    monitored_model = {
+        "model_name": "Test monitored model 6",
+        "model_description": "Test monitored model description",
+        "model_status": "idle"
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model)
+    id = response.json()["_id"]
+
+    monitored_model_changed = {
+        "model_status": "active"
+    }
+
+    response = await client.put(f"/monitored-models/{id}", json=monitored_model_changed)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Monitored model has no iteration. Model status must be 'idle' or 'archived'."
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_with_no_iteration_and_status_active(client: AsyncClient):
+    monitored_model = {
+        "model_name": "Test monitored model 7",
+        "model_description": "Test monitored model description",
+        "model_status": "active"
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Monitored model has no iteration. Model status must be 'idle' or 'archived'."
