@@ -14,7 +14,7 @@ jobs:
       mongo:
         image: mongo
         ports:
-          - ${MONGODB_PORT}:${MONGODB_PORT}
+          - 27017:27017
 
     steps:
     - uses: actions/checkout@v3
