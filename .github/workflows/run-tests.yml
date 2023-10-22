@@ -49,3 +49,8 @@ jobs:
       run: |
           cd back-end/app/tests
           pytest
+
+    - name: Run library tests
+      run: |
+          cd library/tests
+          pytest
