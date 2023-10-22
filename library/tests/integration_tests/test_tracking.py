@@ -227,18 +227,16 @@ async def test_start_iteration_with_path_to_model(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    print("XD\n")
-    print(os.listdir('.'))
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
         iteration.log_model_name('test_iteration')
-        iteration.log_path_to_model('./integration_tests/test_tracking.py')
+        iteration.log_path_to_model(os.path.join(os.path.dirname(__file__), "test_tracking.py"))
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
-    assert result['path_to_model'] == '.\\integration_tests\\test_tracking.py'
+    assert result['path_to_model'] == os.path.join(os.path.dirname(__file__), "test_tracking.py")
 
 
 @pytest.mark.asyncio
