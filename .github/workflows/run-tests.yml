@@ -13,6 +13,8 @@ jobs:
     services:
       mongo:
         image: mongo
+        ports:
+          - ${MONGODB_PORT}:${MONGODB_PORT}
 
     steps:
     - uses: actions/checkout@v3
