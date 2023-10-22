@@ -33,11 +33,10 @@ jobs:
     - name: Enable testing mode
       run: |
         cd back-end
-        if [ -f .env ]; then
-          sed -i 's/TESTING=False/TESTING=True/' .env
-        else
-          echo "TESTING=True" >> .env
-        fi
+        echo "MONGODB_URL=${{ vars.MONGODB_URL }}" > .env
+        echo "MONGODB_DB_NAME=${{ vars.MONGODB_DB_NAME }}" >> .env
+        echo "TESTING=${{ vars.TESTING }}" >> .env
+        echo "MONGODB_TEST_DB_NAME=${{ vars.MONGODB_TEST_DB_NAME }}" >> .env
         cat .env
 
     - name: Start FastAPI server in the background
