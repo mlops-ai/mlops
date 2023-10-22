@@ -1,0 +1,27 @@
+name: Build the app stack
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Docker containers using compose
+      run: docker-compose up -d
+
+    - name: Wait for application to initialize
+      run: sleep 10
+
+    - name: Check application health
+      run: curl -I http://localhost:3000/projects
+
+    - name: Stop the containers
+      run: docker-compose down
+      

@@ -1,0 +1,55 @@
+name: Run tests
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  
+
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        cd back-end
+        pip install -r requirements.txt
+
+    - name: Enable testing mode
+      run: |
+        cd back-end
+        echo "MONGODB_URL=${{ vars.MONGODB_URL }}" > .env
+        echo "MONGODB_DB_NAME=${{ vars.MONGODB_DB_NAME }}" >> .env
+        echo "TESTING=${{ vars.TESTING }}" >> .env
+        echo "MONGODB_TEST_DB_NAME=${{ vars.MONGODB_TEST_DB_NAME }}" >> .env
+        cat .env
+
+    - name: Start FastAPI server in the background
+      run: |
+        cd back-end
+        uvicorn app.app:app --reload &   
+
+    - name: Run backend tests
+      run: |
+          cd back-end/app/tests
+          pytest
+
+    - name: Run library tests
+      run: |
+          cd library/tests
+          pytest
