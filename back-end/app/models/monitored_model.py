@@ -20,7 +20,7 @@ class MonitoredModel(Document):
     - **ml_model (object)**: ML model. ---- TODO: add coded pkl file
     """
 
-    model_name: str = Field(default=None, description="Model name", min_length=1, max_length=100)
+    model_name: str = Field(description="Model name", min_length=1, max_length=100)
     model_description: Optional[str] = Field(default="", description="Model description", max_length=150)
     model_status: str = Field(default='idle', description="Model status")
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
@@ -68,7 +68,6 @@ class MonitoredModel(Document):
                     "user_name": getpass.getuser(),
                     "iteration_name": "Iteration 1",
                     "path_to_model": "model.pkl",
-                    "model_name": "model",
                     "image_charts": [
                         {
                             "name": "Chart 1",
@@ -100,8 +99,8 @@ class UpdateMonitoredModel(MonitoredModel):
         schema_extra = {
             "example": {
                 "model_name": "Titanic",
-                "description": "Titanic model",
-                "status": "archived",
+                "model_description": "Titanic model",
+                "model_status": "archived",
                 "iteration": {
                     "id": "5f9b3b7e9c9d6c0a3c7b3b7e",
                     "experiment_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
@@ -111,7 +110,6 @@ class UpdateMonitoredModel(MonitoredModel):
                     "user_name": getpass.getuser(),
                     "iteration_name": "Iteration 1",
                     "path_to_model": "model.pkl",
-                    "model_name": "model",
                     "image_charts": [
                         {
                             "name": "Chart 1",

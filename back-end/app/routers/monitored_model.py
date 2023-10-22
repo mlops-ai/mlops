@@ -162,11 +162,12 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
     if not db_monitored_model:
         raise monitored_model_not_found_exception()
 
-    unique_name = await is_name_unique(updated_monitored_model.model_name)
-    if not unique_name:
-        raise monitored_model_name_not_unique_exception()
+    if updated_monitored_model.model_name is not None:
+        unique_name = await is_name_unique(updated_monitored_model.model_name)
+        if not unique_name:
+            raise monitored_model_name_not_unique_exception()
 
-    if updated_monitored_model.iteration is not None and updated_monitored_model.iteration != '':
+    if updated_monitored_model.iteration is not None:
         if updated_monitored_model.model_status == 'idle':
             raise monitored_model_has_iteration_exception()
         elif updated_monitored_model.model_status is None:
@@ -174,11 +175,13 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
                 raise monitored_model_has_iteration_exception()
     elif updated_monitored_model.iteration is None:
         if db_monitored_model.iteration is not None:
-            if updated_monitored_model.model_status not in ('active', 'archived'):
-                raise monitored_model_has_iteration_exception()
+            if updated_monitored_model.model_status is not None:
+                if updated_monitored_model.model_status not in ('active', 'archived'):
+                    raise monitored_model_has_iteration_exception()
         else:
-            if updated_monitored_model.model_status not in ('idle', 'archived'):
-                raise monitored_model_has_no_iteration_exception()
+            if updated_monitored_model.model_status is not None:
+                if updated_monitored_model.model_status not in ('idle', 'archived'):
+                    raise monitored_model_has_no_iteration_exception()
 
     await db_monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
     # db_monitored_model.ml_model = monitored_model.ml_model
