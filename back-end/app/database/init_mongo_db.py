@@ -1,6 +1,7 @@
 from app.config.config import settings
 from app.models.project import Project
 from app.models.dataset import Dataset
+from app.models.monitored_model import MonitoredModel
 
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -18,7 +19,8 @@ async def init_mongo_db():
         database=db_client[db_name],
         document_models=[
             Project,
-            Dataset
+            Dataset,
+            MonitoredModel
         ]
     )
 
