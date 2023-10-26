@@ -1,4 +1,5 @@
 import pytest
+import os
 from httpx import AsyncClient
 
 from app.database.init_mongo_db import drop_database
@@ -236,9 +237,79 @@ async def test_get_non_archived_monitored_models(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_update_monitored_model(client: AsyncClient):
+async def test_update_monitored_model_without_iteration(client: AsyncClient):
     """
-    Test update monitored model.
+    Test update monitored model without iteration.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model = {
+        "model_name": "Test monitored model 5",
+        "model_description": "Test monitored model description",
+        "model_status": "idle"
+    }
+
+    monitored_model_changed = {
+        "model_name": "Test monitored model 4 changed",
+        "model_description": "Test monitored model description changed"
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model)
+    monitored_model_id = response.json()["_id"]
+
+    response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed)
+    print(response.json())
+    assert response.status_code == 200
+    assert response.json()["model_name"] == monitored_model_changed["model_name"]
+    assert response.json()["model_description"] == monitored_model_changed["model_description"]
+
+
+@pytest.mark.asyncio
+async def test_update_monitored_model_with_iteration(client: AsyncClient):
+    """
+    Test update monitored model with iteration.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    iteration = {
+        "iteration_name": "Test iteration",
+        "experiment_name": "Test experiment",
+        "project_title": "Test project",
+        "experiment_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+        "project_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+        "user_name": "Test user",
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
+    }
+
+    monitored_model_changed = {
+        "model_status": "active",
+        "iteration": iteration
+    }
+
+    monitored_model_name = "Test monitored model 4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    monitored_model_id = response.json()["_id"]
+
+    response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed)
+    assert response.status_code == 200
+    assert response.json()["model_status"] == monitored_model_changed["model_status"]
+    assert response.json()["iteration"]["iteration_name"] == iteration["iteration_name"]
+
+
+@pytest.mark.asyncio
+async def test_update_iteration_with_no_path_to_model(client: AsyncClient):
+    """
+    Test update iteration with no path to model.
 
     Args:
         client (AsyncClient): Async client fixture
@@ -255,26 +326,92 @@ async def test_update_monitored_model(client: AsyncClient):
         "user_name": "Test user"
     }
 
-    monitored_model = {
-        "model_name": "Test monitored model 5",
-        "model_description": "Test monitored model description",
-        "model_status": "idle"
-    }
-
     monitored_model_changed = {
-        "model_name": "Test monitored model 4 changed",
-        "model_description": "Test monitored model description changed",
         "model_status": "active",
         "iteration": iteration
     }
 
-    response = await client.post("/monitored-models/", json=monitored_model)
-    monitored_model_id = response.json()["_id"]
-    monitored_model["model_name"] = "Test monitored model 5"
-    response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed)
+    monitored_model_name = "Test monitored model 4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
-    assert response.json()["model_name"] == monitored_model_changed["model_name"]
-    assert response.json()["model_status"] == monitored_model_changed["model_status"]
+
+    monitored_model_id = response.json()["_id"]
+    response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Iteration has no path to model."
+
+
+@pytest.mark.asyncio
+async def test_get_monitored_model_ml_model_metadata(client: AsyncClient):
+    """
+    Test get monitored model ml model metadata.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Test monitored model 4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    response = await client.get(f"/monitored-models/{monitored_model_id}/ml-model-metadata")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_monitored_ml_model_predict_success(client: AsyncClient):
+    """
+    Test monitored model predict with success.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Test monitored model 4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    data = {
+        "X1": 1.0,
+        "X2": 2.0
+    }
+    response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
+    assert response.status_code == 200
+    assert response.json()["prediction"] == pytest.approx(7.89043535267264)
+
+
+@pytest.mark.asyncio
+async def test_monitored_ml_model_predict_failure(client: AsyncClient):
+    """
+    Test monitored model predict with failure.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Test monitored model 4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    data = {
+        "X1": 1.0,
+        "X2": 2.0,
+        "X3": 3.0
+    }
+    response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
+    print(response.json())
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Cannot make prediction: The feature names should match those " \
+                                        "that were passed during fit.\nFeature names unseen at fit time:\n- X3\n"
 
 
 @pytest.mark.asyncio

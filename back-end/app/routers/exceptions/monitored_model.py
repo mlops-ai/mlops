@@ -27,3 +27,24 @@ def monitored_model_has_iteration_exception():
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Monitored model has iteration. Model status must be 'active' or 'archived'."
     )
+
+
+def iteration_has_no_path_to_model_exception():
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Iteration has no path to model."
+    )
+
+
+def monitored_model_load_ml_model_exception(description: str):
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Cannot load ml model: {description}"
+    )
+
+
+def monitored_model_prediction_exception(description: str):
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Cannot make prediction: {description}"
+    )
