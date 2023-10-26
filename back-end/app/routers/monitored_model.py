@@ -1,12 +1,15 @@
+import pandas as pd
 from typing import List
-
+import pickle
+from datetime import datetime
 from beanie import PydanticObjectId
 from fastapi import APIRouter, status
 
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
 from app.routers.exceptions.monitored_model import monitored_model_not_found_exception, \
     monitored_model_name_not_unique_exception, monitored_model_has_no_iteration_exception, \
-    monitored_model_has_iteration_exception
+    monitored_model_has_iteration_exception, iteration_has_no_path_to_model_exception, \
+    monitored_model_load_ml_model_exception, monitored_model_prediction_exception
 
 monitored_model_router = APIRouter()
 
@@ -168,6 +171,10 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
             raise monitored_model_name_not_unique_exception()
 
     if updated_monitored_model.iteration is not None:
+        # check if iteration has model path
+        if not updated_monitored_model.iteration.path_to_model:
+            raise iteration_has_no_path_to_model_exception()
+
         if updated_monitored_model.model_status == 'idle':
             raise monitored_model_has_iteration_exception()
         elif updated_monitored_model.model_status is None:
@@ -209,6 +216,70 @@ async def delete_monitored_model(id: PydanticObjectId) -> MonitoredModel:
     return monitored_model
 
 
+@monitored_model_router.get('/{id}/ml-model-metadata', response_model=dict, status_code=status.HTTP_200_OK)
+async def get_monitored_model_ml_model_metadata(id: PydanticObjectId) -> dict:
+    """
+    Get monitored model ml model metadata.
+
+    Args:
+    - **id (str)**: Monitored model id
+
+    Returns:
+    - **dict**: Monitored model ml model metadata.
+    """
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+    if not monitored_model.iteration:
+        raise monitored_model_has_no_iteration_exception()
+
+    try:
+        ml_model = await load_ml_model(monitored_model)
+    except Exception as e:
+        raise monitored_model_load_ml_model_exception(str(e))
+
+    return {
+        'response_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'ml_model': str(ml_model)
+    }
+
+
+@monitored_model_router.post('/{id}/predict', response_model=dict, status_code=status.HTTP_200_OK)
+async def monitored_model_predict(id: PydanticObjectId, data: dict) -> dict:
+    """
+    Make prediction using monitored model ml model. <br>
+    **NOTE:** ml model needs to be complied with scikit-learn API.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **data (dict)**: Single data sample to make prediction on.
+
+    Returns:
+    - **dict**: Prediction result.
+    """
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+    if not monitored_model.iteration:
+        raise monitored_model_has_no_iteration_exception()
+
+    try:
+        ml_model = await load_ml_model(monitored_model)
+    except Exception as e:
+        raise monitored_model_load_ml_model_exception(str(e))
+
+    try:
+        prediction = ml_model.predict(pd.DataFrame([data]))[0]
+    except Exception as e:
+        raise monitored_model_prediction_exception(str(e))
+
+    return {
+        'prediction': prediction
+    }
+
+
 async def is_name_unique(name: str) -> bool:
     """
     Util function for checking if monitored model name is unique.
@@ -225,3 +296,21 @@ async def is_name_unique(name: str) -> bool:
     if monitored_model:
         return False
     return True
+
+
+async def load_ml_model(monitored_model: MonitoredModel) -> object:
+    """
+    Load ml model from path using pickle.
+
+    Args:
+        monitored_model: Monitored model to load ml model from path.
+
+    Returns:
+        Loaded ml model instance.
+    """
+    # TODO: each time we make prediction we load model from path
+    # this will be replaced with loading model from database
+
+    with open(monitored_model.iteration.path_to_model, 'rb') as f:
+        ml_model = pickle.load(f)
+    return ml_model
