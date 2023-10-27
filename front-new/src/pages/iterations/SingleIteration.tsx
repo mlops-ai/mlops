@@ -2,7 +2,7 @@ import Breadcrumb from "@/components/breadcrumb";
 import DataTableContainer from "@/components/data-table/data-table-container";
 import DataTableContent from "@/components/data-table/data-table-content";
 import DataTableHeader from "@/components/data-table/data-table-header";
-import DataTableRow from "@/components/data-table/data-table-row";
+import DataTableRow from "@/components/data-table/data-table-row-single";
 import { Loading } from "@/components/icons";
 import PageHeader from "@/components/page-header";
 import { useData } from "@/hooks/use-data-hook";
@@ -422,7 +422,7 @@ const SingleIteration = () => {
                                     </DataTableRow>
                                 </DataTableContent>
                             </DataTableContainer>
-                            <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-700 dark:bg-gray-800">
+                            <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
                                 <ReactEcharts
                                     option={metricsChartOptions}
                                     theme="customed"

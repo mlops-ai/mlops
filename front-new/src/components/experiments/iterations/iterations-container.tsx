@@ -46,7 +46,7 @@ import moment from "moment";
 import { useModal } from "@/hooks/use-modal-hook";
 import { Iteration } from "@/types/iteration";
 import NoIterationsInfo from "./no-iterations-info";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface IterationsContainerProps {
     projectData: Project;
@@ -67,6 +67,10 @@ const IterationsContainer = ({
     const filterDateRef = useRef<HTMLSpanElement>(null);
 
     const { theme } = useTheme();
+
+    const [searchParams] = useSearchParams({
+        ne: "default",
+    });
 
     const [dateFilterState, setDateFilterState] = useState<string>("ALLTIME");
 
@@ -378,6 +382,41 @@ const IterationsContainer = ({
 
     const navigate = useNavigate();
 
+    const handleCompareIterations = useCallback(() => {
+        if (!gridRef.current) return;
+
+        let selectedIterations = gridRef.current.api
+            .getSelectedRows()
+            .map((iteration) => {
+                return {
+                    experiment_id: iteration.experiment_id,
+                    iteration_id: iteration.id,
+                };
+            });
+
+        let iterationsToCompare = selectedIterations.reduce(
+            (group: any, iteration: any) => {
+                let category = iteration.experiment_id;
+                group[category] = group[category] ?? [];
+                group[category].push(iteration.iteration_id);
+                return group;
+            },
+            {}
+        );
+
+        return navigate(
+            `/projects/${
+                projectData._id
+            }/iterations-compare?iterations=${JSON.stringify(
+                iterationsToCompare
+            )}${
+                searchParams.get("ne") !== "default"
+                    ? `&ne=${searchParams.get("ne")}`
+                    : ""
+            }`
+        );
+    }, []);
+
     useEffect(() => {
         const onKeyDownEL = (event: KeyboardEvent) => {
             if (event.key === "]") {
@@ -391,8 +430,7 @@ const IterationsContainer = ({
 
                 newUrlParams.set(
                     "el",
-                    newUrlParams.get("el") &&
-                        newUrlParams.get("el") === "false"
+                    newUrlParams.get("el") && newUrlParams.get("el") === "false"
                         ? "true"
                         : "false"
                 );
@@ -545,6 +583,7 @@ const IterationsContainer = ({
                         ref={compareButton}
                         variant="mlopsGridAction"
                         size="grid"
+                        onClick={handleCompareIterations}
                     >
                         <Compare className="flex-shrink-0 w-6 h-6 mr-1" />{" "}
                         Compare

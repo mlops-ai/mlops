@@ -18,6 +18,7 @@ import { Tailwind } from "./components/treeselect/treeselect-styles";
 import Monitoring from "./pages/monitoring/Monitoring";
 import Datasets from "./pages/datasets/Datasets";
 import SingleIteration from "./pages/iterations/SingleIteration";
+import CompareIterations from "./pages/iterations/CompareIterations";
 
 function App() {
     return (
@@ -56,6 +57,10 @@ function App() {
                                     <Route 
                                         path="/projects/:project_id/experiments/:experiment_id/iterations/:iteration_id"
                                         element={<SingleIteration />}
+                                    />
+                                    <Route 
+                                        path="/projects/:project_id/iterations-compare"
+                                        element={<CompareIterations />}
                                     />
                                 </Routes>
                                 <Toast />

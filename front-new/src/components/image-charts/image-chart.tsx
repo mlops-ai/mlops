@@ -23,7 +23,7 @@ const ImageChart = ({
     return (
         <div
             key={index}
-            className="flex w-full bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-700 dark:bg-gray-800"
+            className="flex w-full bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800"
         >
             <img
                 src={`${data_image_type},${encoded_image}`}

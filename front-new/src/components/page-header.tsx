@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { projectStatusesMap } from "@/config/maping";
 import { PinFilled } from "@/components/icons";
+import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
     title: string;
@@ -8,6 +9,7 @@ interface PageHeaderProps {
     archivedBadge?: boolean;
     pin?: boolean;
     actionButton?: React.ReactNode;
+    className?: string;
 }
 
 const PageHeader = ({
@@ -16,9 +18,11 @@ const PageHeader = ({
     archivedBadge,
     pin,
     actionButton,
+    className,
 }: PageHeaderProps) => {
     return (
-        <h1 className="flex items-center justify-between mb-1 text-2xl font-semibold text-mlops-primary-tx dark:text-mlops-primary-tx-dark">
+        <h1 className={cn("flex items-center justify-between mb-1 text-2xl font-semibold text-mlops-primary-tx dark:text-mlops-primary-tx-dark",
+        className && className)}>
             <div className="flex items-center">
                 {pin && (
                     <div title="Project is pinned">
