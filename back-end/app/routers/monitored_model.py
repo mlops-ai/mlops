@@ -3,10 +3,15 @@ from typing import List
 from beanie import PydanticObjectId
 from fastapi import APIRouter, status
 
+from app.models.iteration import Iteration
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
+from app.models.project import Project
+from app.routers.exceptions.experiment import experiment_not_found_exception
+from app.routers.exceptions.iteration import iteration_not_found_exception
 from app.routers.exceptions.monitored_model import monitored_model_not_found_exception, \
     monitored_model_name_not_unique_exception, monitored_model_has_no_iteration_exception, \
     monitored_model_has_iteration_exception
+from app.routers.exceptions.project import project_not_found_exception
 
 monitored_model_router = APIRouter()
 
@@ -22,6 +27,7 @@ async def get_all_monitored_models() -> List[MonitoredModel]:
     Returns:
     - **List[MonitoredModel]**: List of all monitored models.
     """
+
     monitored_models = await MonitoredModel.find_all().to_list()
     return monitored_models
 
@@ -37,6 +43,7 @@ async def get_non_archived_monitored_models() -> List[MonitoredModel]:
     Returns:
     - **List[MonitoredModel]**: List of all non-archived monitored models.
     """
+
     monitored_models = await MonitoredModel.find(MonitoredModel.model_status != 'archived').to_list()
     return monitored_models
 
@@ -52,6 +59,7 @@ async def get_archived_monitored_models() -> List[MonitoredModel]:
     Returns:
     - **List[MonitoredModel]**: List of all archived monitored models.
     """
+
     monitored_models = await MonitoredModel.find(MonitoredModel.model_status == 'archived').to_list()
     return monitored_models
 
@@ -67,6 +75,7 @@ async def get_active_monitored_models() -> List[MonitoredModel]:
     Returns:
     - **List[MonitoredModel]**: List of all active monitored models.
     """
+
     monitored_models = await MonitoredModel.find(MonitoredModel.model_status == 'active').to_list()
     return monitored_models
 
@@ -82,6 +91,7 @@ async def get_idle_monitored_models() -> List[MonitoredModel]:
     Returns:
     - **List[MonitoredModel]**: List of all idle monitored models.
     """
+
     monitored_models = await MonitoredModel.find(MonitoredModel.model_status == 'idle').to_list()
     return monitored_models
 
@@ -97,6 +107,7 @@ async def get_monitored_model_by_name(name: str) -> MonitoredModel:
     Returns:
     - **MonitoredModel**: Monitored model
     """
+
     monitored_model = await MonitoredModel.find_one(MonitoredModel.model_name == name)
     if not monitored_model:
         raise monitored_model_not_found_exception()
@@ -115,6 +126,7 @@ async def get_monitored_model_by_id(id: PydanticObjectId) -> MonitoredModel:
     Returns:
     - **MonitoredModel**: Monitored model
     """
+
     monitored_model = await MonitoredModel.find_one(MonitoredModel.id == id)
     if not monitored_model:
         raise monitored_model_not_found_exception()
@@ -133,6 +145,7 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
     Returns:
     - **MonitoredModel**: Added monitored model.
     """
+
     unique_name = await is_name_unique(monitored_model.model_name)
     if not unique_name:
         raise monitored_model_name_not_unique_exception()
@@ -143,6 +156,14 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
         raise monitored_model_has_iteration_exception()
 
     monitored_model = await monitored_model.insert()
+
+    if monitored_model.iteration is not None:
+        iteration_with_assigned_model = await update_assigned_model_in_iteration(monitored_model.iteration,
+                                                                                 monitored_model.id)
+        monitored_model.iteration = iteration_with_assigned_model
+
+    await monitored_model.save()
+
     return monitored_model
 
 
@@ -158,8 +179,9 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
     Returns:
     - **MonitoredModel**: Updated monitored model
     """
-    db_monitored_model = await MonitoredModel.get(id)
-    if not db_monitored_model:
+
+    monitored_model = await MonitoredModel.get(id)
+    if not monitored_model:
         raise monitored_model_not_found_exception()
 
     if updated_monitored_model.model_name is not None:
@@ -171,10 +193,10 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
         if updated_monitored_model.model_status == 'idle':
             raise monitored_model_has_iteration_exception()
         elif updated_monitored_model.model_status is None:
-            if db_monitored_model.model_status == 'idle':
+            if monitored_model.model_status == 'idle':
                 raise monitored_model_has_iteration_exception()
     elif updated_monitored_model.iteration is None:
-        if db_monitored_model.iteration is not None:
+        if monitored_model.iteration is not None:
             if updated_monitored_model.model_status is not None:
                 if updated_monitored_model.model_status not in ('active', 'archived'):
                     raise monitored_model_has_iteration_exception()
@@ -183,11 +205,27 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
                 if updated_monitored_model.model_status not in ('idle', 'archived'):
                     raise monitored_model_has_no_iteration_exception()
 
-    await db_monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
-    # db_monitored_model.ml_model = monitored_model.ml_model
+    if updated_monitored_model.iteration is not None:
+        if monitored_model.iteration is not None:
+            # Remove the association from the old iteration if there was one
+            await update_assigned_model_in_iteration(monitored_model.iteration, None)
+            # Update the new iteration with the model ID and get the updated iteration
+            iteration_with_assigned_model = await update_assigned_model_in_iteration(updated_monitored_model.iteration,
+                                                                                     monitored_model.id)
+            # Update monitored_model's iteration with the updated iteration
+            updated_monitored_model.iteration = iteration_with_assigned_model
+        elif monitored_model.iteration is None:
+            # This is a new assignment, update the new iteration with the model ID and get the updated iteration
+            iteration_with_assigned_model = await update_assigned_model_in_iteration(updated_monitored_model.iteration,
+                                                                                     monitored_model.id)
+            # Update monitored_model's iteration with the updated iteration
+            updated_monitored_model.iteration = iteration_with_assigned_model
 
-    await db_monitored_model.save()
-    return db_monitored_model
+    await monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
+    monitored_model = await MonitoredModel.get(id)
+    await monitored_model.save()
+
+    return monitored_model
 
 
 @monitored_model_router.delete("/{id}", response_model=MonitoredModel, status_code=status.HTTP_200_OK)
@@ -201,9 +239,13 @@ async def delete_monitored_model(id: PydanticObjectId) -> MonitoredModel:
     Returns:
     - **MonitoredModel**: Deleted monitored model
     """
+
     monitored_model = await MonitoredModel.find_one(MonitoredModel.id == id)
     if not monitored_model:
         raise monitored_model_not_found_exception()
+
+    if monitored_model.iteration is not None:
+        monitored_model.iteration.assigned_monitored_model_id = None
 
     await monitored_model.delete()
     return monitored_model
@@ -219,9 +261,39 @@ async def is_name_unique(name: str) -> bool:
     Returns:
         True if name is unique, False otherwise.
     """
+
     monitored_model = await MonitoredModel.find_one(
         MonitoredModel.model_name == name
     )
     if monitored_model:
         return False
     return True
+
+
+async def update_assigned_model_in_iteration(iteration_to_found: Iteration, value_to_set) -> Iteration:
+    """
+    Util function for getting iteration.
+
+    Args:
+        iteration_to_found: Iteration to get.
+        value_to_set: Value to set.
+    Returns:
+        Iteration.
+    """
+    project = await Project.get(iteration_to_found.project_id)
+    if not project:
+        raise project_not_found_exception()
+
+    experiment = next((exp for exp in project.experiments if exp.id == iteration_to_found.experiment_id),
+                      None)
+    if not experiment:
+        raise experiment_not_found_exception()
+
+    iteration = next((iter for iter in experiment.iterations if iter.id == iteration_to_found.id), None)
+    if not iteration:
+        raise iteration_not_found_exception()
+
+    iteration.assigned_monitored_model_id = value_to_set
+    await project.save()
+
+    return iteration

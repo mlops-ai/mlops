@@ -24,7 +24,8 @@ class MonitoredModel(Document):
     model_description: Optional[str] = Field(default="", description="Model description", max_length=150)
     model_status: str = Field(default='idle', description="Model status")
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
-    #ml_model: Optional[str] = Field(default=None, description="path to model")
+    # ml_model: Optional[str] = Field(default=None, description="path to model")
+    pinned: bool = Field(default=False, description="Model pinned status")
 
     @validator('model_status')
     def validate_status(cls, v):
@@ -74,7 +75,8 @@ class MonitoredModel(Document):
                             "encoded_image": "..."
                         }
                     ]
-                }
+                },
+                "pinned": False
             }
         }
 
@@ -116,6 +118,7 @@ class UpdateMonitoredModel(MonitoredModel):
                             "encoded_image": "..."
                         }
                     ]
-                }
+                },
+                "pinned": False
             }
         }

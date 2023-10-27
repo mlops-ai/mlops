@@ -768,3 +768,57 @@ async def test_add_iteration_with_pie_plot(client: AsyncClient):
 
     assert response.status_code == 400
     assert response.json()["detail"] == "x_data and y_data can only have one list of data"
+
+
+@pytest.mark.asyncio
+async def test_delete_iteration_assigned_to_monitored_model(client: AsyncClient):
+    """
+    Test delete iteration assigned to monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment updated"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    iteration = {
+        "iteration_name": "Iteration with monitored model",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01}
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    iteration_to_model = response.json()
+    monitored_model = {
+        "model_name": "Test monitored model",
+        "model_description": "Test monitored model description",
+        "model_status": "active",
+        "iteration": iteration_to_model
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model)
+    monitored_model_id = response.json()["_id"]
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    assigned_monitored_model_id = response.json()["assigned_monitored_model_id"]
+
+    response = await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    assert assigned_monitored_model_id == monitored_model_id
+    assert response.status_code == 400
+    assert response.json()["detail"] == ("Iteration is assigned to monitored model. Cannot delete it. "
+                                         "Please delete monitored model first.")
