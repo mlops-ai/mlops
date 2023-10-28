@@ -36,7 +36,6 @@ import ImageChart from "@/components/image-charts/image-chart";
 import Lightbox from "@/components/image-lightbox/image-lightbox";
 import "@/components/image-lightbox/light-box.css";
 import IterationDropdownActions from "./single-iteration/iteration-dropdown-actions";
-import { dataImageType } from "@/lib/utils";
 
 const SingleIteration = () => {
     /**
@@ -118,7 +117,27 @@ const SingleIteration = () => {
             }
             setIterationData(iteration);
         }
-    }, [data.projects, project_id, experiment_id, iteration_id]);
+    }, [data.projects]);
+
+    const dataImageType = (encoded_image: string) => {
+        const startsWith = encoded_image[0];
+        switch (startsWith) {
+            case "/":
+                return "data:image/jpeg;base64";
+            case "i":
+                return "data:image/png;base64";
+            case "R":
+                return "data:image/gif;base64";
+            case "Q":
+                return "data:image/bmp;base64";
+            case "U":
+                return "data:image/webp;base64";
+            case "P":
+                return "data:image/svg+xml;base64";
+            default:
+                return null;
+        }
+    };
 
     const [
         parametersNames,

@@ -12,25 +12,13 @@ import Projects from "@/pages/projects/Projects";
 import Experiments from "@/pages/experiments/Experiments";
 
 import Toast from "@/components/toast";
+import { Toaster } from "@/components/ui/toaster";
 import Models from "./pages/models/Models";
 import { Tailwind } from "./components/treeselect/treeselect-styles";
 import Monitoring from "./pages/monitoring/Monitoring";
 import Datasets from "./pages/datasets/Datasets";
 import SingleIteration from "./pages/iterations/SingleIteration";
 import CompareIterations from "./pages/iterations/CompareIterations";
-import { lazy } from "react";
-
-// const Projects = lazy(() => import("./pages/projects/Projects"));
-// // @ts-ignore
-// const Experiments = lazy(() => import("./pages/experiments/Experiments"));
-// const Datasets = lazy(() => import("./pages/datasets/Datasets"));
-// const Models = lazy(() => import("./pages/models/Models"));
-// const SingleIteration = lazy(
-//     () => import("./pages/iterations/SingleIteration")
-// );
-// const CompareIterations = lazy(
-//     () => import("./pages/iterations/CompareIterations")
-// );
 
 function App() {
     return (
@@ -41,7 +29,10 @@ function App() {
                         <ErrorBoundary fallbackRender={fallbackRender}>
                             <MainLayout>
                                 <Routes>
-                                    <Route path="/" element={<Projects />} />
+                                    <Route
+                                        path="/"
+                                        element={<Projects />}
+                                    />
                                     <Route
                                         path="/projects"
                                         element={<Projects />}
@@ -63,16 +54,17 @@ function App() {
                                         path="/models/:model_id/monitoring"
                                         element={<Monitoring />}
                                     />
-                                    <Route
+                                    <Route 
                                         path="/projects/:project_id/experiments/:experiment_id/iterations/:iteration_id"
                                         element={<SingleIteration />}
                                     />
-                                    <Route
+                                    <Route 
                                         path="/projects/:project_id/iterations-compare"
                                         element={<CompareIterations />}
                                     />
                                 </Routes>
                                 <Toast />
+                                <Toaster />
                             </MainLayout>
                         </ErrorBoundary>
                     </ModalProvider>

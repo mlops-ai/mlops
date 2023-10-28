@@ -28,7 +28,7 @@ export const metricsChartOptionsGenerator = (
         },
         title: {
             left: "center",
-            text: "Metrics Chart",
+            text: "Metric Chart",
             textStyle: {
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
@@ -50,12 +50,9 @@ export const metricsChartOptionsGenerator = (
             type: "value",
         },
         legend: {
-            type: "scroll",
+            data: metrics_names,
             top: "bottom",
             textStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
-            },
-            pageTextStyle: {
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
         },

@@ -44,7 +44,7 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                         className="flex items-center justify-between w-full cursor-pointer"
                         onSelect={() => {
                             handleClose();
-                            return navigate(
+                            navigate(
                                 `/projects/${data.project?._id}/experiments${
                                     searchParams.get("ne") !== "default"
                                         ? `?ne=${searchParams.get("ne")}`
@@ -120,7 +120,7 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                         key={data.experiment.id}
                         onSelect={() => {
                             handleClose();
-                            return navigate(
+                            navigate(
                                 `/projects/${data.experiment
                                     ?.project_id}/experiments?experiments=${data
                                     .experiment?.id}${
@@ -174,19 +174,6 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                     <CommandItem
                         className="flex items-center justify-between w-full cursor-pointer"
                         key={data.iteration.id}
-                        onSelect={() => {
-                            handleClose();
-                            return navigate(
-                                `/projects/${data.iteration
-                                    ?.project_id}/experiments/${data.iteration
-                                    ?.experiment_id}/iterations/${data.iteration
-                                    ?.id}${
-                                    searchParams.get("ne") !== "default"
-                                        ? `?ne=${searchParams.get("ne")}`
-                                        : ""
-                                }`
-                            );
-                        }}
                     >
                         <div
                             className="flex items-center mr-3"
@@ -297,7 +284,7 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                         key={data.dataset._id}
                         onSelect={() => {
                             handleClose();
-                            return navigate(
+                            navigate(
                                 `/datasets?archived=${data.dataset?.archived}${
                                     searchParams.get("ne") !== "default"
                                         ? `&ne=${searchParams.get("ne")}`
@@ -331,16 +318,15 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                                     }
                                 </span>
                             </Badge>
-                            {data.dataset.version &&
-                                data.dataset.version !== "" && (
-                                    <Badge
-                                        variant="not_started"
-                                        className="border-none"
-                                        title="Dataset Version"
-                                    >
-                                        {data.dataset.version}
-                                    </Badge>
-                                )}
+                            {data.dataset.version && data.dataset.version !== '' && (
+                                <Badge
+                                    variant="not_started"
+                                    className="border-none"
+                                    title="Dataset Version"
+                                >
+                                    {data.dataset.version}
+                                </Badge>
+                            )}
                             {data.dataset.archived && (
                                 <Badge
                                     variant="archived"

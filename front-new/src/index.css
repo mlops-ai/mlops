@@ -175,44 +175,6 @@ ul[data-pc-section="subgroup"] li button {
     border-radius: 4px;
 }
 
-.ag-theme-alpine-dark {
-    --ag-border-color: theme("colors.gray.600");
-}
-
-.ag-theme-alpine {
-    --ag-border-color: theme("colors.gray.300");
-}
-
-.ag-theme-alpine-dark .ag-root-wrapper {
-    border-radius: 4px;
-    background-color: theme("colors.gray.800");
-}
-
-.ag-theme-alpine .ag-root-wrapper {
-    border-radius: 4px;
-    background-color: theme("colors.white");
-}
-
-.ag-theme-alpine-dark .ag-header-row {
-    height: 40px;
-    font-size: 14px;
-    background-color: theme("colors.gray.700");
-}
-
-.ag-theme-alpine .ag-header-row {
-    height: 40px;
-    font-size: 14px;
-    background-color: theme("colors.gray.100");
-}
-
-.ag-theme-alpine-dark .ag-paging-panel {
-    background-color: theme("colors.gray.700");
-}
-
-.ag-theme-alpine .ag-paging-panel {
-    background-color: theme("colors.gray.100");
-}
-
 .ag-header-row {
     height: 40px;
     font-size: 14px;
@@ -230,4 +192,12 @@ ul[data-pc-section="subgroup"] li button {
 .ag-cell {
     font-size: 13px;
     background: none;
+}
+
+.ag-theme-alpine-dark .ag-paging-panel {
+    background-color: #222628;
+}
+
+.ag-theme-alpine .ag-paging-panel {
+    background-color: #f8f8f8;
 }

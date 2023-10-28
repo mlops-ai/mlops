@@ -27,7 +27,7 @@ const DataTableRowCompare = ({ header, cells }: DataTableRowsCompareProps) => {
         <tr className="transition duration-300 bg-white border-gray-300 group dark:bg-gray-800 dark:border-gray-600">
             <th
                 scope="row"
-                className="px-6 py-4 sticky left-0 text-base text-gray-700 bg-gray-100 border-b border-r border-gray-300 dark:bg-gray-700 dark:text-white group-hover:bg-gray-100 group-hover:dark:bg-gray-700 dark:border-gray-600 whitespace-nowrap min-w-[250px] w-[250px] max-w-[250px] overflow-hidden overflow-ellipsis"
+                className="px-6 py-4 text-base text-gray-700 bg-gray-100 border-b border-r border-gray-300 dark:bg-gray-700 dark:text-gray-400 group-hover:bg-gray-100 group-hover:dark:bg-gray-700 dark:border-gray-600 whitespace-nowrap min-w-[250px] w-[250px] max-w-[250px] overflow-hidden overflow-ellipsis"
             >
                 {`${header}:`}
             </th>
