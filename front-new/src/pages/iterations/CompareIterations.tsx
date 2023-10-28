@@ -1,4 +1,4 @@
-import { Key, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import ReactEcharts from "echarts-for-react";
 import { useTheme } from "@/components/providers/theme-provider";
@@ -17,27 +17,27 @@ import { GoIterations } from "react-icons/go";
 import Loading from "@/components/icons/loading";
 import { Experiment } from "@/types/experiment";
 import DataTableContainer from "@/components/data-table/data-table-container";
-import DataTableHeader from "@/components/data-table/data-table-header";
 import DataTableContent from "@/components/data-table/data-table-content";
-import DataTableRow from "@/components/data-table/data-table-row-single";
 import DataTableRowWithHeader from "@/components/data-table/data-table-row-compare";
 import moment from "moment-timezone";
 import { VscProject } from "react-icons/vsc";
 import { LayoutDashboard } from "lucide-react";
 import PageHeader from "@/components/page-header";
 import Breadcrumb from "@/components/breadcrumb";
+import { addDuplicateNumber, dataImageType, transposeArray } from "@/lib/utils";
+import { metricsComparationChartOptionsGenerator } from "./compare-iterations.tsx/metrics-chart-options";
 
 const CompareIterations = () => {
     /**
      * React ref hooks for simultaneous scrolling multiple sections.
      */
-    const iterations_data = useRef();
-    const models_data = useRef();
-    const datasets_data = useRef();
-    const parameters_data = useRef();
-    const metrics_data = useRef();
+    const iterations_data = useRef<HTMLDivElement>(null);
+    const models_data = useRef<HTMLDivElement>(null);
+    const datasets_data = useRef<HTMLDivElement>(null);
+    const parameters_data = useRef<HTMLDivElement>(null);
+    const metrics_data = useRef<HTMLDivElement>(null);
 
-    const theme = useTheme();
+    const { theme } = useTheme();
     const data = useData();
     const [searchParams] = useSearchParams({
         iterations: "",
@@ -45,6 +45,9 @@ const CompareIterations = () => {
     const navigate = useNavigate();
 
     const { project_id } = useParams();
+
+    // console.log(project_id);
+    // console.log(location.pathname);
 
     /**
      * State used for storing lightbox data (image charts viewer).
@@ -54,11 +57,14 @@ const CompareIterations = () => {
         key: 0,
     });
 
-    const iterationsData = useMemo(() => {
+    const [iterationsData, setIterationsData] = useState<Keyable | null>(null);
+
+    useEffect(() => {
         if (data.projects) {
             /**
              * Find project by project_id from url.
              * */
+            // console.log(project_id);
             const project = data.projects.find(
                 (project) => project._id === project_id
             );
@@ -125,16 +131,23 @@ const CompareIterations = () => {
                 );
             }
 
-            return {
+            setIterationsData({
                 iterations: iterations_list,
                 project_title: project.title,
                 numberOfExperiments: experiments.length,
-            };
+            });
         }
-        return null;
     }, [data.projects]);
 
-    const [iterationsDetails, modelsDetails, datasetsDetails] = useMemo(() => {
+    const [
+        iterationsDetails,
+        modelsDetails,
+        datasetsDetails,
+        parameters,
+        metrics,
+        metricsChart,
+        imageCharts,
+    ] = useMemo(() => {
         if (iterationsData) {
             let ids: string[] = [];
             let iterations_names: string[] = [];
@@ -146,6 +159,14 @@ const CompareIterations = () => {
 
             let datasets_names: string[] = [];
             let datasets_versions: string[] = [];
+
+            let parameters: any[] = [];
+            let metrics: any[] = [];
+
+            let metrics_chart: Keyable = {};
+
+            let image_charts: Keyable[] = [];
+            let image_charts_sources: Keyable[] = [];
 
             iterationsData.iterations.forEach((iteration: Iteration) => {
                 ids.push(iteration.id);
@@ -170,7 +191,198 @@ const CompareIterations = () => {
                         ? iteration.dataset.version
                         : "-"
                 );
+
+                parameters.push(
+                    iteration.parameters
+                        ? Object.getOwnPropertyNames(iteration.parameters)
+                        : []
+                );
+                metrics.push(
+                    iteration.metrics
+                        ? Object.getOwnPropertyNames(iteration.metrics)
+                        : []
+                );
             });
+
+            /**
+             * Find iterations with duplicated names and add number to the end of the name.
+             */
+            iterations_names = addDuplicateNumber(iterations_names);
+
+            /**
+             * Prepare parameters data
+             */
+
+            let parametersUniqueSet = new Set();
+            let parametersValuesArrays: any[] = [];
+            let parametersUniqueArray: any[] = [];
+
+            if (parameters.length > 0) {
+                parameters.forEach((data) =>
+                    data.forEach((parameter: string) => {
+                        parametersUniqueSet.add(parameter);
+                    })
+                );
+
+                parametersUniqueArray = Array.from(parametersUniqueSet);
+
+                if (parametersUniqueArray.length > 0) {
+                    parametersUniqueArray.forEach((parameter: any) => {
+                        let parametersValues: (string | number)[] = [];
+                        iterationsData.iterations.forEach(
+                            (iteration: Iteration) => {
+                                if (
+                                    iteration.parameters &&
+                                    iteration.parameters[parameter]
+                                ) {
+                                    parametersValues.push(
+                                        iteration.parameters[parameter]
+                                    );
+                                } else {
+                                    parametersValues.push("-");
+                                }
+                            }
+                        );
+                        parametersValuesArrays.push(parametersValues);
+                    });
+                }
+            }
+
+            /**
+             * Prepare metrics data
+             */
+
+            let metricsUniqueSet = new Set();
+            let metricsUniqueArray: any[] = [];
+            let metricsValuesArrays: any[] = [];
+
+            if (metrics.length > 0) {
+                metrics.forEach((data) =>
+                    data.forEach((metric: string) => {
+                        metricsUniqueSet.add(metric);
+                    })
+                );
+
+                metricsUniqueArray = Array.from(metricsUniqueSet);
+
+                if (metricsUniqueArray.length > 0) {
+                    metricsUniqueArray.forEach((metric: any) => {
+                        let metricsValues: (string | number)[] = [];
+                        iterationsData.iterations.forEach(
+                            (iteration: Iteration) => {
+                                if (
+                                    iteration.metrics &&
+                                    iteration.metrics[metric]
+                                ) {
+                                    metricsValues.push(
+                                        iteration.metrics[metric]
+                                    );
+                                } else {
+                                    metricsValues.push("-");
+                                }
+                            }
+                        );
+                        metricsValuesArrays.push(metricsValues);
+                    });
+
+                    /**
+                     * Prepare metrics chart data
+                     **/
+                    const metricsValuesArraysTransposed =
+                        transposeArray(metricsValuesArrays);
+
+                    const series: Keyable[] = metricsValuesArraysTransposed.map(
+                        (values: any, index: number) => {
+                            return {
+                                name: iterations_names[index],
+                                data: values,
+                                type: "bar",
+                                emphasis: {
+                                    focus: "series",
+                                },
+                            };
+                        }
+                    );
+
+                    metrics_chart = metricsComparationChartOptionsGenerator(
+                        theme,
+                        metricsUniqueArray as string[],
+                        series
+                    );
+                }
+            }
+
+            /**
+             * Prepare image charts data
+             */
+            let imageChartsCount = 0;
+            let imageChartsCountCumsum: number[] = [];
+            let imageChartsListPerIteration: Keyable[] =
+                iterationsData.iterations.map(
+                    (iteration: Iteration, index: number) => {
+                        if (
+                            iteration.image_charts &&
+                            iteration.image_charts.length !== 0
+                        ) {
+                            let filtered_charts = iteration.image_charts.filter(
+                                (chart) => chart.comparable
+                            );
+                            imageChartsCount += filtered_charts.length;
+                            imageChartsCountCumsum.push(imageChartsCount);
+                            return {
+                                charts: filtered_charts,
+                                iteration_name: iterations_names[index],
+                            };
+                        }
+                        return { charts: [], iteration_name: "" };
+                    }
+                );
+
+            imageChartsListPerIteration = imageChartsListPerIteration.filter(
+                (iteration) => iteration.charts.length !== 0
+            );
+
+            imageChartsCountCumsum.unshift(0);
+
+            imageChartsListPerIteration.forEach(
+                (iterationImageCharts: Keyable, idx: number) => {
+                    let chartsPerIteration: React.ReactNode[] = [];
+
+                    iterationImageCharts.charts.forEach(
+                        (image_chart: Keyable, index: number) => {
+                            let encoded_image = image_chart.encoded_image;
+                            const data_image_type =
+                                dataImageType(encoded_image);
+
+                            if (data_image_type) {
+                                chartsPerIteration.push(
+                                    <ImageChart
+                                        key={
+                                            imageChartsCountCumsum[idx] + index
+                                        }
+                                        index={
+                                            imageChartsCountCumsum[idx] + index
+                                        }
+                                        data_image_type={data_image_type}
+                                        encoded_image={encoded_image}
+                                        chart_name={image_chart.name}
+                                        setStatus={setStatus}
+                                    />
+                                );
+
+                                image_charts_sources.push({
+                                    title: `${image_chart.name} @${iterationImageCharts.iteration_name}`,
+                                    url: `${data_image_type},${encoded_image}`,
+                                });
+                            }
+                        }
+                    );
+                    image_charts.push({
+                        iteration_name: iterationImageCharts.iteration_name,
+                        charts: chartsPerIteration,
+                    });
+                }
+            );
 
             return [
                 {
@@ -186,12 +398,25 @@ const CompareIterations = () => {
                 {
                     datasets_names,
                     datasets_versions,
-                }
+                },
+                {
+                    parametersUniqueArray,
+                    parametersValuesArrays,
+                },
+                {
+                    metricsUniqueArray,
+                    metricsValuesArrays,
+                },
+                metrics_chart,
+                {
+                    image_charts,
+                    image_charts_sources,
+                },
             ];
         }
 
-        return [null, null, null];
-    }, [iterationsData]);
+        return [null, null, null, null, null, null, null];
+    }, [iterationsData, theme]);
 
     if (!data.projects || !iterationsData) {
         return (
@@ -266,7 +491,10 @@ const CompareIterations = () => {
                     <h5 className="text-xl font-semibold">
                         Iterations details
                     </h5>
-                    <DataTableContainer>
+                    <DataTableContainer
+                        refContainer={iterations_data}
+                        refs={[models_data, datasets_data, parameters_data, metrics_data]}
+                    >
                         <DataTableContent>
                             <DataTableRowWithHeader
                                 header="Iteration ID"
@@ -300,7 +528,7 @@ const CompareIterations = () => {
 
                 <div className="flex flex-col gap-2">
                     <h5 className="text-xl font-semibold">Models details</h5>
-                    <DataTableContainer>
+                    <DataTableContainer refContainer={models_data} refs={[iterations_data, datasets_data, parameters_data, metrics_data]}>
                         <DataTableContent>
                             <DataTableRowWithHeader
                                 header="Model Path"
@@ -312,18 +540,129 @@ const CompareIterations = () => {
 
                 <div className="flex flex-col gap-2">
                     <h5 className="text-xl font-semibold">Datasets details</h5>
-                    <DataTableContainer>
+                    <DataTableContainer refContainer={datasets_data}>
                         <DataTableContent>
                             <DataTableRowWithHeader
                                 header="Dataset Name"
-                                cells={datasetsDetails?.datasets_names as string[]}
+                                cells={
+                                    datasetsDetails?.datasets_names as string[]
+                                }
                             />
                             <DataTableRowWithHeader
                                 header="Dataset Version"
-                                cells={datasetsDetails?.datasets_versions as string[]}
+                                cells={
+                                    datasetsDetails?.datasets_versions as string[]
+                                }
                             />
                         </DataTableContent>
                     </DataTableContainer>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <h5 className="text-xl font-semibold">Parameters</h5>
+                    {parameters &&
+                    parameters.parametersUniqueArray.length > 0 ? (
+                        <DataTableContainer refContainer={parameters_data} refs={[models_data, datasets_data, iterations_data, metrics_data]}>
+                            <DataTableContent>
+                                {parameters.parametersUniqueArray.map(
+                                    (parameter: any, index) => (
+                                        <DataTableRowWithHeader
+                                            key={index}
+                                            header={parameter}
+                                            cells={
+                                                parameters
+                                                    .parametersValuesArrays[
+                                                    index
+                                                ]
+                                            }
+                                        />
+                                    )
+                                )}
+                            </DataTableContent>
+                        </DataTableContainer>
+                    ) : (
+                        <p>No parameters to show.</p>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <h5 className="text-xl font-semibold">Metrics</h5>
+                    {metrics && metrics.metricsUniqueArray.length > 0 ? (
+                        <>
+                            <DataTableContainer refContainer={metrics_data} refs={[models_data, datasets_data, parameters_data, iterations_data]}>
+                                <DataTableContent>
+                                    {metrics.metricsUniqueArray.map(
+                                        (metric: any, index) => (
+                                            <DataTableRowWithHeader
+                                                key={index}
+                                                header={metric}
+                                                cells={
+                                                    metrics.metricsValuesArrays[
+                                                        index
+                                                    ]
+                                                }
+                                            />
+                                        )
+                                    )}
+                                </DataTableContent>
+                            </DataTableContainer>
+                            <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
+                                <ReactEcharts
+                                    option={metricsChart}
+                                    theme="customed"
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <p>No metrics to show.</p>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <h5 className="text-xl font-semibold">Image charts</h5>
+                    {imageCharts && imageCharts.image_charts.length > 0 ? (
+                        imageCharts.image_charts.map(
+                            (imageChartsPerIterations: any) => (
+                                <div
+                                    key={
+                                        imageChartsPerIterations.iteration_name
+                                    }
+                                >
+                                    <p className="mb-2 text-base italic font-semibold">
+                                        {
+                                            imageChartsPerIterations.iteration_name
+                                        }
+                                    </p>
+                                    <Masonry
+                                        breakpointCols={
+                                            breakpointsMasonryImageCharts
+                                        }
+                                        className="my-masonry-grid"
+                                        columnClassName="my-masonry-grid-column"
+                                    >
+                                        {imageChartsPerIterations.charts}
+                                    </Masonry>
+                                </div>
+                            )
+                        )
+                    ) : (
+                        <p>No image charts to show.</p>
+                    )}
+                    {imageCharts &&
+                        imageCharts.image_charts_sources.length > 0 &&
+                        status.isOpen && (
+                            <Lightbox
+                                // @ts-ignore
+                                images={imageCharts.image_charts_sources}
+                                onClose={() =>
+                                    setStatus((prevState) => {
+                                        return { ...prevState, isOpen: false };
+                                    })
+                                }
+                                startIndex={status.key}
+                                doubleClickZoom={0}
+                            />
+                        )}
                 </div>
             </div>
         </div>
