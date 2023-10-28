@@ -20,6 +20,7 @@ class Dataset(Document):
     - **updated_at** (datetime): Date and time of dataset update
     - **version** (str): Dataset version
     - **linked_iterations** (Dict): Linked iterations (key - iteration id, value - (project_id, experiment_id)
+    - **pinned** (bool): Dataset pinned status
     """
     dataset_name: str = Field(description="Dataset name", min_length=1, max_length=40)
     path_to_dataset: str = Field(default='', description="Path to dataset")
@@ -30,6 +31,7 @@ class Dataset(Document):
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
     version: Optional[str] = Field(default='', description="Dataset version")
     linked_iterations: Optional[Dict] = Field(default_factory=dict, description="Linked iterations")
+    pinned: bool = Field(default=False, description="Dataset pinned status")
 
     def __repr__(self) -> str:
         return f"<Dataset {self.dataset_name}>"
@@ -56,7 +58,8 @@ class Dataset(Document):
                 "dataset_description": "Titanic dataset",
                 "tags": "Classification, Titanic",
                 "archived": False,
-                "version": "1.0.0"
+                "version": "1.0.0",
+                "pinned": False
             }
         }
 
@@ -73,6 +76,7 @@ class UpdateDataset(Dataset):
     - **archived (bool)**: Dataset status
     - **version (str)**: Dataset version
     - **updated_at (datetime)**: Date and time of dataset update
+    - **pinned (bool)**: Dataset pinned status
     """
 
     dataset_name: Optional[str]
@@ -82,6 +86,7 @@ class UpdateDataset(Dataset):
     archived: Optional[bool]
     version: Optional[str]
     updated_at: datetime = Field(default_factory=datetime.now)
+    pinned: Optional[bool]
 
     class Config:
         schema_extra = {
@@ -91,6 +96,7 @@ class UpdateDataset(Dataset):
                 "dataset_description": "Titanic dataset",
                 "tags": "Classification, Titanic",
                 "archived": False,
-                "version": "1.0.0"
+                "version": "1.0.0",
+                "pinned": False
             }
         }
