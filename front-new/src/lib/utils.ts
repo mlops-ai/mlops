@@ -92,11 +92,7 @@ export const sortDatasetComparator = (
     }
 };
 
-export const sortModelComparator = (
-    p1: Model,
-    p2: Model,
-    method: string
-) => {
+export const sortModelComparator = (p1: Model, p2: Model, method: string) => {
     switch (method) {
         case "AZ":
             if (p1.pinned && !p2.pinned) return -1;
@@ -135,7 +131,12 @@ export const dateToHumanize = (date: string) => {
     return difference.humanize() + " ago";
 };
 
-export const extractColumnsData = (rowData: Iteration[], type: "parameters" | "metrics", TreeSelectBaseColumnsOptionsAll: any, TreeSelectBaseColumnsCheckedAll: any) => {
+export const extractColumnsData = (
+    rowData: Iteration[],
+    type: "parameters" | "metrics",
+    TreeSelectBaseColumnsOptionsAll: any,
+    TreeSelectBaseColumnsCheckedAll: any
+) => {
     let columnsPerIterations = rowData.map(
         (iteration) =>
             new Set(
@@ -155,57 +156,113 @@ export const extractColumnsData = (rowData: Iteration[], type: "parameters" | "m
 
     let columnsUniqueArray = Array.from(columnsUniqueSet);
 
-    let gridColumns = []
-    let treeselectColumns = []
+    let gridColumns = [];
+    let treeselectColumns = [];
 
     if (columnsUniqueArray.length > 0) {
         Object.assign(TreeSelectBaseColumnsCheckedAll, {
             [type]: {
                 checked: true,
                 partialChecked: false,
-            }
+            },
         });
 
         for (let i = 0; i < columnsUniqueArray.length; i++) {
-            const key = `${type}.` + columnsUniqueArray[i]
-            gridColumns.push(
-                {
-                    field: key,
-                    headerName: columnsUniqueArray[i],
-                    filter: 'agNumberColumnFilter',
-                    cellRenderer: (val: any) => {
-                        if (val.data[type] && val.data[type][columnsUniqueArray[i]]) {
-                            return val.data[type][columnsUniqueArray[i]]
-                        }
-                        return '-'
+            const key = `${type}.` + columnsUniqueArray[i];
+            gridColumns.push({
+                field: key,
+                headerName: columnsUniqueArray[i],
+                filter: "agNumberColumnFilter",
+                cellRenderer: (val: any) => {
+                    if (
+                        val.data[type] &&
+                        val.data[type][columnsUniqueArray[i]]
+                    ) {
+                        return val.data[type][columnsUniqueArray[i]];
                     }
-                }
-            )
-            treeselectColumns.push(
-                {
-                    key: key,
-                    label: columnsUniqueArray[i]
-                }
-            )
+                    return "-";
+                },
+            });
+            treeselectColumns.push({
+                key: key,
+                label: columnsUniqueArray[i],
+            });
             Object.assign(TreeSelectBaseColumnsCheckedAll, {
                 [key]: {
                     checked: true,
                     partialChecked: false,
-                }
-            })
+                },
+            });
             // columns_list.push(key)
         }
 
-        TreeSelectBaseColumnsOptionsAll.push(
-            {
-                key: type,
-                label: type.charAt(0).toUpperCase() + type.slice(1),
-                leaf: true,
-                children: treeselectColumns
-            }
-        )
+        TreeSelectBaseColumnsOptionsAll.push({
+            key: type,
+            label: type.charAt(0).toUpperCase() + type.slice(1),
+            leaf: true,
+            children: treeselectColumns,
+        });
     }
 
-    return [gridColumns, TreeSelectBaseColumnsOptionsAll, TreeSelectBaseColumnsCheckedAll];
-
+    return [
+        gridColumns,
+        TreeSelectBaseColumnsOptionsAll,
+        TreeSelectBaseColumnsCheckedAll,
+    ];
 };
+
+export const addDuplicateNumber = (array: string[]) => {
+    const duplicatesCounter: any = {};
+    const arrayWithNumbers: string[] = [];
+    for (let i = 0; i < array.length; i++) {
+        const ciag = array[i];
+
+        if (duplicatesCounter[ciag]) {
+            duplicatesCounter[ciag]++;
+            const nowyCiag = `${ciag} [${duplicatesCounter[ciag]}]`;
+            arrayWithNumbers.push(nowyCiag);
+        } else {
+            duplicatesCounter[ciag] = 1;
+            arrayWithNumbers.push(ciag);
+        }
+    }
+
+    return arrayWithNumbers;
+};
+
+export const transposeArray = (array: any[]) => {
+    return array.reduce(
+        (prev, next) =>
+            next.map((item: any, i: number) => (prev[i] || []).concat(next[i])),
+        []
+    );
+};
+
+export const dataImageType = (encoded_image: string) => {
+    const startsWith = encoded_image[0];
+    switch (startsWith) {
+        case "/":
+            return "data:image/jpeg;base64";
+        case "i":
+            return "data:image/png;base64";
+        case "R":
+            return "data:image/gif;base64";
+        case "Q":
+            return "data:image/bmp;base64";
+        case "U":
+            return "data:image/webp;base64";
+        case "P":
+            return "data:image/svg+xml;base64";
+        default:
+            return null;
+    }
+};
+
+export const extractIdFromPath = (path: string) => {
+    const regex = /\/projects\/([a-f0-9]{24})\/experiments/i;
+    const match = path.match(regex);
+    if (match && match[1]) {
+      return match[1];
+    }
+    return null;
+  }

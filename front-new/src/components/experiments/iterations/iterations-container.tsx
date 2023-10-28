@@ -16,7 +16,7 @@ import {
 } from "./treeselect-base-columns-definitions/treeselect-base-columns";
 import { TreeSelectBaseNodesExpanded } from "./treeselect-base-columns-definitions/treeselect-base-nodes-expanded";
 import { defaultColDef } from "./grid-base-columns-definitions/default-col-def";
-import { extractColumnsData } from "@/lib/utils";
+import { extractColumnsData, extractIdFromPath } from "@/lib/utils";
 import { CheckboxSection } from "./grid-base-columns-definitions/checkbox-column";
 import { DatasetInfo } from "./grid-base-columns-definitions/dataset-info-columns";
 import { ModelInfo } from "./grid-base-columns-definitions/model-info-columns";
@@ -46,7 +46,7 @@ import moment from "moment";
 import { useModal } from "@/hooks/use-modal-hook";
 import { Iteration } from "@/types/iteration";
 import NoIterationsInfo from "./no-iterations-info";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 interface IterationsContainerProps {
     projectData: Project;
@@ -65,6 +65,12 @@ const IterationsContainer = ({
     const gridRef = useRef<AgGridReact>(null);
     const textFilterRef = useRef<HTMLInputElement>(null);
     const filterDateRef = useRef<HTMLSpanElement>(null);
+
+    // console.log(projectData._id)
+    // console.log(location.href)
+
+    const { project_id } = useParams();
+    console.log(project_id);
 
     const { theme } = useTheme();
 
@@ -404,17 +410,31 @@ const IterationsContainer = ({
             {}
         );
 
-        return navigate(
-            `/projects/${
-                projectData._id
-            }/iterations-compare?iterations=${JSON.stringify(
-                iterationsToCompare
-            )}${
-                searchParams.get("ne") !== "default"
-                    ? `&ne=${searchParams.get("ne")}`
-                    : ""
-            }`
-        );
+        // navigate(
+        //     {
+        //         pathname: location.pathname + "/iterations-compare",
+        //         search: `?iterations=${JSON.stringify(iterationsToCompare)}${
+        //             searchParams.get("ne") !== "default"
+        //                 ? `&ne=${searchParams.get("ne")}`
+        //                 : ""
+        //         }`,
+        //     }
+        // )
+
+        const extractedID = extractIdFromPath(location.pathname);
+
+        if (extractedID) {
+            return navigate(
+                `/projects/${extractedID}/iterations-compare?iterations=${JSON.stringify(
+                    iterationsToCompare
+                )}${
+                    searchParams.get("ne") !== "default"
+                        ? `&ne=${searchParams.get("ne")}`
+                        : ""
+                }`
+            );
+        }
+        return;
     }, []);
 
     useEffect(() => {
