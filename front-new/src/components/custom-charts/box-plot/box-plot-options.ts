@@ -1,9 +1,11 @@
-import { Keyable } from "@/types/types";
-
-export const metricsComparationChartOptionsGenerator = (
+export const boxPlotOptions = (
     theme: "dark" | "light" | "system",
-    metrics_names: string[],
-    series: Keyable[]
+    x_data: any[][],
+    y_data: any[][],
+    x_label?: string,
+    y_label?: string,
+    title?: string,
+    subtitle?: string
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -13,13 +15,6 @@ export const metricsComparationChartOptionsGenerator = (
             },
             show: true,
             feature: {
-                dataZoom: {
-                    show: true,
-                    yAxisIndex: "none",
-                },
-                brush: {
-                    type: "polygon",
-                },
                 restore: {
                     show: true,
                 },
@@ -28,20 +23,23 @@ export const metricsComparationChartOptionsGenerator = (
         },
         title: {
             left: "center",
-            text: "Metrics Comparasion Chart",
+            text: title ? title : "",
+            subtext: subtitle ? subtitle : "",
             textStyle: {
+                fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
+            },
+            subtextStyle: {
+                fontSize: 16,
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
-            trigger: "axis",
-            axisPointer: {
-                type: "shadow",
-            },
+            trigger: "item",
         },
         xAxis: {
-            type: "category",
-            data: metrics_names,
+            type: "value",
+            name: x_label ? x_label : "",
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -50,9 +48,24 @@ export const metricsComparationChartOptionsGenerator = (
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
             },
+            splitLine: {
+                lineStyle: {
+                    color: theme === "dark" ? "#374151" : "#ccc",
+                },
+            },
         },
         yAxis: {
-            type: "value",
+            type: "category",
+            name: y_label ? y_label : "",
+            data: x_data[0],
+            axisLabel: {
+                color: theme === "dark" ? "#ffffff" : "#666",
+            },
+            axisLine: {
+                lineStyle: {
+                    color: theme === "dark" ? "#ffffff" : "#333",
+                },
+            },
             splitLine: {
                 lineStyle: {
                     color: theme === "dark" ? "#374151" : "#ccc",
@@ -69,6 +82,20 @@ export const metricsComparationChartOptionsGenerator = (
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
         },
-        series: series,
+        series: {
+            type: "boxplot",
+            data: y_data,
+            itemStyle: {
+                color: "#b8c5f2",
+            },
+            encode: {
+                tooltip: [1, 2, 3, 4, 5],
+                x: [1, 2, 3, 4, 5],
+                y: 0,
+            },
+            emphasis: {
+                focus: "series",
+            },
+        },
     };
 };

@@ -1,9 +1,13 @@
 import { Keyable } from "@/types/types";
 
-export const metricsChartOptionsGenerator = (
+export const barPlotOptions = (
     theme: "dark" | "light" | "system",
-    metrics_names: string[],
-    series: Keyable[]
+    x_data: any[][],
+    series: Keyable[],
+    x_label?: string,
+    y_label?: string,
+    title?: string,
+    subtitle?: string
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -28,15 +32,26 @@ export const metricsChartOptionsGenerator = (
         },
         title: {
             left: "center",
-            text: "Metrics Chart",
+            text: title ? title : "",
+            subtext: subtitle ? subtitle : "",
             textStyle: {
+                fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
+            subtextStyle: {
+                fontSize: 16,
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
+            },
         },
-        tooltip: {},
+        tooltip: {
+            trigger: "item"
+        },
         xAxis: {
             type: "category",
-            data: metrics_names,
+            data: x_data[0],
+            name: x_label ? x_label : "",
+            nameLocation: "center",
+            nameGap: 30,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -45,9 +60,25 @@ export const metricsChartOptionsGenerator = (
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
             },
+            splitLine: {
+                lineStyle: {
+                    color: theme === "dark" ? "#374151" : "#ccc",
+                },
+            },
         },
         yAxis: {
             type: "value",
+            name: y_label ? y_label : "",
+            nameLocation: "center",
+            nameGap: 30,
+            axisLabel: {
+                color: theme === "dark" ? "#ffffff" : "#666",
+            },
+            axisLine: {
+                lineStyle: {
+                    color: theme === "dark" ? "#ffffff" : "#333",
+                },
+            },
             splitLine: {
                 lineStyle: {
                     color: theme === "dark" ? "#374151" : "#ccc",
@@ -63,6 +94,9 @@ export const metricsChartOptionsGenerator = (
             pageTextStyle: {
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
+        },
+        grid: {
+            show: true,
         },
         series: series,
     };

@@ -262,7 +262,34 @@ export const extractIdFromPath = (path: string) => {
     const regex = /\/projects\/([a-f0-9]{24})\/experiments/i;
     const match = path.match(regex);
     if (match && match[1]) {
-      return match[1];
+        return match[1];
     }
     return null;
-  }
+};
+
+export const onlyNumbers = (array: any[]) => {
+    return array.every((element) => {
+        return !isNaN(element);
+    });
+};
+
+export const xAxisType = (array: any[][]) => {
+    array.forEach((data) => {
+        if (!onlyNumbers(data)) {
+            return "category";
+        }
+    })
+    return "value";
+}
+
+export const minValue = (value: any) => {
+    return Math.floor(value.min);
+}
+
+export const maxValue = (value: any) => {
+    return Math.ceil(value.max);
+}
+
+export const scatterPlotTooltipFormatter = (args: any) => {
+    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${args.data.join(', ')})`;
+}

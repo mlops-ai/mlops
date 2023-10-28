@@ -37,6 +37,8 @@ import Lightbox from "@/components/image-lightbox/image-lightbox";
 import "@/components/image-lightbox/light-box.css";
 import IterationDropdownActions from "./single-iteration/iteration-dropdown-actions";
 import { dataImageType } from "@/lib/utils";
+import CustomChart from "@/components/custom-charts/custom-chart";
+import { Chart } from "@/types/chart";
 
 const SingleIteration = () => {
     /**
@@ -128,6 +130,7 @@ const SingleIteration = () => {
         metricsChartOptions,
         imageCharts,
         imageChartsSources,
+        customCharts,
     ] = useMemo(() => {
         let parameters_names: string[] = [];
         let parameters_values: string[] = [];
@@ -136,6 +139,7 @@ const SingleIteration = () => {
         let metrics_chart_options: any = {};
         let image_charts: React.ReactNode[] = [];
         let image_charts_sources: Keyable[] = [];
+        let custom_charts: React.ReactNode[] = [];
 
         if (iterationData) {
             if (iterationData.parameters) {
@@ -200,6 +204,23 @@ const SingleIteration = () => {
                 });
             }
 
+            if (iterationData.interactive_charts) {
+                custom_charts = iterationData.interactive_charts.map(
+                    (chart_data: Keyable, index: number) => {
+                        return (
+                            <CustomChart
+                                key={index}
+                                theme={theme}
+                                type={chart_data.chart_type}
+                                iteration_name={iterationData.iteration_name}
+                                chart_data={chart_data as Chart}
+                            />
+                        );
+                    }
+                );
+                console.log(custom_charts);
+            }
+
             return [
                 parameters_names,
                 parameters_values,
@@ -208,11 +229,12 @@ const SingleIteration = () => {
                 metrics_chart_options,
                 image_charts,
                 image_charts_sources,
+                custom_charts,
             ];
         }
 
-        return [[], [], [], [], {}, [], []];
-    }, [iterationData, theme]);
+        return [[], [], [], [], {}, [], [], [], []];
+    }, [iterationData, theme, project_id, experiment_id, iteration_id]);
 
     if (iterationData === null) {
         return (
@@ -301,7 +323,6 @@ const SingleIteration = () => {
                             <DataTableRow>
                                 <td
                                     scope="row"
-                                    // className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                                     className="px-6 py-4"
                                 >
                                     {moment(iterationData.created_at).format(
@@ -440,6 +461,15 @@ const SingleIteration = () => {
                             startIndex={status.key}
                             doubleClickZoom={0}
                         />
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <h5 className="text-xl font-semibold">Custom charts</h5>
+                    {customCharts.length > 0 ? (
+                        customCharts
+                    ) : (
+                        <p>No custom charts to show.</p>
                     )}
                 </div>
             </div>

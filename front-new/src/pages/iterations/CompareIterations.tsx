@@ -25,7 +25,7 @@ import { LayoutDashboard } from "lucide-react";
 import PageHeader from "@/components/page-header";
 import Breadcrumb from "@/components/breadcrumb";
 import { addDuplicateNumber, dataImageType, transposeArray } from "@/lib/utils";
-import { metricsComparationChartOptionsGenerator } from "./compare-iterations.tsx/metrics-chart-options";
+import { metricsComparationChartOptionsGenerator } from "@/pages/iterations/compare-iterations/metrics-chart-options";
 
 const CompareIterations = () => {
     /**

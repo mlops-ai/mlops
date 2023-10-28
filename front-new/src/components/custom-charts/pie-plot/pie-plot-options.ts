@@ -1,9 +1,10 @@
 import { Keyable } from "@/types/types";
 
-export const metricsChartOptionsGenerator = (
+export const piePlotOptions = (
     theme: "dark" | "light" | "system",
-    metrics_names: string[],
-    series: Keyable[]
+    series: Keyable[],
+    title?: string,
+    subtitle?: string
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -13,13 +14,6 @@ export const metricsChartOptionsGenerator = (
             },
             show: true,
             feature: {
-                dataZoom: {
-                    show: true,
-                    yAxisIndex: "none",
-                },
-                brush: {
-                    type: "polygon",
-                },
                 restore: {
                     show: true,
                 },
@@ -28,31 +22,19 @@ export const metricsChartOptionsGenerator = (
         },
         title: {
             left: "center",
-            text: "Metrics Chart",
+            text: title ? title : "",
+            subtext: subtitle ? subtitle : "",
             textStyle: {
+                fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
-        },
-        tooltip: {},
-        xAxis: {
-            type: "category",
-            data: metrics_names,
-            axisLabel: {
-                color: theme === "dark" ? "#ffffff" : "#666",
-            },
-            axisLine: {
-                lineStyle: {
-                    color: theme === "dark" ? "#ffffff" : "#333",
-                },
+            subtextStyle: {
+                fontSize: 16,
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
-        yAxis: {
-            type: "value",
-            splitLine: {
-                lineStyle: {
-                    color: theme === "dark" ? "#374151" : "#ccc",
-                },
-            },
+        tooltip: {
+            trigger: "item"
         },
         legend: {
             type: "scroll",
