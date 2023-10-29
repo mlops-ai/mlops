@@ -37,7 +37,7 @@ import Lightbox from "@/components/image-lightbox/image-lightbox";
 import "@/components/image-lightbox/light-box.css";
 import IterationDropdownActions from "./single-iteration/iteration-dropdown-actions";
 import { dataImageType } from "@/lib/utils";
-import CustomChart from "@/components/custom-charts/custom-chart";
+import CustomChart from "@/components/custom-charts/single/custom-chart";
 import { Chart } from "@/types/chart";
 
 const SingleIteration = () => {
@@ -218,7 +218,6 @@ const SingleIteration = () => {
                         );
                     }
                 );
-                console.log(custom_charts);
             }
 
             return [
@@ -321,10 +320,7 @@ const SingleIteration = () => {
                         <DataTableHeader cols={["Created", "Run By"]} />
                         <DataTableContent>
                             <DataTableRow>
-                                <td
-                                    scope="row"
-                                    className="px-6 py-4"
-                                >
+                                <td scope="row" className="px-6 py-4">
                                     {moment(iterationData.created_at).format(
                                         "DD.MM.YYYY, HH:mm"
                                     )}
@@ -437,6 +433,15 @@ const SingleIteration = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
+                    <h5 className="text-xl font-semibold">Custom charts</h5>
+                    {customCharts.length > 0 ? (
+                        customCharts
+                    ) : (
+                        <p>No custom charts to show.</p>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-2">
                     <h5 className="text-xl font-semibold">Image charts</h5>
                     {imageCharts.length > 0 ? (
                         <Masonry
@@ -461,15 +466,6 @@ const SingleIteration = () => {
                             startIndex={status.key}
                             doubleClickZoom={0}
                         />
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <h5 className="text-xl font-semibold">Custom charts</h5>
-                    {customCharts.length > 0 ? (
-                        customCharts
-                    ) : (
-                        <p>No custom charts to show.</p>
                     )}
                 </div>
             </div>

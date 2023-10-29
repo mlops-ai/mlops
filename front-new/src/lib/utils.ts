@@ -1,7 +1,9 @@
+import { Chart } from "@/types/chart";
 import { Dataset } from "@/types/dataset";
 import { Iteration } from "@/types/iteration";
 import { Model } from "@/types/model";
 import { Project } from "@/types/project";
+import { Keyable } from "@/types/types";
 import { type ClassValue, clsx } from "clsx";
 import { LoremIpsum } from "lorem-ipsum";
 import moment from "moment";
@@ -278,18 +280,116 @@ export const xAxisType = (array: any[][]) => {
         if (!onlyNumbers(data)) {
             return "category";
         }
-    })
+    });
     return "value";
-}
+};
+
+export const xAxisTypeCompare = (charts: Chart[]) => {
+    charts.forEach((chart) => {
+        chart.x_data.forEach((data) => {
+            if (!onlyNumbers(data)) {
+                return "category";
+            }
+        });
+    });
+    return "value";
+};
 
 export const minValue = (value: any) => {
     return Math.floor(value.min);
-}
+};
 
 export const maxValue = (value: any) => {
     return Math.ceil(value.max);
-}
+};
 
 export const scatterPlotTooltipFormatter = (args: any) => {
-    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${args.data.join(', ')})`;
+    return `${args.marker}${args.seriesName} (${
+        args.dataIndex
+    })<br />(${args.data.join(", ")})`;
+};
+
+export const groupCustomCharts = (charts: Chart[]) => {
+    return charts.reduce((arr: any, chart: Chart) => {
+        if (chart.chart_type !== "pie" && chart.chart_type !== "boxplot") {
+            arr[chart.name] = arr[chart.name] || [];
+            arr[chart.name].push(chart);
+        } else {
+            arr[chart.chart_type] = arr[chart.chart_type] || [];
+            arr[chart.chart_type].push(chart);
+        }
+        return arr;
+    }, {});
+};
+
+export const checkTypesInGroup = (charts: Chart[], firstType: string) => {
+    return charts.every((chart) => {
+        return chart.chart_type === firstType;
+    });
+};
+
+const findMaxValue = (counts: Keyable) => {
+    let maxValue = 0;
+    let maxKey = "";
+    for (const key in counts) {
+        if (counts[key] > maxValue) {
+            maxValue = counts[key];
+            maxKey = key;
+        }
+    }
+    return maxKey;
+};
+
+export const getMostFrequentValues = (charts: Chart[]) => {
+    const titleCounts: Keyable = {};
+    const subtitleCounts: Keyable = {};
+    const xLabelCounts: Keyable = {};
+    const yLabelCounts: Keyable = {};
+
+    charts.forEach((chart: Chart) => {
+        if (chart.chart_title) {
+            if (titleCounts[chart.chart_title]) {
+                titleCounts[chart.chart_title]++;
+            } else {
+                titleCounts[chart.chart_title] = 1;
+            }
+        }
+
+        if (chart.chart_subtitle) {
+            if (subtitleCounts[chart.chart_subtitle]) {
+                subtitleCounts[chart.chart_subtitle]++;
+            } else {
+                subtitleCounts[chart.chart_subtitle] = 1;
+            }
+        }
+
+        if (chart.x_label) {
+            if (xLabelCounts[chart.x_label]) {
+                xLabelCounts[chart.x_label]++;
+            } else {
+                xLabelCounts[chart.x_label] = 1;
+            }
+        }
+
+        if (chart.y_label) {
+            if (yLabelCounts[chart.y_label]) {
+                yLabelCounts[chart.y_label]++;
+            } else {
+                yLabelCounts[chart.y_label] = 1;
+            }
+        }
+    });
+
+    return [
+        findMaxValue(titleCounts),
+        findMaxValue(subtitleCounts),
+        findMaxValue(xLabelCounts),
+        findMaxValue(yLabelCounts),
+    ];
+};
+
+export const checkXDataInBarPlotGroup = (charts: Chart[], firstX: any[]) => {
+    return charts.every((chart) => {
+        return JSON.stringify(chart.x_data[0]) === JSON.stringify(firstX);
+    });
 }

@@ -24,8 +24,18 @@ import { VscProject } from "react-icons/vsc";
 import { LayoutDashboard } from "lucide-react";
 import PageHeader from "@/components/page-header";
 import Breadcrumb from "@/components/breadcrumb";
-import { addDuplicateNumber, dataImageType, transposeArray } from "@/lib/utils";
+import {
+    addDuplicateNumber,
+    checkTypesInGroup,
+    checkXDataInBarPlotGroup,
+    dataImageType,
+    groupCustomCharts,
+    transposeArray,
+} from "@/lib/utils";
 import { metricsComparationChartOptionsGenerator } from "@/pages/iterations/compare-iterations/metrics-chart-options";
+import { Chart } from "@/types/chart";
+import CustomChartCompare from "@/components/custom-charts/compare/custom-chart-compare";
+import CustomChart from "@/components/custom-charts/single/custom-chart";
 
 const CompareIterations = () => {
     /**
@@ -46,9 +56,6 @@ const CompareIterations = () => {
 
     const { project_id } = useParams();
 
-    // console.log(project_id);
-    // console.log(location.pathname);
-
     /**
      * State used for storing lightbox data (image charts viewer).
      * */
@@ -64,7 +71,6 @@ const CompareIterations = () => {
             /**
              * Find project by project_id from url.
              * */
-            // console.log(project_id);
             const project = data.projects.find(
                 (project) => project._id === project_id
             );
@@ -137,7 +143,7 @@ const CompareIterations = () => {
                 numberOfExperiments: experiments.length,
             });
         }
-    }, [data.projects]);
+    }, [data.projects, project_id]);
 
     const [
         iterationsDetails,
@@ -146,6 +152,7 @@ const CompareIterations = () => {
         parameters,
         metrics,
         metricsChart,
+        customCharts,
         imageCharts,
     ] = useMemo(() => {
         if (iterationsData) {
@@ -167,6 +174,8 @@ const CompareIterations = () => {
 
             let image_charts: Keyable[] = [];
             let image_charts_sources: Keyable[] = [];
+
+            let custom_charts: React.ReactNode[] = [];
 
             iterationsData.iterations.forEach((iteration: Iteration) => {
                 ids.push(iteration.id);
@@ -313,6 +322,97 @@ const CompareIterations = () => {
             }
 
             /**
+             * Prepare custom charts data
+             */
+            let customChartsInIterations = iterationsData.iterations
+                .map((iteration: Iteration, index: number) => {
+                    if (
+                        iteration.interactive_charts &&
+                        iteration.interactive_charts.length > 0
+                    ) {
+                        return {
+                            interactive_charts: iteration.interactive_charts,
+                            iteration_name: iterations_names[index],
+                        };
+                    }
+                    return { interactive_charts: [], iteration_name: "" };
+                })
+                .filter(
+                    (data: Keyable) => data.interactive_charts.length !== 0
+                );
+
+            let customChartsInIterationsPacked = customChartsInIterations.map(
+                (data: Keyable) => {
+                    return data.interactive_charts.map((chart: Chart) => {
+                        return {
+                            ...chart,
+                            iteration_name: data.iteration_name,
+                        };
+                    });
+                }
+            );
+
+            let customChartsInIterationsFlat =
+                customChartsInIterationsPacked.flat();
+
+            let customChartsComparable = customChartsInIterationsFlat.filter(
+                (chart: Chart) => chart.comparable
+            );
+
+            const customChartsGroups = groupCustomCharts(
+                customChartsComparable
+            );
+
+            console.log(customChartsGroups);
+
+            Object.keys(customChartsGroups).forEach((chart_group: string) => {
+                let chartsInGroup: Chart[] = customChartsGroups[chart_group];
+                let firstType = chartsInGroup[0].chart_type;
+                if (checkTypesInGroup(chartsInGroup, firstType)) {
+                    if (firstType === "pie" || firstType === "boxplot") {
+                        chartsInGroup.forEach((chart: Chart) => {
+                            custom_charts.push(
+                                <CustomChart
+                                    key={chart.id}
+                                    type={chart.chart_type}
+                                    iteration_name={
+                                        chart.iteration_name as string
+                                    }
+                                    chart_data={chart}
+                                    theme={theme}
+                                />
+                            );
+                        });
+                    } else if (firstType !== "bar") {
+                        custom_charts.push(
+                            <CustomChartCompare
+                                key={chart_group}
+                                type={firstType}
+                                charts={chartsInGroup}
+                                theme={theme}
+                            />
+                        );
+                    } else {
+                        let firstX = chartsInGroup[0].x_data[0];
+                        if (checkXDataInBarPlotGroup(chartsInGroup, firstX)) {
+                            custom_charts.push(
+                                <CustomChartCompare
+                                    key={chart_group}
+                                    type={firstType}
+                                    charts={chartsInGroup}
+                                    theme={theme}
+                                />
+                            );
+                        } else {
+                            console.log("Different x_data in bar plots group");
+                        }
+                    }
+                } else {
+                    console.log("Different chart types in group");
+                }
+            });
+
+            /**
              * Prepare image charts data
              */
             let imageChartsCount = 0;
@@ -408,6 +508,7 @@ const CompareIterations = () => {
                     metricsValuesArrays,
                 },
                 metrics_chart,
+                custom_charts,
                 {
                     image_charts,
                     image_charts_sources,
@@ -415,7 +516,7 @@ const CompareIterations = () => {
             ];
         }
 
-        return [null, null, null, null, null, null, null];
+        return [null, null, null, null, null, null, [], null];
     }, [iterationsData, theme]);
 
     if (!data.projects || !iterationsData) {
@@ -493,7 +594,12 @@ const CompareIterations = () => {
                     </h5>
                     <DataTableContainer
                         refContainer={iterations_data}
-                        refs={[models_data, datasets_data, parameters_data, metrics_data]}
+                        refs={[
+                            models_data,
+                            datasets_data,
+                            parameters_data,
+                            metrics_data,
+                        ]}
                     >
                         <DataTableContent>
                             <DataTableRowWithHeader
@@ -528,7 +634,15 @@ const CompareIterations = () => {
 
                 <div className="flex flex-col gap-2">
                     <h5 className="text-xl font-semibold">Models details</h5>
-                    <DataTableContainer refContainer={models_data} refs={[iterations_data, datasets_data, parameters_data, metrics_data]}>
+                    <DataTableContainer
+                        refContainer={models_data}
+                        refs={[
+                            iterations_data,
+                            datasets_data,
+                            parameters_data,
+                            metrics_data,
+                        ]}
+                    >
                         <DataTableContent>
                             <DataTableRowWithHeader
                                 header="Model Path"
@@ -562,7 +676,15 @@ const CompareIterations = () => {
                     <h5 className="text-xl font-semibold">Parameters</h5>
                     {parameters &&
                     parameters.parametersUniqueArray.length > 0 ? (
-                        <DataTableContainer refContainer={parameters_data} refs={[models_data, datasets_data, iterations_data, metrics_data]}>
+                        <DataTableContainer
+                            refContainer={parameters_data}
+                            refs={[
+                                models_data,
+                                datasets_data,
+                                iterations_data,
+                                metrics_data,
+                            ]}
+                        >
                             <DataTableContent>
                                 {parameters.parametersUniqueArray.map(
                                     (parameter: any, index) => (
@@ -589,7 +711,15 @@ const CompareIterations = () => {
                     <h5 className="text-xl font-semibold">Metrics</h5>
                     {metrics && metrics.metricsUniqueArray.length > 0 ? (
                         <>
-                            <DataTableContainer refContainer={metrics_data} refs={[models_data, datasets_data, parameters_data, iterations_data]}>
+                            <DataTableContainer
+                                refContainer={metrics_data}
+                                refs={[
+                                    models_data,
+                                    datasets_data,
+                                    parameters_data,
+                                    iterations_data,
+                                ]}
+                            >
                                 <DataTableContent>
                                     {metrics.metricsUniqueArray.map(
                                         (metric: any, index) => (
@@ -615,6 +745,15 @@ const CompareIterations = () => {
                         </>
                     ) : (
                         <p>No metrics to show.</p>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <h5 className="text-xl font-semibold">Custom charts</h5>
+                    {customCharts.length > 0 ? (
+                        customCharts
+                    ) : (
+                        <p>No custom charts to show.</p>
                     )}
                 </div>
 

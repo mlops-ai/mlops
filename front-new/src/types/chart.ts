@@ -24,4 +24,6 @@ export interface Chart {
 
     created_at: Date;
     updated_at: Date;
+
+    iteration_name?: string;
 }

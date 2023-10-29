@@ -27,7 +27,7 @@ const BarPlot = ({
         });
     } else {
         series_data.push({
-            name: iteration_name,
+            name: chart_data.y_data_names && chart_data.y_data_names.length > 0 ? chart_data.y_data_names[0] : iteration_name,
             data: chart_data.y_data[0],
             type: chart_data.chart_type,
             showSymbol: false,
