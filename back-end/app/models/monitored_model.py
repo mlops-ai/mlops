@@ -19,14 +19,13 @@ class MonitoredModel(Document):
     - **iteration (Iteration)**: Related Iteration.
     - **ml_model (object)**: ML model. ---- TODO: add coded pkl file
     """
-
     model_name: str = Field(description="Model name", min_length=1, max_length=100)
     model_description: Optional[str] = Field(default="", description="Model description", max_length=150)
     model_status: str = Field(default='idle', description="Model status")
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
     pinned: bool = Field(default=False, description="Model pinned status")
+    predictions_data: Optional[list] = Field(default=[], description="Predictions data")
     # ml_model: Optional[object] = Field(default=None, description="Loaded ml model")
-
 
     @validator('model_status')
     def validate_status(cls, v):
@@ -77,7 +76,8 @@ class MonitoredModel(Document):
                         }
                     ]
                 },
-                "pinned": False
+                "pinned": False,
+                "predictions_data": []
             }
         }
 
@@ -92,11 +92,12 @@ class UpdateMonitoredModel(MonitoredModel):
     - **model_status (str)**: Monitored model status.
     - **iteration (Iteration)**: Related Iteration.
     """
-
     model_name: Optional[str]
     model_description: Optional[str]
     model_status: Optional[str]
     iteration: Optional[Iteration]
+    pinned: Optional[bool]
+    predictions_data: Optional[list]
 
     class Config:
         schema_extra = {
@@ -120,6 +121,7 @@ class UpdateMonitoredModel(MonitoredModel):
                         }
                     ]
                 },
-                "pinned": False
+                "pinned": False,
+                "predictions_data": []
             }
         }
