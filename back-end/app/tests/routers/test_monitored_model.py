@@ -685,11 +685,14 @@ async def test_update_monitored_model_with_changing_iteration(client: AsyncClien
 
     response = await client.post("/monitored-models/", json=monitored_model)
     monitored_model_id = response.json()["_id"]
+    monitored_model_name = response.json()["model_name"]
 
     monitored_model_changed_v1 = {
         "model_status": "active",
         "iteration": old_iteration_to_model
     }
+
+    monitored_model_response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed_v1)
 
     new_iteration = {
         "iteration_name": "Iteration 5",
