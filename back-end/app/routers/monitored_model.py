@@ -315,10 +315,16 @@ async def monitored_model_predict(id: PydanticObjectId, data: dict) -> dict:
 
     try:
         prediction = ml_model.predict(pd.DataFrame([data]))[0]
+        monitored_model.predictions_data.append({
+            **data,
+            'prediction': prediction
+        })
+        await monitored_model.save()
     except Exception as e:
         raise monitored_model_prediction_exception(str(e))
 
     return {
+        **data,
         'prediction': prediction
     }
 
