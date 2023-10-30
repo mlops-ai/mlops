@@ -21,7 +21,7 @@ class MonitoredModel(Document):
     - **iteration (Iteration)**: Related Iteration.
     - **pinned (bool)**: Monitored model pinned status.
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
-    - **ml_model (object)**: ML model
+    - **ml_model (str)**: ML model
     """
     model_name: str = Field(description="Model name", min_length=1, max_length=100)
     model_description: Optional[str] = Field(default="", description="Model description", max_length=150)
