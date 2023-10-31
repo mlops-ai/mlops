@@ -4,12 +4,15 @@ import { numberBetween } from "@/lib/utils";
 import { Iteration } from "@/types/iteration";
 import moment from "moment-timezone";
 import { GoIterations } from "react-icons/go";
+import {useSearchParams} from "react-router-dom";
 
 interface ModelCardInfoProps {
     iteration?: Iteration;
 }
 
 const ModelCardInfo = ({ iteration }: ModelCardInfoProps) => {
+
+    const [searchParams] = useSearchParams();
     const IterationBlock = () => {
         if (!iteration) {
             return (
@@ -28,7 +31,11 @@ const ModelCardInfo = ({ iteration }: ModelCardInfoProps) => {
                     Based on model from{" "}
                     <a
                         className="italic cursor-pointer hover:underline"
-                        href="#"
+                        href={`/projects/${iteration.project_id}/experiments/${iteration.experiment_id}/iterations/${iteration.id}${
+                            searchParams.get("ne") !== "default"
+                                ? `?ne=${searchParams.get("ne")}`
+                                : ""
+                        }`}
                     >
                         {iteration.iteration_name}
                     </a>{" "}

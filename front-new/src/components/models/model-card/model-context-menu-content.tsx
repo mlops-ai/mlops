@@ -12,6 +12,8 @@ import { Model } from "@/types/model";
 import ModalModelMenuItem from "./model-menu/modal-model-menu-item";
 import { ModelStatus } from "@/types/types";
 import PinUnpinModelMenuItem from "./model-menu/pin-unpin-model-menu-item";
+import NavigateToModelIterationMenuItem
+    from "@/components/models/model-card/model-menu/navigate-to-model-iteration.tsx";
 
 interface ModelCardProps {
     model: Model;
@@ -65,6 +67,11 @@ const ModelContextMenuContent = ({ model, setLoading }: ModelCardProps) => {
             />
             <ContextMenuSeparator />
             <CopyModelIdMenuItem model={model} ItemType={ContextMenuItem} />
+            <ContextMenuSeparator />
+            {model.iteration && <NavigateToModelIterationMenuItem
+                model={model}
+                ItemType={ContextMenuItem}
+            />}
         </ContextMenuContent>
     );
 };

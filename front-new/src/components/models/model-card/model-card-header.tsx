@@ -11,7 +11,7 @@ interface ModelCardProps {
 }
 
 const ModelCardHeader = ({ model, setLoading }: ModelCardProps) => {
-    const [searchParams, setSearchParams] = useSearchParams({
+    const [searchParams] = useSearchParams({
         ne: "default",
     });
 

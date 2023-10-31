@@ -10,8 +10,8 @@ export const ModelInfo = [
         field: "model_path",
         headerName: "Model Path",
         cellRenderer: (val: any) => {
-            if (val.data["model_path"]) {
-                return val.data["model_path"];
+            if (val.data["path_to_model"]) {
+                return val.data["path_to_model"];
             }
             return "-";
         },
