@@ -51,3 +51,17 @@ def set_active_model(model_name: str) -> str:
 
     settings.change_active_model(model["model_name"])
     return f"Active model set to: {settings.active_model}"
+
+
+def predict(model_name: str, data: dict):
+
+    model = get_model(model_name)
+
+    app_response = requests.post(f"{settings.url}/monitored-models/{model['_id']}/predict", json=data)
+
+    prediction = app_response.json()
+
+    if app_response.status_code == 200:
+        return prediction
+    else:
+        raise request_failed_exception(app_response)
