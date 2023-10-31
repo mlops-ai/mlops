@@ -524,7 +524,6 @@ async def test_monitored_ml_model_predict_failure_2(client: AsyncClient):
         "X2": "Invalid value :)",
     }
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
-    print(response.json())
     assert response.status_code == 400
     assert response.json()["detail"] == "Cannot make prediction: could not convert" \
                                         " string to float: 'Invalid value :)'"
