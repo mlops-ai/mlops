@@ -75,7 +75,10 @@ async def test_create_model_with_iteration(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
+        iteration.log_model_name('test_regression_model')
+        iteration.log_path_to_model(os.path.join(
+            os.path.dirname(__file__), "linear_regression_model.pkl"
+        ))
         iteration.log_parameters(params)
         iteration.log_metrics(metrics)
 
