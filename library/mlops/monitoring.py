@@ -1,12 +1,7 @@
 import requests
-import requests
-from contextlib import contextmanager
 from mlops.config.config import settings
-from mlops.src.iteration import Iteration
-from mlops.src.dataset import Dataset
 from mlops.exceptions.tracking import request_failed_exception
 from mlops.exceptions.monitoring import failed_to_set_active_model_exception
-from typing import ContextManager
 
 
 def get_model(model_name: str) -> dict:
