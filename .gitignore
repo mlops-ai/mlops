@@ -8,6 +8,8 @@ front-end/coverage
 front-end/build
 front-end/package-lock.json
 
+front-new/dist
+front-new/node_modules
 # Docker
 /data
 # **/*.env

@@ -1,0 +1,21 @@
+# TODO: workflow for deploying docker compose app stack
+
+name: Deploy the app
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: TODO
+      run: echo "TODO"

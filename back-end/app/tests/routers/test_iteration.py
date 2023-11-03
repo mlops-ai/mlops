@@ -69,8 +69,7 @@ async def test_add_iteration(client: AsyncClient):
     iteration = {
         "iteration_name": "Test iteration",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
-        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
-        "model_name": "Test model name"
+        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001}
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -105,8 +104,7 @@ async def test_add_iteration2(client: AsyncClient):
         "iteration_name": "Test iteration 2",
         "metrics": {"accuracy": 0.9, "precision": 0.8, "recall": 0.7, "f1": 0.6},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.001},
-        "path_to_model": test_file_path,
-        "model_name": "Test model name"
+        "path_to_model": test_file_path
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -193,8 +191,7 @@ async def test_change_iteration_name(client: AsyncClient):
     iteration = {
         "iteration_name": "Test iteration to change",
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
-        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
-        "model_name": "Test model name to change"
+        "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001}
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -334,7 +331,10 @@ async def test_add_iteration_with_chart(client: AsyncClient):
                 "x_label": "Shot number",
                 "y_label": "Points"
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -378,7 +378,10 @@ async def test_add_iteration_with_str_chart(client: AsyncClient):
                 "x_label": "String labels",
                 "y_label": "Values",
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -443,7 +446,10 @@ async def test_add_iteration_with_duplicated_chart_names(client: AsyncClient):
                 "y_label": "Count",
                 "comparable": True
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -494,7 +500,10 @@ async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClie
                 "x_label": "Shot number",
                 "y_label": "Points"
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -537,7 +546,10 @@ async def test_add_iteration_with_image_charts(client: AsyncClient):
                 "name": "Test chart 1",
                 "encoded_image": encoded_image
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -649,7 +661,10 @@ async def test_add_iteration_with_bar_plot(client: AsyncClient):
                 "y_label": "Y",
                 "compare": False
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -710,7 +725,10 @@ async def test_add_iteration_with_scatter_plots(client: AsyncClient):
                 "y_label": "Amount of deaths",
                 "compare": True
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -764,10 +782,70 @@ async def test_add_iteration_with_pie_plot(client: AsyncClient):
                 "y_label": "Amount of deaths",
                 "compare": False
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
 
     assert response.status_code == 400
     assert response.json()["detail"] == "x_data and y_data can only have one list of data"
+
+
+@pytest.mark.asyncio
+async def test_delete_iteration_assigned_to_monitored_model(client: AsyncClient):
+    """
+    Test delete iteration assigned to monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project_title = "Test project updated"
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Test experiment updated"
+    response_exp = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response_exp.json()["id"]
+
+    iteration = {
+        "iteration_name": "Iteration with monitored model",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    iteration_to_model = response.json()
+    monitored_model = {
+        "model_name": "Test monitored model",
+        "model_description": "Test monitored model description",
+        "model_status": "active",
+        "iteration": iteration_to_model
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model)
+    monitored_model_id = response.json()["_id"]
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    assigned_monitored_model_id = response.json()["assigned_monitored_model_id"]
+
+    response = await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+
+    assert assigned_monitored_model_id == monitored_model_id
+    assert response.status_code == 400
+    assert response.json()["detail"] == ("Iteration is assigned to monitored model. Cannot delete it. "
+                                         "Please delete monitored model first.")

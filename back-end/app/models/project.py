@@ -20,6 +20,7 @@ class Project(Document):
     - **created_at (datetime)**: Project creation date.
     - **updated_at (datetime)**: Project last update date.
     - **experiments (List[Experiment])**: List of experiments in the project.
+    - **pinned (bool)**: Project pinned status.
     """
 
     title: str = Field(description="Project title", min_length=1, max_length=40)
@@ -29,6 +30,7 @@ class Project(Document):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     experiments: List[Experiment] = []
+    pinned: bool = Field(default=False, description="Project pinned status")
 
     @validator('status')
     def validate_status(cls, v):
@@ -61,7 +63,11 @@ class Project(Document):
         schema_extra = {
             "example": {
                 "title": "Titanic",
-                "created_at": datetime.now()
+                "description": "Titanic dataset",
+                "status": "not_started",
+                "archived": False,
+                "created_at": datetime.now(),
+                "pinned": False
             }
         }
 
@@ -76,6 +82,7 @@ class UpdateProject(Project):
     - **status (str)**: Project status.
     - **archived (bool)**: Project archived status.
     - **updated_at (datetime)**: Project last update date.
+    - **pinned (bool)**: Project pinned status.
     """
 
     title: Optional[str]
@@ -83,6 +90,7 @@ class UpdateProject(Project):
     status: Optional[str]
     archived: Optional[bool]
     updated_at: datetime = Field(default_factory=datetime.now)
+    pinned: Optional[bool]
 
     class Config:
         schema_extra = {
@@ -90,7 +98,8 @@ class UpdateProject(Project):
                 "title": "Titanic",
                 "description": "Titanic dataset",
                 "status": "not_started",
-                "archived": False
+                "archived": False,
+                "pinned": False
             }
         }
 
