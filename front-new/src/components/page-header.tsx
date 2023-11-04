@@ -1,11 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import { projectStatusesMap } from "@/config/maping";
+import { projectStatusesMap, modelStatusesMap } from "@/config/maping";
 import { PinFilled } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
     title: string;
     statusBadge?: "not_started" | "in_progress" | "completed";
+    modelBadge?: "idle" | "active" | "archived";
     archivedBadge?: boolean;
     pin?: boolean;
     actionButton?: React.ReactNode;
@@ -15,6 +16,7 @@ interface PageHeaderProps {
 const PageHeader = ({
     title,
     statusBadge,
+    modelBadge,
     archivedBadge,
     pin,
     actionButton,
@@ -39,6 +41,15 @@ const PageHeader = ({
                     >
                         {projectStatusesMap[statusBadge]}
                     </Badge>
+                )}
+                {modelBadge && (
+                    <Badge
+                    variant={modelBadge}
+                    title="Project status"
+                    className="ml-2"
+                >
+                    {modelStatusesMap[modelBadge]}
+                </Badge>
                 )}
                 {archivedBadge && (
                     <Badge

@@ -1,4 +1,4 @@
-import Analytics from "@/components/icons/analytics";
+import Analytics from "@/components/icons/chart";
 import Link from "@/components/icons/link";
 import { Keyable } from "@/types/types";
 import { CalendarDays } from "lucide-react";

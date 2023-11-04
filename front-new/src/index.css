@@ -179,6 +179,14 @@ ul[data-pc-section="subgroup"] li button {
     --ag-border-color: theme("colors.gray.600");
 }
 
+.ag-theme-alpine-dark .ag-header-viewport {
+    background-color: theme("colors.gray.700");
+}
+
+.ag-theme-alpine .ag-header-viewport {
+    background-color: theme("colors.gray.100");
+}
+
 .ag-theme-alpine {
     --ag-border-color: theme("colors.gray.300");
 }

@@ -59,8 +59,8 @@ const formSchema = z.object({
         }),
     description: z
         .string()
-        .max(1000, {
-            message: "Description cannot be longer than 1000 characters.",
+        .max(500, {
+            message: "Description cannot be longer than 500 characters.",
         })
         .optional(),
     status: z.enum(["not_started", "in_progress", "completed"]),
@@ -200,13 +200,13 @@ const EditProjectModal = () => {
                                         <Textarea
                                             className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx"
                                             disabled={isLoading}
-                                            maxLength={1000}
+                                            maxLength={500}
                                             placeholder="Project description..."
                                             {...field}
                                         />
                                     </FormControl>
                                     <FormDescription>
-                                        Optional (max. 1000 characters)
+                                        Optional (max. 500 characters)
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>

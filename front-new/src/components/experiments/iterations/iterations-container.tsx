@@ -410,17 +410,6 @@ const IterationsContainer = ({
             {}
         );
 
-        // navigate(
-        //     {
-        //         pathname: location.pathname + "/iterations-compare",
-        //         search: `?iterations=${JSON.stringify(iterationsToCompare)}${
-        //             searchParams.get("ne") !== "default"
-        //                 ? `&ne=${searchParams.get("ne")}`
-        //                 : ""
-        //         }`,
-        //     }
-        // )
-
         const extractedID = extractIdFromPath(location.pathname);
 
         if (extractedID) {

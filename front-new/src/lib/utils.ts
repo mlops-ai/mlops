@@ -133,6 +133,10 @@ export const dateToHumanize = (date: string) => {
     return difference.humanize() + " ago";
 };
 
+export const generatePredictionsData = (predicationData: Keyable) => {
+    // const predictionColumnsArray = Object.getOwnPropertyNames(predicationData);
+}
+
 export const extractColumnsData = (
     rowData: Iteration[],
     type: "parameters" | "metrics",
