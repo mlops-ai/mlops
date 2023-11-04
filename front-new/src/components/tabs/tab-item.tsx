@@ -12,6 +12,7 @@ interface TabItemProps {
 const TabItem = ({ title, Icon, param, value }: TabItemProps) => {
     const [searchParams, setSearchParams] = useSearchParams({
         archived: "false",
+        charts: "false",
     });
 
     const isActive = searchParams.get(param) === value;
