@@ -84,6 +84,8 @@ async def test_create_monitored_model(client: AsyncClient):
     response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed)
     assert response.status_code == 200
     assert response.json()["model_status"] == "active"
+    assert response.json()['model_name'] == monitored_model['model_name']
+    assert response.json()['iteration']['assigned_monitored_model_name'] == monitored_model['model_name']
 
 
 @pytest.mark.asyncio
@@ -362,6 +364,7 @@ async def test_update_monitored_model_with_iteration(client: AsyncClient):
     assert response.status_code == 200
     assert response.json()["model_status"] == monitored_model_changed["model_status"]
     assert response.json()["iteration"]["iteration_name"] == iteration["iteration_name"]
+    assert response.json()["iteration"]["assigned_monitored_model_name"] == monitored_model_changed["model_name"]
 
 
 @pytest.mark.asyncio
@@ -720,4 +723,38 @@ async def test_update_monitored_model_with_changing_iteration(client: AsyncClien
     assert monitored_model_response.json()["iteration"]["id"] == new_iteration_id
     assert monitored_model_response.json()["iteration"]["assigned_monitored_model_id"] == monitored_model_id
     assert new_iteration_response.json()["assigned_monitored_model_id"] == monitored_model_id
+    assert new_iteration_response.json()["assigned_monitored_model_name"] == monitored_model_name
     assert old_iteration_response.json()["assigned_monitored_model_id"] is None
+    assert old_iteration_response.json()["assigned_monitored_model_name"] is None
+
+
+@pytest.mark.asyncio
+async def test_delete_monitored_model(client: AsyncClient):
+    """
+    Test delete monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    model_name_to_find = "Engine failure prediction model v7"
+    response = await client.get(f"/monitored-models/name/{model_name_to_find}")
+
+    iteration = response.json()["iteration"]
+    project_id = iteration["project_id"]
+    experiment_id = iteration["experiment_id"]
+    iteration_id = iteration["id"]
+
+    response = await client.delete(f"/monitored-models/{response.json()['_id']}")
+    assert response.status_code == 200
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+    assert response.status_code == 200
+    assert response.json()["assigned_monitored_model_id"] is None
+    assert response.json()["assigned_monitored_model_name"] is None
+
+    response = await client.get(f"/monitored-models/name/{model_name_to_find}")
+    assert response.status_code == 404

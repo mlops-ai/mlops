@@ -24,7 +24,7 @@ class Project(Document):
     """
 
     title: str = Field(description="Project title", min_length=1, max_length=40)
-    description: Optional[str] = Field(default="", description="Project description", max_length=150)
+    description: Optional[str] = Field(default="", description="Project description", max_length=600)
     status: str = Field(default='not_started', description="Project status")
     archived: bool = Field(default=False, description="Project status")
     created_at: datetime = Field(default_factory=datetime.now)
