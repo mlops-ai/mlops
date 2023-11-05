@@ -29,9 +29,17 @@ import {
 } from "./model/treeselect-base-columns-definitions/treeselect-base-columns";
 import { TreeSelectBaseNodesExpanded } from "./model/treeselect-base-columns-definitions/treeselect-base-nodes-expanded";
 import moment from "moment";
-import { IRowNode } from "ag-grid-community";
+import { IRowNode, ModelUpdatedEvent } from "ag-grid-community";
 import { Button } from "../ui/button";
-import { Chart, ClearFilter, ClearSorting, Delete, Download, Loading } from "../icons";
+import {
+    Chart,
+    ClearFilter,
+    ClearSorting,
+    Delete,
+    Download,
+    Loading,
+} from "@/components/icons";
+import NoPredictionsHistory from "./no-predictions-history";
 
 interface MonitoringContainerProps {
     modelData: Model;
@@ -62,13 +70,16 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
         // rowData = modelData.predictions_data;
         rowData = predictions;
 
+        const exampleRow = rowData[0];
+
         const defaultColumns = [
             "prediction_id",
             "prediction_date",
             "predicted_value",
             "predicted_by",
         ];
-        const columns = Object.getOwnPropertyNames(rowData[0]).filter(
+
+        const columns = Object.getOwnPropertyNames(exampleRow).filter(
             (col) => !defaultColumns.includes(col)
         );
 
@@ -81,6 +92,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
 
         let featuresColumns: any[] = [];
         let treeselectColumns: any[] = [];
+
         if (columns.length > 0) {
             Object.assign(TreeSelectBaseColumnsCheckedAll, {
                 features: {
@@ -88,11 +100,11 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                     partialChecked: false,
                 },
             });
+
             columns.forEach((col) => {
                 featuresColumns.push({
                     field: col,
                     headerName: col,
-                    filter: "agNumberColumnFilter",
                 });
                 treeselectColumns.push({
                     key: col,
@@ -213,7 +225,9 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
         let grid_cols = gridRef.current.columnApi
             .getColumns()
             ?.map((col) => col.getColId())
-            .filter((col) => col !== "prediction_id" && col !== "predicted_value");
+            .filter(
+                (col) => col !== "prediction_id" && col !== "predicted_value"
+            );
         for (let col of grid_cols!) {
             if (columns_active.includes(col)) {
                 gridRef.current.columnApi.setColumnVisible(col, true);
@@ -364,19 +378,13 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
 
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-3">
-                    <Button
-                        variant="mlopsGridAction"
-                        size="grid"
-                    >
+                    <Button variant="mlopsGridAction" size="grid">
                         <Delete className="flex-shrink-0 w-6 h-6 mr-1" /> Delete
                     </Button>
 
-                    <Button
-                        variant="mlopsGridAction"
-                        size="grid"
-                    >
-                        <Chart className="flex-shrink-0 w-6 h-6 mr-1" />{" "}
-                        Create chart
+                    <Button variant="mlopsGridAction" size="grid">
+                        <Chart className="flex-shrink-0 w-6 h-6 mr-1" /> Create
+                        chart
                     </Button>
 
                     <Button
@@ -436,7 +444,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                     rowHeight={25}
                     domLayout={"autoHeight"}
                     // onSelectionChanged={onSelectionChanged}
-                    // noRowsOverlayComponent={NoIterationsInfo}
+                    noRowsOverlayComponent={NoPredictionsHistory}
                     isExternalFilterPresent={isExternalFilterPresent}
                     doesExternalFilterPass={doesExternalFilterPass}
                 />

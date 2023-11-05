@@ -27,6 +27,11 @@ const TabItem = ({ title, Icon, param, value }: TabItemProps) => {
             onClick={() =>
                 setSearchParams(
                     (prev) => {
+                        if (param === "charts") {
+                            prev.delete("archived");
+                        } else {
+                            prev.delete("charts");
+                        }
                         prev.set(param, value);
                         return prev;
                     },
