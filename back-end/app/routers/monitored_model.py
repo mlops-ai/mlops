@@ -165,7 +165,8 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
     monitored_model = await monitored_model.insert()
     if monitored_model.iteration is not None:
         iteration_with_assigned_model = await update_assigned_model_in_iteration(monitored_model.iteration,
-                                                                                 monitored_model.id)
+                                                                                 monitored_model.id,
+                                                                                 monitored_model.model_name)
         monitored_model.iteration = iteration_with_assigned_model
         await update_ml_model_to_encoded_in_monitored_model(monitored_model.iteration, monitored_model.id)
 
@@ -200,7 +201,6 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
         # check if iteration has model path
         if not updated_monitored_model.iteration.path_to_model:
             raise iteration_has_no_path_to_model_exception()
-
         if updated_monitored_model.model_status == 'idle':
             raise monitored_model_has_iteration_exception()
         elif updated_monitored_model.model_status is None:
@@ -219,21 +219,38 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
     if updated_monitored_model.iteration is not None:
         if monitored_model.iteration is not None:
             # Remove the association from the old iteration if there was one
-            await update_assigned_model_in_iteration(monitored_model.iteration, None)
+            await update_assigned_model_in_iteration(monitored_model.iteration, None, None)
             # Update the new iteration with the model ID and get the updated iteration
-            iteration_with_assigned_model = await update_assigned_model_in_iteration(updated_monitored_model.iteration,
-                                                                                     monitored_model.id)
+            if updated_monitored_model.model_name is not None:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    updated_monitored_model.model_name)
+            else:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    monitored_model.model_name)
             # Update monitored_model's iteration with the updated iteration
             updated_monitored_model.iteration = iteration_with_assigned_model
         elif monitored_model.iteration is None:
             # This is a new assignment, update the new iteration with the model ID and get the updated iteration
-            iteration_with_assigned_model = await update_assigned_model_in_iteration(updated_monitored_model.iteration,
-                                                                                     monitored_model.id)
+            if updated_monitored_model.model_name is not None:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    updated_monitored_model.model_name)
+            else:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    monitored_model.model_name)
             # Update monitored_model's iteration with the updated iteration
             updated_monitored_model.iteration = iteration_with_assigned_model
 
         await update_ml_model_to_encoded_in_monitored_model(updated_monitored_model.iteration, monitored_model.id)
 
+    updated_monitored_model.updated_at = datetime.now()
     await monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
     monitored_model = await MonitoredModel.get(id)
     await monitored_model.save()
@@ -258,7 +275,7 @@ async def delete_monitored_model(id: PydanticObjectId) -> MonitoredModel:
         raise monitored_model_not_found_exception()
 
     if monitored_model.iteration is not None:
-        monitored_model.iteration.assigned_monitored_model_id = None
+        await update_assigned_model_in_iteration(monitored_model.iteration, None, None)
 
     await monitored_model.delete()
     return monitored_model
@@ -353,13 +370,15 @@ async def is_name_unique(name: str) -> bool:
     return True
 
 
-async def update_assigned_model_in_iteration(iteration_to_found: Iteration, value_to_set):
+async def update_assigned_model_in_iteration(iteration_to_found: Iteration, monitored_model_id: PydanticObjectId,
+                                             monitored_model_name: str):
     """
     Util function for getting iteration and assigning to assigned_monitored_model_id parameter to monitored_model_id.
 
     Args:
         iteration_to_found: Iteration to get.
-        value_to_set: Value to set - monitored_model_id.
+        monitored_model_id: Monitored model id.
+        monitored_model_name: Monitored model name.
     Returns:
         Iteration.
     """
@@ -376,13 +395,15 @@ async def update_assigned_model_in_iteration(iteration_to_found: Iteration, valu
     if not iteration:
         raise iteration_not_found_exception()
 
-    iteration.assigned_monitored_model_id = value_to_set
+    iteration.assigned_monitored_model_id = monitored_model_id
+    iteration.assigned_monitored_model_name = monitored_model_name
     await project.save()
 
     return iteration
 
 
-async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iteration, monitored_model_id: PydanticObjectId):
+async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iteration,
+                                                        monitored_model_id: PydanticObjectId):
     """
     Util function for getting iteration and assigning to ml_model MonitoredModel parameter encoded pkl file.
 

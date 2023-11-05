@@ -41,6 +41,7 @@ class Iteration(BaseModel):
     - **interactive_charts (Optional[List[InteractiveChart]])**: Interactive charts list.
     - **image_charts (Optional[List[ImageChart]])**: Image charts list.
     - **assigned_monitored_model_id (Optional[PydanticObjectId])**: Assigned monitored model id.
+    - **assigned_monitored_model_name (Optional[str])**: Assigned monitored model name.
     """
 
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
@@ -58,6 +59,7 @@ class Iteration(BaseModel):
     interactive_charts: Optional[List[InteractiveChart]] = Field(default=[], description="Interactive charts list")
     image_charts: Optional[List[ImageChart]] = Field(default=[], description="Image charts list")
     assigned_monitored_model_id: Optional[PydanticObjectId] = Field(default=None, alias="assigned_monitored_model_id")
+    assigned_monitored_model_name: Optional[str] = Field(default=None, alias="assigned_monitored_model_name")
 
     def __repr__(self) -> str:
         return f"<Iteration {self.iteration_name}>"
@@ -119,11 +121,13 @@ class UpdateIteration(Iteration):
 
     iteration_name: Optional[str]
     assigned_monitored_model_id: Optional[PydanticObjectId]
+    assigned_monitored_model_name: Optional[str]
 
     class Config:
         schema_extra = {
                     "example": {
                         "iteration_name": "New name",
-                        "assigned_monitored_model_id": "5f9b3b7e9c9d6c0a3c7b3b7e"
+                        "assigned_monitored_model_id": "5f9b3b7e9c9d6c0a3c7b3b7e",
+                        "assigned_monitored_model_name": "Model name"
                     }
                 }
