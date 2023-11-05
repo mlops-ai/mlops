@@ -18,6 +18,7 @@ import { Model } from "@/types/model";
 import { useEffect, useState } from "react";
 import { VscFolderActive } from "react-icons/vsc";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import MonitoringCharts from "./monitoring-charts";
 
 const Monitoring = () => {
     console.log("Monitoring");
@@ -41,7 +42,6 @@ const Monitoring = () => {
 
     useEffect(() => {
         if (data.models) {
-            console.log(data.models);
             const foundModel = data.models.find(
                 (model) => model._id === model_id
             );
@@ -91,6 +91,21 @@ const Monitoring = () => {
         );
     }
 
+    const monitoringContent = () => {
+        if (!charts) {
+            return (
+                <div className="flex flex-col w-full">
+                    <ModelInfo model={modelData} />
+                    <ModelDescription
+                        description={modelData.model_description}
+                    />
+                    <MonitoringContainer modelData={modelData} />
+                </div>
+            );
+        }
+        return <MonitoringCharts />;
+    };
+
     return (
         <div className="relative">
             {isLoading && (
@@ -128,32 +143,27 @@ const Monitoring = () => {
                 />
             </div>
 
-            <div className="mb-4 text-base border-b-2 border-gray-200 dark:border-gray-700">
-                <Tabs>
-                    <TabItem
-                        title="Model predictions"
-                        Icon={Cycle}
-                        param="charts"
-                        value="false"
-                    />
-                    <TabItem
-                        title="Charts"
-                        Icon={Chart}
-                        param="charts"
-                        value="true"
-                    />
-                </Tabs>
-            </div>
-
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col">
                 {modelData.iteration ? (
-                    <div className="flex flex-col w-full">
-                        <ModelInfo model={modelData} />
-                        <ModelDescription
-                            description={modelData.model_description}
-                        />
-                        <MonitoringContainer modelData={modelData} />
-                    </div>
+                    <>
+                        <div className="mb-4 text-base border-b-2 border-gray-200 dark:border-gray-700">
+                            <Tabs>
+                                <TabItem
+                                    title="Model predictions"
+                                    Icon={Cycle}
+                                    param="charts"
+                                    value="false"
+                                />
+                                <TabItem
+                                    title="Charts"
+                                    Icon={Chart}
+                                    param="charts"
+                                    value="true"
+                                />
+                            </Tabs>
+                        </div>
+                        {monitoringContent()}
+                    </>
                 ) : (
                     <ModelIsEmpty />
                 )}

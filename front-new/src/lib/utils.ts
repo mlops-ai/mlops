@@ -133,10 +133,6 @@ export const dateToHumanize = (date: string) => {
     return difference.humanize() + " ago";
 };
 
-export const generatePredictionsData = (predicationData: Keyable) => {
-    // const predictionColumnsArray = Object.getOwnPropertyNames(predicationData);
-}
-
 export const extractColumnsData = (
     rowData: Iteration[],
     type: "parameters" | "metrics",
@@ -396,4 +392,113 @@ export const checkXDataInBarPlotGroup = (charts: Chart[], firstX: any[]) => {
     return charts.every((chart) => {
         return JSON.stringify(chart.x_data[0]) === JSON.stringify(firstX);
     });
-}
+};
+
+export const getParameterTypes = (objects: Keyable[]) => {
+    const parameterTypes: Keyable = {};
+
+    for (const obj of objects) {
+        for (const key in obj) {
+            if (typeof obj[key] !== "number") {
+                parameterTypes[key] = "agTextColumnFilter";
+            } else if (!parameterTypes[key]) {
+                parameterTypes[key] = "agNumberColumnFilter";
+            }
+        }
+    }
+
+    return parameterTypes;
+};
+
+export const generateHistogramData = (values: number[], numBins: number) => {
+    // Znajdź minimum i maksimum wśród wartości
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+
+    // Oblicz szerokość każdego pojemnika
+    const binWidth = (maxValue - minValue) / numBins;
+
+    // Inicjalizuj tablicę wynikową
+    const histogramData = [];
+
+    // Inicjalizuj pojemniki i zlicz liczbę elementów w każdym pojemniku
+    for (let i = 0; i < numBins; i++) {
+        const binStart = minValue + i * binWidth;
+        const binEnd = binStart + binWidth;
+        const binCenter = (binStart + binEnd) / 2;
+        let binCount = 0;
+
+        if (i === numBins - 1) {
+            binCount = values.filter(
+                (value) => value >= binStart && value <= binEnd
+            ).length;
+        } else {
+            binCount = values.filter(
+                (value) => value >= binStart && value < binEnd
+            ).length;
+        }
+
+        histogramData.push([binStart, binEnd, binCenter, binCount]);
+    }
+
+    return histogramData;
+};
+
+export const histogramTooltipFormatter = (args: any) => {
+    return `${args.marker} ${args.seriesName}'s bin (${args.dataIndex + 1}): [${
+        Math.round(args.data[0] * 100) / 100
+    }-${Math.round(args.data[1] * 100) / 100}] <br />Items in bin: <b>${
+        args.data[3]
+    }</b>`;
+};
+
+export const quantile = (data: number[], q: number) => {
+    const pos = (data.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    if (data[base + 1] !== undefined) {
+        return data[base] + rest * (data[base + 1] - data[base]);
+    } else {
+        return data[base];
+    }
+};
+
+export const squareRootBins = (data: number[]) => {
+    const numberOfBins = Math.ceil(Math.sqrt(data.length));
+    return generateHistogramData(data, numberOfBins);
+};
+
+export const scottBins = (data: number[]) => {
+    const mean = data.reduce((a, b) => a + b) / data.length;
+
+    const std = Math.sqrt(
+        data.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) /
+            data.length
+    );
+
+    const binWidth = (3.5 * std) / Math.pow(data.length, 1 / 3);
+
+    const numberOfBins = Math.ceil(
+        (Math.max(...data) - Math.min(...data)) / binWidth
+    );
+
+    return generateHistogramData(data, numberOfBins);
+};
+
+export const freedmanDiaconisBins = (data: number[]) => {
+    const binWidth =
+        (2 * (quantile(data, 0.75) - quantile(data, 0.25))) /
+        Math.pow(data.length, 1 / 3);
+
+    const numberOfBins = Math.ceil(
+        (Math.max(...data) - Math.min(...data)) / binWidth
+    );
+
+    return generateHistogramData(data, numberOfBins);
+};
+
+export const sturgesBins = (data: number[]) => {
+    const numOfBins = Math.ceil(Math.log2(data.length) + 1);
+
+    return generateHistogramData(data, numOfBins);
+};
