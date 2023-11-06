@@ -758,3 +758,67 @@ async def test_delete_monitored_model(client: AsyncClient):
 
     response = await client.get(f"/monitored-models/name/{model_name_to_find}")
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_two_monitored_model_to_one_iteration(client: AsyncClient):
+    """
+    Test create two monitored models to one iteration.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Mercedes-Benz Manufacturing Poland"
+
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Engine failure prediction"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Iteration 4",
+        "metrics": {"accuracy": 0.9, "precision": 0.9, "recall": 0.9, "f1": 0.9},
+        "parameters": {"batch_size": 64, "epochs": 1000, "learning_rate": 0.19},
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    iteration_to_model_1 = response.json()
+
+
+    monitored_model_1 = {
+        "model_name": "Engine failure prediction model v8",
+        "model_description": "Test monitored model description",
+        "model_status": "idle"
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model_1)
+    monitored_model_id = response.json()["_id"]
+    monitored_model_name = response.json()["model_name"]
+
+    monitored_model_changed_v1 = {
+        "model_status": "active",
+        "iteration": iteration_to_model_1
+    }
+
+    monitored_model_response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed_v1)
+
+    monitored_model_2 = {
+        "model_name": "Engine failure prediction model v9",
+        "model_description": "Test monitored model description",
+        "model_status": "active",
+        "iteration": iteration_to_model_1
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model_2)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Iteration is assigned to monitored model."

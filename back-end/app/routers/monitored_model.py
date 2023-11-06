@@ -17,7 +17,8 @@ from app.routers.exceptions.monitored_model import monitored_model_not_found_exc
     monitored_model_has_iteration_exception, iteration_has_no_path_to_model_exception, \
     monitored_model_load_ml_model_exception, monitored_model_prediction_exception, \
     monitored_model_encoding_pkl_file_exception, monitored_model_no_ml_model_to_decode_exception, \
-    monitored_model_decoding_pkl_file_exception
+    monitored_model_decoding_pkl_file_exception, monitored_model_has_no_iteration_to_check_exception, \
+    iteration_is_assigned_to_monitored_model_exception
 from app.routers.exceptions.project import project_not_found_exception
 
 monitored_model_router = APIRouter()
@@ -161,6 +162,12 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
         raise monitored_model_has_no_iteration_exception()
     elif monitored_model.iteration is not None and monitored_model.model_status == 'idle':
         raise monitored_model_has_iteration_exception()
+
+    if monitored_model.iteration is not None:
+        iteration_to_check = await get_iteration_from_monitored_model(monitored_model)
+        if iteration_to_check.assigned_monitored_model_id is not None and \
+                iteration_to_check.assigned_monitored_model_name is not None:
+            raise iteration_is_assigned_to_monitored_model_exception()
 
     monitored_model = await monitored_model.insert()
     if monitored_model.iteration is not None:
@@ -500,3 +507,29 @@ async def load_ml_model(monitored_model: MonitoredModel) -> object:
     ml_model = await load_and_decode_pkl(monitored_model)
 
     return ml_model
+
+
+async def get_iteration_from_monitored_model(monitored_model: MonitoredModel) -> Iteration:
+    """
+    Get iteration from monitored model.
+
+    Args:
+        monitored_model: Monitored model to get iteration from.
+
+    Returns:
+        Iteration.
+    """
+    project = await Project.get(monitored_model.iteration.project_id)
+    if not project:
+        raise project_not_found_exception()
+
+    experiment = next((exp for exp in project.experiments if exp.id == monitored_model.iteration.experiment_id),
+                      None)
+    if not experiment:
+        raise experiment_not_found_exception()
+
+    iteration = next((iter for iter in experiment.iterations if iter.id == monitored_model.iteration.id), None)
+    if not iteration:
+        raise iteration_not_found_exception()
+
+    return iteration
