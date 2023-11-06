@@ -1,14 +1,8 @@
-import { maxValue, minValue, scatterPlotTooltipFormatter } from "@/lib/utils";
-import { Keyable } from "@/types/types";
-
-export const scatterPlotCompareOptions = (
-    theme: "dark" | "light" | "system",
-    series: Keyable[],
-    x_axis_type: string,
-    x_label: string,
-    y_label: string,
-    title: string,
-    subtitle: string
+export const countPlotOptions = (
+    unique_values: any,
+    value_counts: any,
+    col: string,
+    theme: "dark" | "light" | "system"
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -33,28 +27,26 @@ export const scatterPlotCompareOptions = (
         },
         title: {
             left: "center",
-            text: title,
-            subtext: subtitle,
+            text: `Count Plot of ${col}`,
+            subtext: `Number of unique values: ${unique_values.length}`,
             textStyle: {
                 fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
             trigger: "item",
-            formatter: scatterPlotTooltipFormatter,
         },
         xAxis: {
-            type: x_axis_type,
-            name: x_label,
+            type: "category",
+            data: unique_values,
+            name: "unique values",
             nameLocation: "center",
             nameGap: 30,
-            min: minValue,
-            max: maxValue,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -71,11 +63,9 @@ export const scatterPlotCompareOptions = (
         },
         yAxis: {
             type: "value",
-            name: y_label,
+            name: "count",
             nameLocation: "center",
             nameGap: 30,
-            min: minValue,
-            max: maxValue,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -83,7 +73,6 @@ export const scatterPlotCompareOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
-                onZero: false,
             },
             splitLine: {
                 lineStyle: {
@@ -91,19 +80,17 @@ export const scatterPlotCompareOptions = (
                 },
             },
         },
-        legend: {
-            type: "scroll",
-            top: "bottom",
-            textStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
-            },
-            pageTextStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
-            },
-        },
         grid: {
             show: true,
         },
-        series: series,
+        series: {
+            name: col,
+            type: "bar",
+            data: value_counts,
+            showSymbol: false,
+            emphasis: {
+                focus: "series",
+            },
+        },
     };
 };

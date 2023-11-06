@@ -1,4 +1,7 @@
-import { histogramTooltipFormatter, scatterPlotTooltipFormatter } from "@/lib/utils";
+import {
+    histogramTooltipFormatter,
+    scatterPlotTooltipFormatter2,
+} from "@/lib/utils";
 
 export const scatterWithHistogramsOptions = (
     data: any,
@@ -31,7 +34,7 @@ export const scatterWithHistogramsOptions = (
         },
         title: {
             left: "center",
-            text: `Comparison of ${firstCol} and ${secondCol} features with histograms`,
+            text: `Comparison of ${firstCol} and ${secondCol} with histograms`,
             subtext: `Number of bins: ${firstColBins.length}`,
             textStyle: {
                 fontSize: 18,
@@ -46,6 +49,9 @@ export const scatterWithHistogramsOptions = (
             {
                 scale: true,
                 gridIndex: 0,
+                name: firstCol,
+                nameLocation: "center",
+                nameGap: 30,
                 axisLabel: {
                     color: theme === "dark" ? "#ffffff" : "#666",
                 },
@@ -96,6 +102,9 @@ export const scatterWithHistogramsOptions = (
         yAxis: [
             {
                 gridIndex: 0,
+                name: secondCol,
+                nameLocation: "center",
+                nameGap: 30,
                 axisLabel: {
                     color: theme === "dark" ? "#ffffff" : "#666",
                 },
@@ -108,6 +117,7 @@ export const scatterWithHistogramsOptions = (
                     lineStyle: {
                         color: theme === "dark" ? "#ffffff" : "#333",
                     },
+                    onZero: false,
                 },
             },
             {
@@ -147,7 +157,7 @@ export const scatterWithHistogramsOptions = (
                 top: "50%",
                 right: "50%",
                 tooltip: {
-                    formatter: scatterPlotTooltipFormatter,
+                    formatter: scatterPlotTooltipFormatter2,
                 },
             },
             {
@@ -165,7 +175,6 @@ export const scatterWithHistogramsOptions = (
                 },
             },
         ],
-
         series: [
             {
                 name: `(${firstCol}, ${secondCol})`,

@@ -34,7 +34,7 @@ const ScatterWithHistograms = ({
         .map((row: any) => row[secondCol])
         .sort((a: number, b: number) => a - b);
 
-    const data = firstColData.map((value, index) => [value, secondColData[index]]);
+    const data = firstColData.map((value, index) => [value, secondColData[index], rowData[index].predicted_value]);
 
     let firstColHistogramData;
     let secondColHistogramData;

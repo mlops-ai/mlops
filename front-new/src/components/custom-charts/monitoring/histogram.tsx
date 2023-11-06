@@ -1,10 +1,9 @@
-import * as echarts from "echarts";
-// @ts-ignore
-import { transform, histogram, HistogramBins } from "echarts-stat";
-
 import ReactEcharts from "echarts-for-react";
+
 import { Keyable } from "@/types/types";
+
 import { histogramOptions } from "./histogram/histogram-options";
+
 import {
     freedmanDiaconisBins,
     generateHistogramData,
@@ -12,8 +11,6 @@ import {
     squareRootBins,
     sturgesBins,
 } from "@/lib/utils";
-
-echarts.registerTransform(transform.histogram);
 
 interface HistogramProps {
     rowData: Keyable[];

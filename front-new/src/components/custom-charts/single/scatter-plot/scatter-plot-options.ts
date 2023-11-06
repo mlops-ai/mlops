@@ -87,6 +87,7 @@ export const scatterPlotOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
+                onZero: false,
             },
             splitLine: {
                 lineStyle: {

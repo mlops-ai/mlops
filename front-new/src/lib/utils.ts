@@ -304,9 +304,17 @@ export const maxValue = (value: any) => {
 };
 
 export const scatterPlotTooltipFormatter = (args: any) => {
-    return `${args.marker}${args.seriesName} (${
-        args.dataIndex
-    })<br />(${args.data.join(", ")})`;
+    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
+        args.data[0],
+        args.data[1],
+    ].join(", ")})`;
+};
+
+export const scatterPlotTooltipFormatter2 = (args: any) => {
+    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
+        args.data[0],
+        args.data[1],
+    ].join(", ")})<br />predicted_value: ${args.data[2]}`;
 };
 
 export const groupCustomCharts = (charts: Chart[]) => {
@@ -494,6 +502,8 @@ export const freedmanDiaconisBins = (data: number[]) => {
         (Math.max(...data) - Math.min(...data)) / binWidth
     );
 
+    console.log(numberOfBins);
+
     return generateHistogramData(data, numberOfBins);
 };
 
@@ -501,4 +511,21 @@ export const sturgesBins = (data: number[]) => {
     const numOfBins = Math.ceil(Math.log2(data.length) + 1);
 
     return generateHistogramData(data, numOfBins);
+};
+
+export const countUniqueValues = (data: any[]) => {
+    const counts: Keyable = {};
+
+    for (const value of data) {
+        if (counts[value]) {
+            counts[value] += 1;
+        } else {
+            counts[value] = 1;
+        }
+    }
+    
+    const unique_values = Object.keys(counts);
+    const unique_counts = Object.values(counts);
+
+    return [unique_values, unique_counts];
 };

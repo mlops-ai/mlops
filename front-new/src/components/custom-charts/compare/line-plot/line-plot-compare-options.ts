@@ -45,7 +45,7 @@ export const linePlotCompareOptions = (
             },
         },
         tooltip: {
-            trigger: "axis"
+            trigger: "axis",
         },
         xAxis: {
             type: x_axis_type,
@@ -82,6 +82,7 @@ export const linePlotCompareOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
+                onZero: false,
             },
             splitLine: {
                 lineStyle: {
