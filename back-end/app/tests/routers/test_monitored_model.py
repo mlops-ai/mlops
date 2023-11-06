@@ -441,9 +441,9 @@ async def test_get_monitored_model_ml_model_metadata(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_monitored_ml_model_predict_success(client: AsyncClient):
+async def test_monitored_ml_model_predict_success_single_data(client: AsyncClient):
     """
-    Test monitored model predict with success.
+    Test monitored model predict with success for single data.
 
     Args:
         client (AsyncClient): Async client fixture
@@ -456,20 +456,63 @@ async def test_monitored_ml_model_predict_success(client: AsyncClient):
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
-    data = {
-        "X1": 1.0,
-        "X2": 2.0
-    }
+    data = [
+        {
+            "X1": 1.0,
+            "X2": 2.0
+        }
+    ]
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
     assert response.status_code == 200
-    assert response.json()["prediction"] == pytest.approx(7.89043535267264)
-    assert response.json()["X1"] == 1.0
+    assert response.json()[0]["prediction"] == pytest.approx(7.89043535267264)
+    assert response.json()[0]["input_data"]["X1"] == 1.0
 
     # check monitored model predictions data after prediction
     monitored_model_name = "Engine failure prediction model v4 changed"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
     assert len(response.json()["predictions_data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_monitored_ml_model_predict_success_multiple_data(client: AsyncClient):
+    """
+    Test monitored model predict with success for multiple data.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Engine failure prediction model v4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    data = [
+        {
+            "X1": 1.0,
+            "X2": 2.0
+        },
+        {
+            "X1": 3.0,
+            "X2": 4.0
+        }
+    ]
+    response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
+    assert response.status_code == 200
+    assert response.json()[0]["prediction"] == pytest.approx(7.89043535267264)
+    assert response.json()[0]["input_data"]["X1"] == 1.0
+    assert response.json()[1]["prediction"] == pytest.approx(17.685669831629962)
+    assert response.json()[1]["input_data"]["X1"] == 3.0
+    assert response.json()[1]["input_data"]["X2"] == 4.0
+
+    # check monitored model predictions data after prediction
+    monitored_model_name = "Engine failure prediction model v4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["predictions_data"]) == 3
 
 
 @pytest.mark.asyncio
@@ -488,11 +531,13 @@ async def test_monitored_ml_model_predict_failure(client: AsyncClient):
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
-    data = {
-        "X1": 21.0,
-        "X2": 37.0,
-        "X3": 3.0
-    }
+    data = [
+        {
+            "X1": 21.0,
+            "X2": 37.0,
+            "X3": 3.0
+        }
+    ]
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
     assert response.status_code == 400
     assert response.json()["detail"] == "Cannot make prediction: The feature names should match those " \
@@ -502,7 +547,7 @@ async def test_monitored_ml_model_predict_failure(client: AsyncClient):
     monitored_model_name = "Engine failure prediction model v4 changed"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
-    assert len(response.json()["predictions_data"]) == 1
+    assert len(response.json()["predictions_data"]) == 3
     assert response.json()["predictions_data"][0]["prediction"] == pytest.approx(7.89043535267264)
 
 
@@ -522,10 +567,12 @@ async def test_monitored_ml_model_predict_failure_2(client: AsyncClient):
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
-    data = {
-        "X1": 100.0,
-        "X2": "Invalid value :)",
-    }
+    data = [
+        {
+            "X1": 100.0,
+            "X2": "Invalid value :)",
+        }
+    ]
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
     assert response.status_code == 400
     assert response.json()["detail"] == "Cannot make prediction: could not convert" \
@@ -535,7 +582,7 @@ async def test_monitored_ml_model_predict_failure_2(client: AsyncClient):
     monitored_model_name = "Engine failure prediction model v4 changed"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
-    assert len(response.json()["predictions_data"]) == 1
+    assert len(response.json()["predictions_data"]) == 3
     assert response.json()["predictions_data"][0]["prediction"] == pytest.approx(7.89043535267264)
 
 
