@@ -3,7 +3,7 @@ import { histogramTooltipFormatter } from "@/lib/utils";
 export const histogramOptions = (
     bins: any,
     col: string,
-    theme: "dark" | "light" | "system",
+    theme: "dark" | "light" | "system"
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -28,7 +28,7 @@ export const histogramOptions = (
         },
         title: {
             left: "center",
-            text: `Histogram of ${col} feature`,
+            text: `Histogram of ${col}`,
             subtext: `Number of bins: ${bins.length}`,
             textStyle: {
                 fontSize: 18,
@@ -45,6 +45,9 @@ export const histogramOptions = (
         },
         xAxis: {
             scale: true,
+            name: "bins",
+            nameLocation: "center",
+            nameGap: 25,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -61,11 +64,16 @@ export const histogramOptions = (
         },
         yAxis: {
             scale: true,
+            name: "count",
+            nameTextStyle: {
+                color: theme === "dark" ? "#ffffff" : "#666",
+            },
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
             axisLine: {
                 show: false,
+                onZero: false,
             },
             axisTick: {
                 show: false,
@@ -94,9 +102,9 @@ export const histogramOptions = (
             },
         ],
         grid: {
-            left: "3%",
-            right: "3%",
-            bottom: "3%",
+            left: "5%",
+            right: "5%",
+            bottom: "6%",
             containLabel: true,
         },
     };

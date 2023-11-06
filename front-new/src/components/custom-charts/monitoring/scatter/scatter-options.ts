@@ -1,14 +1,10 @@
-import { maxValue, minValue, scatterPlotTooltipFormatter } from "@/lib/utils";
-import { Keyable } from "@/types/types";
+import { scatterPlotTooltipFormatter2 } from "@/lib/utils";
 
-export const scatterPlotCompareOptions = (
-    theme: "dark" | "light" | "system",
-    series: Keyable[],
-    x_axis_type: string,
-    x_label: string,
-    y_label: string,
-    title: string,
-    subtitle: string
+export const scatterOptions = (
+    data: any,
+    firstCol: string,
+    secondCol: string,
+    theme: "dark" | "light" | "system"
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -33,8 +29,7 @@ export const scatterPlotCompareOptions = (
         },
         title: {
             left: "center",
-            text: title,
-            subtext: subtitle,
+            text: `Comparison of ${firstCol} and ${secondCol}`,
             textStyle: {
                 fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
@@ -46,15 +41,12 @@ export const scatterPlotCompareOptions = (
         },
         tooltip: {
             trigger: "item",
-            formatter: scatterPlotTooltipFormatter,
+            formatter: scatterPlotTooltipFormatter2,
         },
         xAxis: {
-            type: x_axis_type,
-            name: x_label,
+            name: firstCol,
             nameLocation: "center",
             nameGap: 30,
-            min: minValue,
-            max: maxValue,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -70,12 +62,7 @@ export const scatterPlotCompareOptions = (
             },
         },
         yAxis: {
-            type: "value",
-            name: y_label,
-            nameLocation: "center",
-            nameGap: 30,
-            min: minValue,
-            max: maxValue,
+            name: secondCol,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -91,19 +78,16 @@ export const scatterPlotCompareOptions = (
                 },
             },
         },
-        legend: {
-            type: "scroll",
-            top: "bottom",
-            textStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
-            },
-            pageTextStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
-            },
-        },
         grid: {
             show: true,
         },
-        series: series,
+        series: {
+            name: `(${firstCol}, ${secondCol})`,
+            type: "scatter",
+            xAxisIndex: 0,
+            yAxisIndex: 0,
+            encode: { tooltip: [0, 1] },
+            data: data,
+        },
     };
 };

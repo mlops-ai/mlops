@@ -49,7 +49,7 @@ export const linePlotOptions = (
             },
         },
         tooltip: {
-            trigger: "axis"
+            trigger: "axis",
         },
         xAxis: {
             type: x_axis_type,
@@ -86,6 +86,7 @@ export const linePlotOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
+                onZero: false,
             },
             splitLine: {
                 lineStyle: {

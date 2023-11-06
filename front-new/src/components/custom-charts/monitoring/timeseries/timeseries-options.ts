@@ -1,14 +1,9 @@
-import { maxValue, minValue, scatterPlotTooltipFormatter } from "@/lib/utils";
-import { Keyable } from "@/types/types";
+import moment from "moment";
 
-export const scatterPlotCompareOptions = (
-    theme: "dark" | "light" | "system",
-    series: Keyable[],
-    x_axis_type: string,
-    x_label: string,
-    y_label: string,
-    title: string,
-    subtitle: string
+export const timeseriesOptions = (
+    data: any,
+    col: string,
+    theme: "dark" | "light" | "system"
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -33,8 +28,7 @@ export const scatterPlotCompareOptions = (
         },
         title: {
             left: "center",
-            text: title,
-            subtext: subtitle,
+            text: `Timeseries of ${col}`,
             textStyle: {
                 fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
@@ -45,65 +39,67 @@ export const scatterPlotCompareOptions = (
             },
         },
         tooltip: {
-            trigger: "item",
-            formatter: scatterPlotTooltipFormatter,
+            trigger: "axis",
+            formatter: function (params: any) {
+                params = params[0];
+                var date = new Date(params.data[0]);
+                return `${params.marker}${moment(date).format(
+                    "DD.MM.YYYY, HH:mm"
+                )} <br> ${col}: ${params.data[1]}`;
+            },
+            axisPointer: {
+                animation: false,
+            },
         },
         xAxis: {
-            type: x_axis_type,
-            name: x_label,
-            nameLocation: "center",
-            nameGap: 30,
-            min: minValue,
-            max: maxValue,
+            type: "time",
+            splitLine: {
+                show: false,
+            },
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
             axisLine: {
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
-                },
-            },
-            splitLine: {
-                lineStyle: {
-                    color: theme === "dark" ? "#374151" : "#ccc",
                 },
             },
         },
         yAxis: {
             type: "value",
-            name: y_label,
-            nameLocation: "center",
-            nameGap: 30,
-            min: minValue,
-            max: maxValue,
+            name: col,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
-            },
-            axisLine: {
-                lineStyle: {
-                    color: theme === "dark" ? "#ffffff" : "#333",
-                },
-                onZero: false,
             },
             splitLine: {
                 lineStyle: {
                     color: theme === "dark" ? "#374151" : "#ccc",
                 },
             },
-        },
-        legend: {
-            type: "scroll",
-            top: "bottom",
-            textStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
-            },
-            pageTextStyle: {
-                color: theme === "dark" ? "#ffffff" : "#333",
+            axisLine: {
+                lineStyle: {
+                    color: theme === "dark" ? "#ffffff" : "#333",
+                },
             },
         },
-        grid: {
-            show: true,
-        },
-        series: series,
+        dataZoom: [
+            {
+                type: "inside",
+                start: 0,
+                end: 100,
+            },
+            {
+                start: 0,
+                end: 100,
+            },
+        ],
+        series: [
+            {
+                name: col,
+                type: "line",
+                showSymbol: false,
+                data: data,
+            },
+        ],
     };
 };
