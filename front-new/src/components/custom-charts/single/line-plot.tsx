@@ -70,6 +70,7 @@ const LinePlot = ({
 
     return (
         <ReactEcharts
+            style={{ height: "400px" }}
             option={linePlotOptions(
                 theme,
                 series_data,

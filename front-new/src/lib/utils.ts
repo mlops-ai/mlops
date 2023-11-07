@@ -502,8 +502,6 @@ export const freedmanDiaconisBins = (data: number[]) => {
         (Math.max(...data) - Math.min(...data)) / binWidth
     );
 
-    console.log(numberOfBins);
-
     return generateHistogramData(data, numberOfBins);
 };
 
@@ -529,3 +527,34 @@ export const countUniqueValues = (data: any[]) => {
 
     return [unique_values, unique_counts];
 };
+
+export const countPredictionByDate = (predictions: Keyable[]) => {
+    const dateCount: Keyable = {};
+
+    predictions.forEach((prediction: Keyable) => {
+        const predictionDate = new Date(prediction.prediction_date);
+        const year = predictionDate.getFullYear();
+        const month = predictionDate.getMonth() + 1;
+        const day = predictionDate.getDate();
+
+        const key = `${year}-${month}-${day < 10 ? "0" : ""}${day}`;
+
+        if (dateCount[key]) {
+            dateCount[key]++;
+        } else {
+            dateCount[key] = 1;
+        }
+
+    });
+
+    const uniqueDates: any = Object.keys(dateCount);
+    const objectCounts: any = Object.values(dateCount);
+
+    let data: any = [];
+
+    uniqueDates.forEach((date: any, index: any) => {
+        data.push([date, objectCounts[index]]);
+    });
+
+    return data;
+}

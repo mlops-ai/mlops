@@ -36,7 +36,7 @@ export const scatterOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
@@ -46,7 +46,7 @@ export const scatterOptions = (
         xAxis: {
             name: firstCol,
             nameLocation: "center",
-            nameGap: 30,
+            nameGap: 25,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -80,7 +80,17 @@ export const scatterOptions = (
         },
         grid: {
             show: true,
+            bottom: "25%",
         },
+        dataZoom: [
+            {
+                bottom: 10,
+                type: "inside",
+                start: 0,
+                end: 100,
+            },
+            { bottom: 10, start: 0, end: 100 },
+        ],
         series: {
             name: `(${firstCol}, ${secondCol})`,
             type: "scatter",

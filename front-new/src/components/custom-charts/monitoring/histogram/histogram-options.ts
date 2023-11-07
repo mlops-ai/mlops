@@ -36,7 +36,7 @@ export const histogramOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {

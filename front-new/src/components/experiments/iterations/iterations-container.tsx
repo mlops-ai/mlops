@@ -479,7 +479,7 @@ const IterationsContainer = ({
                         }
                     >
                         <SelectValue
-                            placeholder="Sort projects"
+                            placeholder="Filter by date ..."
                             ref={filterDateRef}
                         />
                     </SelectTrigger>

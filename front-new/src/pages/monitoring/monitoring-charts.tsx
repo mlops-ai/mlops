@@ -1,14 +1,15 @@
 import Histogram from "@/components/custom-charts/monitoring/histogram";
 
+import ReactEcharts from "echarts-for-react";
+
 import { predictions } from "@/test-data/predictions";
 import ScatterWithHistograms from "@/components/custom-charts/monitoring/scatter-with-histograms";
 import { useTheme } from "@/components/providers/theme-provider";
 
-import ReactEcharts from "echarts-for-react";
-import moment from "moment";
 import Timeseries from "@/components/custom-charts/monitoring/timeseries";
 import Scatter from "@/components/custom-charts/monitoring/scatter";
 import CountPlot from "@/components/custom-charts/monitoring/count-plot";
+import PredictionsPerDayTimeseries from "@/components/custom-charts/monitoring/predictions-per-day-timeseries";
 
 const MonitoringCharts = () => {
     const rowData = predictions;
@@ -20,6 +21,8 @@ const MonitoringCharts = () => {
             <Histogram rowData={rowData} colName="example6" theme={theme} />
 
             {/* <ReactEcharts option={option} theme="customed" /> */}
+
+            <PredictionsPerDayTimeseries rowData={rowData} theme={theme} />
 
             <Scatter
                 rowData={rowData}
@@ -77,7 +80,11 @@ const MonitoringCharts = () => {
 
             <CountPlot rowData={rowData} colName="sibs" theme={theme} />
 
-            <CountPlot rowData={rowData} colName="predicted_value" theme={theme} />
+            <CountPlot
+                rowData={rowData}
+                colName="predicted_value"
+                theme={theme}
+            />
 
             <CountPlot rowData={rowData} colName="example10" theme={theme} />
 

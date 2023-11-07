@@ -42,7 +42,7 @@ export const scatterWithHistogramsOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         xAxis: [
@@ -51,7 +51,7 @@ export const scatterWithHistogramsOptions = (
                 gridIndex: 0,
                 name: firstCol,
                 nameLocation: "center",
-                nameGap: 30,
+                nameGap: 25,
                 axisLabel: {
                     color: theme === "dark" ? "#ffffff" : "#666",
                 },
@@ -152,10 +152,20 @@ export const scatterWithHistogramsOptions = (
             },
         ],
         tooltip: {},
+        dataZoom: [
+            {
+                bottom: 10,
+                type: "inside",
+                start: 0,
+                end: 100,
+            },
+            { bottom: 10, start: 0, end: 100 },
+        ],
         grid: [
             {
                 top: "50%",
                 right: "50%",
+                bottom: "18%",
                 tooltip: {
                     formatter: scatterPlotTooltipFormatter2,
                 },
@@ -170,6 +180,7 @@ export const scatterWithHistogramsOptions = (
             {
                 top: "50%",
                 left: "52%",
+                bottom: "18%",
                 tooltip: {
                     formatter: histogramTooltipFormatter,
                 },
