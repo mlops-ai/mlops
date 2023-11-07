@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 from datetime import datetime
 
 from app.models.iteration import Iteration
+from app.models.prediction_data import PredictionData
 
 
 class MonitoredModel(Document):
@@ -31,7 +32,7 @@ class MonitoredModel(Document):
     model_status: str = Field(default='idle', description="Model status")
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
     pinned: bool = Field(default=False, description="Model pinned status")
-    predictions_data: Optional[list[dict]] = Field(default=[], description="Predictions data")
+    predictions_data: Optional[list[PredictionData]] = Field(default=[], description="Predictions data")
     ml_model: Optional[str] = Field(default=None, description="Loaded ml model")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
@@ -109,7 +110,7 @@ class UpdateMonitoredModel(MonitoredModel):
     model_status: Optional[str]
     iteration: Optional[Iteration]
     pinned: Optional[bool]
-    predictions_data: Optional[list[dict]]
+    predictions_data: Optional[list[PredictionData]]
     updated_at: datetime = Field(default_factory=datetime.now)
 
     class Config:

@@ -9,6 +9,7 @@ from fastapi import APIRouter, status
 
 from app.models.iteration import Iteration
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
+from app.models.prediction_data import PredictionData
 from app.models.project import Project
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
@@ -310,18 +311,18 @@ async def get_monitored_model_ml_model_metadata(id: PydanticObjectId) -> dict:
     }
 
 
-@monitored_model_router.post('/{id}/predict', response_model=dict, status_code=status.HTTP_200_OK)
-async def monitored_model_predict(id: PydanticObjectId, data: dict) -> dict:
+@monitored_model_router.post('/{id}/predict', response_model=list[PredictionData], status_code=status.HTTP_200_OK)
+async def monitored_model_predict(id: PydanticObjectId, data: list[dict]) -> list[PredictionData]:
     """
     Make prediction using monitored model ml model. <br>
     **NOTE:** ml model needs to be complied with scikit-learn API.
 
     Args:
     - **id (str)**: Monitored model id
-    - **data (dict)**: Single data sample to make prediction on.
+    - **data (list[dict])**: List of samples to make prediction on.
 
     Returns:
-    - **dict**: Prediction result.
+    - **list[PredictionData]**: List of predictions data.
     """
     monitored_model = await MonitoredModel.get(id)
 
@@ -335,20 +336,21 @@ async def monitored_model_predict(id: PydanticObjectId, data: dict) -> dict:
     except Exception as e:
         raise monitored_model_load_ml_model_exception(str(e))
 
-    try:
-        prediction = ml_model.predict(pd.DataFrame([data]))[0]
-        monitored_model.predictions_data.append({
-            **data,
-            'prediction': prediction
-        })
-        await monitored_model.save()
-    except Exception as e:
-        raise monitored_model_prediction_exception(str(e))
+    predictions_data = []
+    for sample in data:
+        try:
+            prediction = ml_model.predict(pd.DataFrame([sample]))[0]
+            prediction_data = PredictionData(
+                input_data=sample,
+                prediction=prediction
+            )
+            predictions_data.append(prediction_data)
+            monitored_model.predictions_data.append(prediction_data)
+            await monitored_model.save()
+        except Exception as e:
+            raise monitored_model_prediction_exception(str(e))
 
-    return {
-        **data,
-        'prediction': prediction
-    }
+    return predictions_data
 
 
 async def is_name_unique(name: str) -> bool:
