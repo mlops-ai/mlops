@@ -35,7 +35,7 @@ export const timeseriesOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
@@ -84,12 +84,16 @@ export const timeseriesOptions = (
         },
         dataZoom: [
             {
+                minValueSpan: 3600 * 24 * 1000 * 30,
+                maxValueSpan: 3600 * 24 * 1000 * 365,
                 type: "inside",
-                start: 0,
+                start: 100,
                 end: 100,
             },
             {
-                start: 0,
+                minValueSpan: 3600 * 24 * 1000 * 30,
+                maxValueSpan: 3600 * 24 * 1000 * 365,
+                start: 100,
                 end: 100,
             },
         ],

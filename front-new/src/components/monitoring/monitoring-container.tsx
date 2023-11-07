@@ -8,7 +8,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { predictions } from "@/test-data/predictions";
 import { defaultColDef } from "./model/grid-base-columns-definitions/default-col-def";
-import { CheckboxSection } from "./model/grid-base-columns-definitions/checkbox-column";
 import { PredictionInfo } from "./model/grid-base-columns-definitions/prediction-info-columns";
 import { useTheme } from "../providers/theme-provider";
 import { TreeSelect } from "primereact/treeselect";
@@ -20,7 +19,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../ui/select";
+} from "@/components/ui/select";
 import { MdSort } from "react-icons/md";
 
 import {
@@ -29,17 +28,17 @@ import {
 } from "./model/treeselect-base-columns-definitions/treeselect-base-columns";
 import { TreeSelectBaseNodesExpanded } from "./model/treeselect-base-columns-definitions/treeselect-base-nodes-expanded";
 import moment from "moment";
-import { IRowNode, ModelUpdatedEvent } from "ag-grid-community";
+import { IRowNode } from "ag-grid-community";
 import { Button } from "../ui/button";
 import {
     Chart,
     ClearFilter,
     ClearSorting,
-    Delete,
     Download,
     Loading,
 } from "@/components/icons";
 import NoPredictionsHistory from "./no-predictions-history";
+import { useModal } from "@/hooks/use-modal-hook";
 
 interface MonitoringContainerProps {
     modelData: Model;
@@ -53,6 +52,8 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
     const gridRef = useRef<AgGridReact>(null);
     const textFilterRef = useRef<HTMLInputElement>(null);
     const filterDateRef = useRef<HTMLSpanElement>(null);
+
+    const { onOpen } = useModal();
 
     const { model_id } = useParams();
 
@@ -127,7 +128,6 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
         });
 
         let gridColumnsAll = [
-            CheckboxSection,
             {
                 headerName: "Prediction Info",
                 children: PredictionInfo(),
@@ -297,7 +297,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                         }
                     >
                         <SelectValue
-                            placeholder="Sort projects"
+                            placeholder="Filter by date ..."
                             ref={filterDateRef}
                         />
                     </SelectTrigger>
@@ -347,7 +347,6 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                     }
                     id="filter-text-box"
                     onChange={(e) => onFilterTextBoxChanged(e.target.value)}
-                    // disabled={disabled}
                 />
 
                 <TreeSelect
@@ -378,11 +377,11 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
 
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-3">
-                    <Button variant="mlopsGridAction" size="grid">
-                        <Delete className="flex-shrink-0 w-6 h-6 mr-1" /> Delete
-                    </Button>
-
-                    <Button variant="mlopsGridAction" size="grid">
+                    <Button
+                        variant="mlopsGridAction"
+                        size="grid"
+                        onClick={() => onOpen("createMonitoringChartModal", {})}
+                    >
                         <Chart className="flex-shrink-0 w-6 h-6 mr-1" /> Create
                         chart
                     </Button>
@@ -443,7 +442,6 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                     paginationPageSize={20}
                     rowHeight={25}
                     domLayout={"autoHeight"}
-                    // onSelectionChanged={onSelectionChanged}
                     noRowsOverlayComponent={NoPredictionsHistory}
                     isExternalFilterPresent={isExternalFilterPresent}
                     doesExternalFilterPass={doesExternalFilterPass}

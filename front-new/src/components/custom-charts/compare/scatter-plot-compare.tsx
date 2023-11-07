@@ -72,6 +72,7 @@ const ScatterPlotCompare = ({
 
     return (
         <ReactEcharts
+            style={{ height: "400px" }}
             option={scatterPlotCompareOptions(
                 theme,
                 series_data,

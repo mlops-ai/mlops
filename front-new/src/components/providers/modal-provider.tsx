@@ -32,6 +32,7 @@ import {
     DeleteDatasetModal,
     ArchiveRestoreDatasetModal,
 } from "@/components/modals/datasets";
+import CreateMonitoringChartModal from "../modals/monitoring/create-monitoring-chart-modal";
 
 const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     return (
@@ -59,6 +60,8 @@ const ModalProvider = ({ children }: { children: React.ReactNode }) => {
             <DeleteModelModal />
             <EditModelModal />
             <ArchiveRestoreModelModal />
+
+            <CreateMonitoringChartModal />
         </>
     );
 };
