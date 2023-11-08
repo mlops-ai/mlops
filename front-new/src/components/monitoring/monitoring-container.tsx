@@ -4,11 +4,8 @@ import { useGrid } from "@/hooks/use-grid-hook";
 import { useTreeselect } from "@/hooks/use-tree-select-hook";
 import { Model } from "@/types/model";
 import { AgGridReact } from "ag-grid-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { predictions } from "@/test-data/predictions";
-import { defaultColDef } from "./model/grid-base-columns-definitions/default-col-def";
-import { PredictionInfo } from "./model/grid-base-columns-definitions/prediction-info-columns";
 import { useTheme } from "../providers/theme-provider";
 import { TreeSelect } from "primereact/treeselect";
 import { ChevronDown, Search } from "lucide-react";
@@ -22,11 +19,6 @@ import {
 } from "@/components/ui/select";
 import { MdSort } from "react-icons/md";
 
-import {
-    TreeSelectBaseColumnsChecked,
-    TreeSelectBaseColumnsOptions,
-} from "./model/treeselect-base-columns-definitions/treeselect-base-columns";
-import { TreeSelectBaseNodesExpanded } from "./model/treeselect-base-columns-definitions/treeselect-base-nodes-expanded";
 import moment from "moment";
 import { IRowNode } from "ag-grid-community";
 import { Button } from "../ui/button";
@@ -64,88 +56,6 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
     const [dateFilterState, setDateFilterState] = useState<string>("ALLTIME");
 
     let dateFilter: string = "ALLTIME";
-
-    useEffect(() => {
-        let rowData;
-
-        // rowData = modelData.predictions_data;
-        rowData = predictions;
-
-        const exampleRow = rowData[0];
-
-        const defaultColumns = [
-            "prediction_id",
-            "prediction_date",
-            "predicted_value",
-            "predicted_by",
-        ];
-
-        const columns = Object.getOwnPropertyNames(exampleRow).filter(
-            (col) => !defaultColumns.includes(col)
-        );
-
-        let TreeSelectBaseColumnsOptionsAll: any = JSON.parse(
-            JSON.stringify(TreeSelectBaseColumnsOptions)
-        );
-        let TreeSelectBaseColumnsCheckedAll: any = JSON.parse(
-            JSON.stringify(TreeSelectBaseColumnsChecked)
-        );
-
-        let featuresColumns: any[] = [];
-        let treeselectColumns: any[] = [];
-
-        if (columns.length > 0) {
-            Object.assign(TreeSelectBaseColumnsCheckedAll, {
-                features: {
-                    checked: true,
-                    partialChecked: false,
-                },
-            });
-
-            columns.forEach((col) => {
-                featuresColumns.push({
-                    field: col,
-                    headerName: col,
-                });
-                treeselectColumns.push({
-                    key: col,
-                    label: col,
-                });
-                Object.assign(TreeSelectBaseColumnsCheckedAll, {
-                    [col]: {
-                        checked: true,
-                        partialChecked: false,
-                    },
-                });
-            });
-        }
-
-        TreeSelectBaseColumnsOptionsAll.push({
-            key: "features",
-            label: "Features",
-            leaf: true,
-            children: treeselectColumns,
-        });
-
-        let gridColumnsAll = [
-            {
-                headerName: "Prediction Info",
-                children: PredictionInfo(),
-            },
-            {
-                headerName: "Model Features",
-                children: featuresColumns,
-            },
-        ];
-
-        treeselect.setAll(
-            TreeSelectBaseColumnsOptionsAll,
-            TreeSelectBaseColumnsCheckedAll,
-            TreeSelectBaseNodesExpanded
-        );
-
-        grid.setAll(rowData, defaultColDef, gridColumnsAll);
-    }, []);
 
     const externalFilterChanged = useCallback((newValue: string) => {
         dateFilter = newValue;
@@ -225,9 +135,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
         let grid_cols = gridRef.current.columnApi
             .getColumns()
             ?.map((col) => col.getColId())
-            .filter(
-                (col) => col !== "prediction_id" && col !== "predicted_value"
-            );
+            .filter((col) => col !== "prediction");
         for (let col of grid_cols!) {
             if (columns_active.includes(col)) {
                 gridRef.current.columnApi.setColumnVisible(col, true);
@@ -362,7 +270,6 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                         updateColumnVisibility(e.value);
                     }}
                     onToggle={(e) => {
-                        console.log(e.value);
                         treeselect.setExpandedKeys(e.value);
                     }}
                     scrollHeight="300px"
@@ -380,7 +287,14 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                     <Button
                         variant="mlopsGridAction"
                         size="grid"
-                        onClick={() => onOpen("createMonitoringChartModal", {})}
+                        onClick={() => {
+                            document.body.style.overflow = "hidden";
+                            onOpen("createMonitoringChartModal", {
+                                model: modelData,
+                                baseFeatures: grid.baseFeatures,
+                            });
+                        }}
+                        disabled={grid.rowData.length === 0 ? true : false}
                     >
                         <Chart className="flex-shrink-0 w-6 h-6 mr-1" /> Create
                         chart

@@ -34,7 +34,7 @@ export const PredictionInfo = () => {
 
     return [
         {
-            field: "predicted_value",
+            field: "prediction",
             headerName: "Predicted Value",
             pinned: true,
             filter: true,

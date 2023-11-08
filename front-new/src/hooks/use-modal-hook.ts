@@ -44,6 +44,7 @@ interface ModalData {
     deleteIterations?: DeleteIterations;
     model?: Model;
     dataset?: Dataset;
+    baseFeatures?: string[];
 }
 
 interface ModalStore {

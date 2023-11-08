@@ -1,30 +1,47 @@
-import Histogram from "@/components/custom-charts/monitoring/histogram";
 
-import ReactEcharts from "echarts-for-react";
-
-import { predictions } from "@/test-data/predictions";
-import ScatterWithHistograms from "@/components/custom-charts/monitoring/scatter-with-histograms";
+import { predictions } from "@/test-data/predictions_new";
 import { useTheme } from "@/components/providers/theme-provider";
 
-import Timeseries from "@/components/custom-charts/monitoring/timeseries";
-import Scatter from "@/components/custom-charts/monitoring/scatter";
-import CountPlot from "@/components/custom-charts/monitoring/count-plot";
 import PredictionsPerDayTimeseries from "@/components/custom-charts/monitoring/predictions-per-day-timeseries";
+import { Model } from "@/types/model";
+import { useMemo } from "react";
+import MonitoringChart from "../custom-charts/monitoring/monitoring-chart";
 
-const MonitoringCharts = () => {
-    const rowData = predictions;
+interface MonitoringChartsProps {
+    modelData: Model;
+}
 
+const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
+
+    console.log(modelData);
+    
     const { theme } = useTheme();
+    const monitoringCharts = useMemo(() => {
+        if (!modelData.monitoring_charts) return [];
+        return modelData.monitoring_charts.map((chart) => {
+            return (
+                <MonitoringChart
+                    key={chart.id}
+                    type={chart.chart_type}
+                    chart_schema={chart}
+                    predictionsData={predictions}
+                    theme={theme}
+                />
+            );
+        });
+    }, [modelData.monitoring_charts]);
+
+    const rowData = predictions;
 
     return (
         <div className="grid grid-cols-1 gap-6">
-            <Histogram rowData={rowData} colName="example6" theme={theme} />
+            <PredictionsPerDayTimeseries rowData={rowData} theme={theme} />
+            {monitoringCharts}
+            {/* <Histogram rowData={rowData} colName="example6" theme={theme} /> */}
 
             {/* <ReactEcharts option={option} theme="customed" /> */}
 
-            <PredictionsPerDayTimeseries rowData={rowData} theme={theme} />
-
-            <Scatter
+            {/* <Scatter
                 rowData={rowData}
                 firstCol="example7"
                 secondCol="example3"
@@ -58,9 +75,9 @@ const MonitoringCharts = () => {
                 secondCol="example3"
                 numberOfBins={5}
                 theme={theme}
-            />
+            /> */}
 
-            <ScatterWithHistograms
+            {/* <ScatterWithHistograms
                 rowData={rowData}
                 firstCol="example7"
                 secondCol="example9"
@@ -112,7 +129,7 @@ const MonitoringCharts = () => {
                 colName="age"
                 binMethod="freedmanDiaconis"
                 theme={theme}
-            />
+            /> */}
         </div>
     );
 };
