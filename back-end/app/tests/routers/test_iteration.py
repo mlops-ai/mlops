@@ -331,7 +331,10 @@ async def test_add_iteration_with_chart(client: AsyncClient):
                 "x_label": "Shot number",
                 "y_label": "Points"
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -375,7 +378,10 @@ async def test_add_iteration_with_str_chart(client: AsyncClient):
                 "x_label": "String labels",
                 "y_label": "Values",
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -440,7 +446,10 @@ async def test_add_iteration_with_duplicated_chart_names(client: AsyncClient):
                 "y_label": "Count",
                 "comparable": True
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -491,7 +500,10 @@ async def test_add_iteration_with_different_amounts_of_x_and_y(client: AsyncClie
                 "x_label": "Shot number",
                 "y_label": "Points"
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -534,7 +546,10 @@ async def test_add_iteration_with_image_charts(client: AsyncClient):
                 "name": "Test chart 1",
                 "encoded_image": encoded_image
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -646,7 +661,10 @@ async def test_add_iteration_with_bar_plot(client: AsyncClient):
                 "y_label": "Y",
                 "compare": False
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -707,7 +725,10 @@ async def test_add_iteration_with_scatter_plots(client: AsyncClient):
                 "y_label": "Amount of deaths",
                 "compare": True
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -761,7 +782,10 @@ async def test_add_iteration_with_pie_plot(client: AsyncClient):
                 "y_label": "Amount of deaths",
                 "compare": False
             }
-        ]
+        ],
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -795,7 +819,10 @@ async def test_delete_iteration_assigned_to_monitored_model(client: AsyncClient)
         "metrics": {
             "accuracy": 0.9},
         "parameters": {
-            "learning_rate": 0.01}
+            "learning_rate": 0.01},
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)

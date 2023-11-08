@@ -262,6 +262,8 @@ function IterationsCompare() {
                     metrics_data.push(<tr><th>{metric}</th>{data.map(value => <td>{value}</td>)}</tr>)
                 })
 
+                console.log(metrics_values);
+
                 let series = metrics_values.map((values, index) => {
                     return {
                         name: names_text[index],
@@ -830,6 +832,8 @@ function IterationsCompare() {
             })
 
             image_charts_list = image_charts_list.filter(charts => charts.charts.length !== 0)
+
+            console.log(image_charts_list)
 
             image_charts_counts.unshift(0)
 

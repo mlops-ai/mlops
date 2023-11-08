@@ -24,7 +24,7 @@ class Dataset(Document):
     """
     dataset_name: str = Field(description="Dataset name", min_length=1, max_length=40)
     path_to_dataset: str = Field(default='', description="Path to dataset")
-    dataset_description: Optional[str] = Field(default='', description="Dataset description", max_length=150)
+    dataset_description: Optional[str] = Field(default='', description="Dataset description", max_length=600)
     tags: Optional[str] = Field(default='', description="Dataset tags")
     archived: bool = Field(default=False, description="Dataset status")
     created_at: datetime = Field(default_factory=datetime.now)

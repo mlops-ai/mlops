@@ -1,10 +1,14 @@
 import getpass
+import pickle
+
 from pydantic import Field, validator
 from typing import Optional
 from beanie import Document
 from fastapi import HTTPException, status
+from datetime import datetime
 
 from app.models.iteration import Iteration
+from app.models.prediction_data import PredictionData
 
 
 class MonitoredModel(Document):
@@ -19,15 +23,19 @@ class MonitoredModel(Document):
     - **iteration (Iteration)**: Related Iteration.
     - **pinned (bool)**: Monitored model pinned status.
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
-    - **ml_model (object)**: ML model. ---- TODO: add coded pkl file
+    - **ml_model (str)**: ML model
+    - **created_at (datetime)**: Monitored model creation date.
+    - **updated_at (datetime)**: Monitored model last update date.
     """
     model_name: str = Field(description="Model name", min_length=1, max_length=100)
-    model_description: Optional[str] = Field(default="", description="Model description", max_length=150)
+    model_description: Optional[str] = Field(default="", description="Model description", max_length=600)
     model_status: str = Field(default='idle', description="Model status")
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
     pinned: bool = Field(default=False, description="Model pinned status")
-    predictions_data: Optional[list[dict]] = Field(default=[], description="Predictions data")
-    # ml_model: Optional[object] = Field(default=None, description="Loaded ml model")
+    predictions_data: Optional[list[PredictionData]] = Field(default=[], description="Predictions data")
+    ml_model: Optional[str] = Field(default=None, description="Loaded ml model")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     @validator('model_status')
     def validate_status(cls, v):
@@ -95,13 +103,15 @@ class UpdateMonitoredModel(MonitoredModel):
     - **iteration (Iteration)**: Related Iteration.
     - **pinned (bool)**: Monitored model pinned status.
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
+    - **updated_at (datetime)**: Monitored model last update date.
     """
     model_name: Optional[str]
     model_description: Optional[str]
     model_status: Optional[str]
     iteration: Optional[Iteration]
     pinned: Optional[bool]
-    predictions_data: Optional[list[dict]]
+    predictions_data: Optional[list[PredictionData]]
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     class Config:
         schema_extra = {

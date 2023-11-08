@@ -84,6 +84,8 @@ async def test_create_monitored_model(client: AsyncClient):
     response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed)
     assert response.status_code == 200
     assert response.json()["model_status"] == "active"
+    assert response.json()['model_name'] == monitored_model['model_name']
+    assert response.json()['iteration']['assigned_monitored_model_name'] == monitored_model['model_name']
 
 
 @pytest.mark.asyncio
@@ -362,6 +364,7 @@ async def test_update_monitored_model_with_iteration(client: AsyncClient):
     assert response.status_code == 200
     assert response.json()["model_status"] == monitored_model_changed["model_status"]
     assert response.json()["iteration"]["iteration_name"] == iteration["iteration_name"]
+    assert response.json()["iteration"]["assigned_monitored_model_name"] == monitored_model_changed["model_name"]
 
 
 @pytest.mark.asyncio
@@ -438,9 +441,9 @@ async def test_get_monitored_model_ml_model_metadata(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_monitored_ml_model_predict_success(client: AsyncClient):
+async def test_monitored_ml_model_predict_success_single_data(client: AsyncClient):
     """
-    Test monitored model predict with success.
+    Test monitored model predict with success for single data.
 
     Args:
         client (AsyncClient): Async client fixture
@@ -453,20 +456,63 @@ async def test_monitored_ml_model_predict_success(client: AsyncClient):
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
-    data = {
-        "X1": 1.0,
-        "X2": 2.0
-    }
+    data = [
+        {
+            "X1": 1.0,
+            "X2": 2.0
+        }
+    ]
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
     assert response.status_code == 200
-    assert response.json()["prediction"] == pytest.approx(7.89043535267264)
-    assert response.json()["X1"] == 1.0
+    assert response.json()[0]["prediction"] == pytest.approx(7.89043535267264)
+    assert response.json()[0]["input_data"]["X1"] == 1.0
 
     # check monitored model predictions data after prediction
     monitored_model_name = "Engine failure prediction model v4 changed"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
     assert len(response.json()["predictions_data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_monitored_ml_model_predict_success_multiple_data(client: AsyncClient):
+    """
+    Test monitored model predict with success for multiple data.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Engine failure prediction model v4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    data = [
+        {
+            "X1": 1.0,
+            "X2": 2.0
+        },
+        {
+            "X1": 3.0,
+            "X2": 4.0
+        }
+    ]
+    response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
+    assert response.status_code == 200
+    assert response.json()[0]["prediction"] == pytest.approx(7.89043535267264)
+    assert response.json()[0]["input_data"]["X1"] == 1.0
+    assert response.json()[1]["prediction"] == pytest.approx(17.685669831629962)
+    assert response.json()[1]["input_data"]["X1"] == 3.0
+    assert response.json()[1]["input_data"]["X2"] == 4.0
+
+    # check monitored model predictions data after prediction
+    monitored_model_name = "Engine failure prediction model v4 changed"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["predictions_data"]) == 3
 
 
 @pytest.mark.asyncio
@@ -485,11 +531,13 @@ async def test_monitored_ml_model_predict_failure(client: AsyncClient):
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
-    data = {
-        "X1": 21.0,
-        "X2": 37.0,
-        "X3": 3.0
-    }
+    data = [
+        {
+            "X1": 21.0,
+            "X2": 37.0,
+            "X3": 3.0
+        }
+    ]
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
     assert response.status_code == 400
     assert response.json()["detail"] == "Cannot make prediction: The feature names should match those " \
@@ -499,7 +547,7 @@ async def test_monitored_ml_model_predict_failure(client: AsyncClient):
     monitored_model_name = "Engine failure prediction model v4 changed"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
-    assert len(response.json()["predictions_data"]) == 1
+    assert len(response.json()["predictions_data"]) == 3
     assert response.json()["predictions_data"][0]["prediction"] == pytest.approx(7.89043535267264)
 
 
@@ -519,12 +567,13 @@ async def test_monitored_ml_model_predict_failure_2(client: AsyncClient):
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
-    data = {
-        "X1": 100.0,
-        "X2": "Invalid value :)",
-    }
+    data = [
+        {
+            "X1": 100.0,
+            "X2": "Invalid value :)",
+        }
+    ]
     response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
-    print(response.json())
     assert response.status_code == 400
     assert response.json()["detail"] == "Cannot make prediction: could not convert" \
                                         " string to float: 'Invalid value :)'"
@@ -533,7 +582,7 @@ async def test_monitored_ml_model_predict_failure_2(client: AsyncClient):
     monitored_model_name = "Engine failure prediction model v4 changed"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
-    assert len(response.json()["predictions_data"]) == 1
+    assert len(response.json()["predictions_data"]) == 3
     assert response.json()["predictions_data"][0]["prediction"] == pytest.approx(7.89043535267264)
 
 
@@ -721,4 +770,102 @@ async def test_update_monitored_model_with_changing_iteration(client: AsyncClien
     assert monitored_model_response.json()["iteration"]["id"] == new_iteration_id
     assert monitored_model_response.json()["iteration"]["assigned_monitored_model_id"] == monitored_model_id
     assert new_iteration_response.json()["assigned_monitored_model_id"] == monitored_model_id
+    assert new_iteration_response.json()["assigned_monitored_model_name"] == monitored_model_name
     assert old_iteration_response.json()["assigned_monitored_model_id"] is None
+    assert old_iteration_response.json()["assigned_monitored_model_name"] is None
+
+
+@pytest.mark.asyncio
+async def test_delete_monitored_model(client: AsyncClient):
+    """
+    Test delete monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    model_name_to_find = "Engine failure prediction model v7"
+    response = await client.get(f"/monitored-models/name/{model_name_to_find}")
+
+    iteration = response.json()["iteration"]
+    project_id = iteration["project_id"]
+    experiment_id = iteration["experiment_id"]
+    iteration_id = iteration["id"]
+
+    response = await client.delete(f"/monitored-models/{response.json()['_id']}")
+    assert response.status_code == 200
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
+    assert response.status_code == 200
+    assert response.json()["assigned_monitored_model_id"] is None
+    assert response.json()["assigned_monitored_model_name"] is None
+
+    response = await client.get(f"/monitored-models/name/{model_name_to_find}")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_two_monitored_model_to_one_iteration(client: AsyncClient):
+    """
+    Test create two monitored models to one iteration.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project_title = "Mercedes-Benz Manufacturing Poland"
+
+    response = await client.get(f"/projects/title/{project_title}")
+    project_id = response.json()["_id"]
+
+    experiment_name = "Engine failure prediction"
+    response = await client.get(f"/projects/{project_id}/experiments/name/{experiment_name}")
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Iteration 4",
+        "metrics": {"accuracy": 0.9, "precision": 0.9, "recall": 0.9, "f1": 0.9},
+        "parameters": {"batch_size": 64, "epochs": 1000, "learning_rate": 0.19},
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    iteration_to_model_1 = response.json()
+
+
+    monitored_model_1 = {
+        "model_name": "Engine failure prediction model v8",
+        "model_description": "Test monitored model description",
+        "model_status": "idle"
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model_1)
+    monitored_model_id = response.json()["_id"]
+    monitored_model_name = response.json()["model_name"]
+
+    monitored_model_changed_v1 = {
+        "model_status": "active",
+        "iteration": iteration_to_model_1
+    }
+
+    monitored_model_response = await client.put(f"/monitored-models/{monitored_model_id}", json=monitored_model_changed_v1)
+
+    monitored_model_2 = {
+        "model_name": "Engine failure prediction model v9",
+        "model_description": "Test monitored model description",
+        "model_status": "active",
+        "iteration": iteration_to_model_1
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model_2)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Iteration is assigned to monitored model."

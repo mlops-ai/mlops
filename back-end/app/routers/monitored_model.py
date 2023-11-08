@@ -1,3 +1,5 @@
+import base64
+
 import pandas as pd
 from typing import List
 import pickle
@@ -7,15 +9,18 @@ from fastapi import APIRouter, status
 
 from app.models.iteration import Iteration
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
+from app.models.prediction_data import PredictionData
 from app.models.project import Project
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
 from app.routers.exceptions.monitored_model import monitored_model_not_found_exception, \
     monitored_model_name_not_unique_exception, monitored_model_has_no_iteration_exception, \
     monitored_model_has_iteration_exception, iteration_has_no_path_to_model_exception, \
-    monitored_model_load_ml_model_exception, monitored_model_prediction_exception
+    monitored_model_load_ml_model_exception, monitored_model_prediction_exception, \
+    monitored_model_encoding_pkl_file_exception, monitored_model_no_ml_model_to_decode_exception, \
+    monitored_model_decoding_pkl_file_exception, monitored_model_has_no_iteration_to_check_exception, \
+    iteration_is_assigned_to_monitored_model_exception
 from app.routers.exceptions.project import project_not_found_exception
-
 
 monitored_model_router = APIRouter()
 
@@ -159,12 +164,19 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
     elif monitored_model.iteration is not None and monitored_model.model_status == 'idle':
         raise monitored_model_has_iteration_exception()
 
-    monitored_model = await monitored_model.insert()
+    if monitored_model.iteration is not None:
+        iteration_to_check = await get_iteration_from_monitored_model(monitored_model)
+        if iteration_to_check.assigned_monitored_model_id is not None and \
+                iteration_to_check.assigned_monitored_model_name is not None:
+            raise iteration_is_assigned_to_monitored_model_exception()
 
+    monitored_model = await monitored_model.insert()
     if monitored_model.iteration is not None:
         iteration_with_assigned_model = await update_assigned_model_in_iteration(monitored_model.iteration,
-                                                                                 monitored_model.id)
+                                                                                 monitored_model.id,
+                                                                                 monitored_model.model_name)
         monitored_model.iteration = iteration_with_assigned_model
+        await update_ml_model_to_encoded_in_monitored_model(monitored_model.iteration, monitored_model.id)
 
     await monitored_model.save()
 
@@ -197,7 +209,6 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
         # check if iteration has model path
         if not updated_monitored_model.iteration.path_to_model:
             raise iteration_has_no_path_to_model_exception()
-
         if updated_monitored_model.model_status == 'idle':
             raise monitored_model_has_iteration_exception()
         elif updated_monitored_model.model_status is None:
@@ -216,19 +227,38 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
     if updated_monitored_model.iteration is not None:
         if monitored_model.iteration is not None:
             # Remove the association from the old iteration if there was one
-            await update_assigned_model_in_iteration(monitored_model.iteration, None)
+            await update_assigned_model_in_iteration(monitored_model.iteration, None, None)
             # Update the new iteration with the model ID and get the updated iteration
-            iteration_with_assigned_model = await update_assigned_model_in_iteration(updated_monitored_model.iteration,
-                                                                                     monitored_model.id)
+            if updated_monitored_model.model_name is not None:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    updated_monitored_model.model_name)
+            else:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    monitored_model.model_name)
             # Update monitored_model's iteration with the updated iteration
             updated_monitored_model.iteration = iteration_with_assigned_model
         elif monitored_model.iteration is None:
             # This is a new assignment, update the new iteration with the model ID and get the updated iteration
-            iteration_with_assigned_model = await update_assigned_model_in_iteration(updated_monitored_model.iteration,
-                                                                                     monitored_model.id)
+            if updated_monitored_model.model_name is not None:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    updated_monitored_model.model_name)
+            else:
+                iteration_with_assigned_model = await update_assigned_model_in_iteration(
+                    updated_monitored_model.iteration,
+                    monitored_model.id,
+                    monitored_model.model_name)
             # Update monitored_model's iteration with the updated iteration
             updated_monitored_model.iteration = iteration_with_assigned_model
 
+        await update_ml_model_to_encoded_in_monitored_model(updated_monitored_model.iteration, monitored_model.id)
+
+    updated_monitored_model.updated_at = datetime.now()
     await monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
     monitored_model = await MonitoredModel.get(id)
     await monitored_model.save()
@@ -253,7 +283,7 @@ async def delete_monitored_model(id: PydanticObjectId) -> MonitoredModel:
         raise monitored_model_not_found_exception()
 
     if monitored_model.iteration is not None:
-        monitored_model.iteration.assigned_monitored_model_id = None
+        await update_assigned_model_in_iteration(monitored_model.iteration, None, None)
 
     await monitored_model.delete()
     return monitored_model
@@ -288,18 +318,18 @@ async def get_monitored_model_ml_model_metadata(id: PydanticObjectId) -> dict:
     }
 
 
-@monitored_model_router.post('/{id}/predict', response_model=dict, status_code=status.HTTP_200_OK)
-async def monitored_model_predict(id: PydanticObjectId, data: dict) -> dict:
+@monitored_model_router.post('/{id}/predict', response_model=list[PredictionData], status_code=status.HTTP_200_OK)
+async def monitored_model_predict(id: PydanticObjectId, data: list[dict]) -> list[PredictionData]:
     """
     Make prediction using monitored model ml model. <br>
     **NOTE:** ml model needs to be complied with scikit-learn API.
 
     Args:
     - **id (str)**: Monitored model id
-    - **data (dict)**: Single data sample to make prediction on.
+    - **data (list[dict])**: List of samples to make prediction on.
 
     Returns:
-    - **dict**: Prediction result.
+    - **list[PredictionData]**: List of predictions data.
     """
     monitored_model = await MonitoredModel.get(id)
 
@@ -313,20 +343,21 @@ async def monitored_model_predict(id: PydanticObjectId, data: dict) -> dict:
     except Exception as e:
         raise monitored_model_load_ml_model_exception(str(e))
 
-    try:
-        prediction = ml_model.predict(pd.DataFrame([data]))[0]
-        monitored_model.predictions_data.append({
-            **data,
-            'prediction': prediction
-        })
-        await monitored_model.save()
-    except Exception as e:
-        raise monitored_model_prediction_exception(str(e))
+    predictions_data = []
+    for sample in data:
+        try:
+            prediction = ml_model.predict(pd.DataFrame([sample]))[0]
+            prediction_data = PredictionData(
+                input_data=sample,
+                prediction=prediction
+            )
+            predictions_data.append(prediction_data)
+            monitored_model.predictions_data.append(prediction_data)
+            await monitored_model.save()
+        except Exception as e:
+            raise monitored_model_prediction_exception(str(e))
 
-    return {
-        **data,
-        'prediction': prediction
-    }
+    return predictions_data
 
 
 async def is_name_unique(name: str) -> bool:
@@ -347,14 +378,16 @@ async def is_name_unique(name: str) -> bool:
         return False
     return True
 
-  
-async def update_assigned_model_in_iteration(iteration_to_found: Iteration, value_to_set) -> Iteration:
+
+async def update_assigned_model_in_iteration(iteration_to_found: Iteration, monitored_model_id: PydanticObjectId,
+                                             monitored_model_name: str):
     """
-    Util function for getting iteration.
+    Util function for getting iteration and assigning to assigned_monitored_model_id parameter to monitored_model_id.
 
     Args:
         iteration_to_found: Iteration to get.
-        value_to_set: Value to set.
+        monitored_model_id: Monitored model id.
+        monitored_model_name: Monitored model name.
     Returns:
         Iteration.
     """
@@ -371,12 +404,98 @@ async def update_assigned_model_in_iteration(iteration_to_found: Iteration, valu
     if not iteration:
         raise iteration_not_found_exception()
 
-    iteration.assigned_monitored_model_id = value_to_set
+    iteration.assigned_monitored_model_id = monitored_model_id
+    iteration.assigned_monitored_model_name = monitored_model_name
     await project.save()
 
     return iteration
 
- 
+
+async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iteration,
+                                                        monitored_model_id: PydanticObjectId):
+    """
+    Util function for getting iteration and assigning to ml_model MonitoredModel parameter encoded pkl file.
+
+    Args:
+        iteration_to_found: Iteration to get.
+        monitored_model_id: Monitored model id.
+
+    Returns:
+        None
+    """
+    project = await Project.get(iteration_to_found.project_id)
+    if not project:
+        raise project_not_found_exception()
+
+    experiment = next((exp for exp in project.experiments if exp.id == iteration_to_found.experiment_id),
+                      None)
+    if not experiment:
+        raise experiment_not_found_exception()
+
+    iteration = next((iter for iter in experiment.iterations if iter.id == iteration_to_found.id), None)
+    if not iteration:
+        raise iteration_not_found_exception()
+
+    monitored_model = await MonitoredModel.get(monitored_model_id)
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    monitored_model.ml_model = await load_ml_model_from_file_and_encode(iteration.path_to_model)
+
+    await monitored_model.save()
+
+
+async def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
+    """
+    Load ml model from file and encode it to base64.
+
+    Args:
+        pkl_file_path: Path to pkl file.
+
+    Returns:
+        ml_model: Encoded ml model.
+    """
+    try:
+        # Open and read the pkl file in binary mode
+        with open(pkl_file_path, 'rb') as file:
+            encoded_model = file.read()
+
+        # Set the encoded model to the ml_model property
+        ml_model = base64.b64encode(encoded_model).decode("utf-8")
+
+        return ml_model
+
+    except Exception as e:
+        # Handle any exceptions or errors that may occur
+        raise monitored_model_encoding_pkl_file_exception(str(e))
+
+
+async def load_and_decode_pkl(monitored_model: MonitoredModel) -> object:
+    """
+    Load and decode pkl file.
+
+    Args:
+        monitored_model: Monitored model to load and decode pkl file.
+
+    Returns:
+        decoded_model: Decoded model.
+    """
+    try:
+        if monitored_model.ml_model:
+            # Load and deserialize the pickled model from ml_model
+            model_data = base64.b64decode(monitored_model.ml_model.encode("utf-8"))
+            decoded_model = pickle.loads(model_data)
+
+            # Now, loaded_model contains your decoded model
+            return decoded_model
+        else:
+            raise monitored_model_no_ml_model_to_decode_exception()
+
+    except Exception as e:
+        # Handle any exceptions or errors that may occur during decoding
+        raise monitored_model_decoding_pkl_file_exception(str(e))
+
+
 async def load_ml_model(monitored_model: MonitoredModel) -> object:
     """
     Load ml model from path using pickle.
@@ -387,9 +506,32 @@ async def load_ml_model(monitored_model: MonitoredModel) -> object:
     Returns:
         Loaded ml model instance.
     """
-    # TODO: each time we make prediction we load model from path
-    # this will be replaced with loading model from database
+    ml_model = await load_and_decode_pkl(monitored_model)
 
-    with open(monitored_model.iteration.path_to_model, 'rb') as f:
-        ml_model = pickle.load(f)
     return ml_model
+
+
+async def get_iteration_from_monitored_model(monitored_model: MonitoredModel) -> Iteration:
+    """
+    Get iteration from monitored model.
+
+    Args:
+        monitored_model: Monitored model to get iteration from.
+
+    Returns:
+        Iteration.
+    """
+    project = await Project.get(monitored_model.iteration.project_id)
+    if not project:
+        raise project_not_found_exception()
+
+    experiment = next((exp for exp in project.experiments if exp.id == monitored_model.iteration.experiment_id),
+                      None)
+    if not experiment:
+        raise experiment_not_found_exception()
+
+    iteration = next((iter for iter in experiment.iterations if iter.id == monitored_model.iteration.id), None)
+    if not iteration:
+        raise iteration_not_found_exception()
+
+    return iteration

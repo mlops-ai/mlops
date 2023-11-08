@@ -1,0 +1,1002 @@
+[
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 0,
+        "age": 100,
+        "sibs": 2,
+        "parch": 6,
+        "cabin": 2,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 88,
+        "sibs": 0,
+        "parch": 3,
+        "cabin": 7,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 34,
+        "sibs": 9,
+        "parch": 5,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 77,
+        "sibs": 6,
+        "parch": 6,
+        "cabin": 9,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 34,
+        "sibs": 10,
+        "parch": 2,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 1,
+        "sibs": 3,
+        "parch": 6,
+        "cabin": 9,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 70,
+        "sibs": 7,
+        "parch": 0,
+        "cabin": 0,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 60,
+        "sibs": 6,
+        "parch": 6,
+        "cabin": 0,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 2,
+        "sibs": 7,
+        "parch": 6,
+        "cabin": 0,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 47,
+        "sibs": 2,
+        "parch": 1,
+        "cabin": 1,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 88,
+        "sibs": 0,
+        "parch": 0,
+        "cabin": 0,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 1,
+        "age": 24,
+        "sibs": 10,
+        "parch": 0,
+        "cabin": 10,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 88,
+        "sibs": 7,
+        "parch": 1,
+        "cabin": 2,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 18,
+        "sibs": 3,
+        "parch": 8,
+        "cabin": 2,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 67,
+        "sibs": 4,
+        "parch": 0,
+        "cabin": 2,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 22,
+        "sibs": 7,
+        "parch": 4,
+        "cabin": 7,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 89,
+        "sibs": 3,
+        "parch": 6,
+        "cabin": 3,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 18,
+        "sibs": 3,
+        "parch": 0,
+        "cabin": 8,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 69,
+        "sibs": 1,
+        "parch": 0,
+        "cabin": 3,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 1,
+        "age": 47,
+        "sibs": 7,
+        "parch": 4,
+        "cabin": 0,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 84,
+        "sibs": 7,
+        "parch": 10,
+        "cabin": 2,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 44,
+        "sibs": 8,
+        "parch": 5,
+        "cabin": 5,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 63,
+        "sibs": 4,
+        "parch": 5,
+        "cabin": 2,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 63,
+        "sibs": 3,
+        "parch": 0,
+        "cabin": 1,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 84,
+        "sibs": 0,
+        "parch": 10,
+        "cabin": 7,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 11,
+        "sibs": 1,
+        "parch": 9,
+        "cabin": 10,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 44,
+        "sibs": 10,
+        "parch": 2,
+        "cabin": 8,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 0,
+        "age": 14,
+        "sibs": 2,
+        "parch": 5,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 14,
+        "sibs": 7,
+        "parch": 1,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 61,
+        "sibs": 3,
+        "parch": 7,
+        "cabin": 2,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 34,
+        "sibs": 9,
+        "parch": 9,
+        "cabin": 9,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 1,
+        "age": 39,
+        "sibs": 3,
+        "parch": 1,
+        "cabin": 8,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 91,
+        "sibs": 6,
+        "parch": 1,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 1,
+        "age": 12,
+        "sibs": 0,
+        "parch": 5,
+        "cabin": 0,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 0,
+        "age": 86,
+        "sibs": 10,
+        "parch": 4,
+        "cabin": 10,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 29,
+        "sibs": 8,
+        "parch": 2,
+        "cabin": 4,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 32,
+        "sibs": 2,
+        "parch": 6,
+        "cabin": 6,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 0,
+        "age": 87,
+        "sibs": 3,
+        "parch": 5,
+        "cabin": 1,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 32,
+        "sibs": 2,
+        "parch": 3,
+        "cabin": 7,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 39,
+        "sibs": 5,
+        "parch": 1,
+        "cabin": 1,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 8,
+        "sibs": 7,
+        "parch": 8,
+        "cabin": 7,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 29,
+        "sibs": 5,
+        "parch": 8,
+        "cabin": 5,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 47,
+        "sibs": 1,
+        "parch": 3,
+        "cabin": 6,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 84,
+        "sibs": 5,
+        "parch": 0,
+        "cabin": 6,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 15,
+        "sibs": 2,
+        "parch": 8,
+        "cabin": 10,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 96,
+        "sibs": 10,
+        "parch": 5,
+        "cabin": 8,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 52,
+        "sibs": 8,
+        "parch": 3,
+        "cabin": 10,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 32,
+        "sibs": 1,
+        "parch": 2,
+        "cabin": 8,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 9,
+        "sibs": 0,
+        "parch": 10,
+        "cabin": 5,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 23,
+        "sibs": 0,
+        "parch": 0,
+        "cabin": 7,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 12,
+        "sibs": 1,
+        "parch": 5,
+        "cabin": 5,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 55,
+        "sibs": 8,
+        "parch": 7,
+        "cabin": 0,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 1,
+        "age": 21,
+        "sibs": 6,
+        "parch": 6,
+        "cabin": 4,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 64,
+        "sibs": 10,
+        "parch": 4,
+        "cabin": 1,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 91,
+        "sibs": 10,
+        "parch": 1,
+        "cabin": 8,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 17,
+        "sibs": 5,
+        "parch": 3,
+        "cabin": 0,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 31,
+        "sibs": 9,
+        "parch": 7,
+        "cabin": 5,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 15,
+        "sibs": 6,
+        "parch": 5,
+        "cabin": 3,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 19,
+        "sibs": 0,
+        "parch": 2,
+        "cabin": 7,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 1,
+        "age": 87,
+        "sibs": 6,
+        "parch": 7,
+        "cabin": 4,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 30,
+        "sibs": 3,
+        "parch": 6,
+        "cabin": 0,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 91,
+        "sibs": 8,
+        "parch": 10,
+        "cabin": 1,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 60,
+        "sibs": 4,
+        "parch": 5,
+        "cabin": 10,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 38,
+        "sibs": 4,
+        "parch": 6,
+        "cabin": 7,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 82,
+        "sibs": 6,
+        "parch": 6,
+        "cabin": 8,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 87,
+        "sibs": 0,
+        "parch": 2,
+        "cabin": 4,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 1,
+        "age": 13,
+        "sibs": 1,
+        "parch": 6,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 0,
+        "sibs": 2,
+        "parch": 7,
+        "cabin": 1,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 11,
+        "sibs": 8,
+        "parch": 7,
+        "cabin": 8,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 38,
+        "sibs": 1,
+        "parch": 5,
+        "cabin": 10,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 1,
+        "sibs": 6,
+        "parch": 5,
+        "cabin": 1,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 40,
+        "sibs": 6,
+        "parch": 8,
+        "cabin": 4,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 27,
+        "sibs": 6,
+        "parch": 1,
+        "cabin": 6,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 71,
+        "sibs": 2,
+        "parch": 0,
+        "cabin": 8,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 51,
+        "sibs": 9,
+        "parch": 7,
+        "cabin": 8,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 18,
+        "sibs": 6,
+        "parch": 7,
+        "cabin": 10,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 0,
+        "age": 26,
+        "sibs": 4,
+        "parch": 4,
+        "cabin": 4,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 53,
+        "sibs": 2,
+        "parch": 1,
+        "cabin": 5,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 26,
+        "sibs": 5,
+        "parch": 7,
+        "cabin": 3,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 1,
+        "age": 93,
+        "sibs": 6,
+        "parch": 7,
+        "cabin": 4,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 1,
+        "age": 44,
+        "sibs": 6,
+        "parch": 5,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 36,
+        "sibs": 9,
+        "parch": 3,
+        "cabin": 5,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 26,
+        "sibs": 9,
+        "parch": 1,
+        "cabin": 4,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 81,
+        "sibs": 10,
+        "parch": 2,
+        "cabin": 9,
+        "embarked": 1
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 3,
+        "sibs": 1,
+        "parch": 1,
+        "cabin": 4,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 0,
+        "age": 61,
+        "sibs": 7,
+        "parch": 9,
+        "cabin": 7,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 5,
+        "sibs": 0,
+        "parch": 5,
+        "cabin": 4,
+        "embarked": 3
+    },
+    {
+        "prediction": 1,
+        "pclass": 1,
+        "sex": 1,
+        "age": 60,
+        "sibs": 7,
+        "parch": 1,
+        "cabin": 6,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 1,
+        "age": 80,
+        "sibs": 8,
+        "parch": 3,
+        "cabin": 0,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 3,
+        "sex": 0,
+        "age": 31,
+        "sibs": 10,
+        "parch": 0,
+        "cabin": 10,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 44,
+        "sibs": 7,
+        "parch": 6,
+        "cabin": 6,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 18,
+        "sibs": 4,
+        "parch": 10,
+        "cabin": 2,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 83,
+        "sibs": 1,
+        "parch": 7,
+        "cabin": 7,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 0,
+        "age": 33,
+        "sibs": 4,
+        "parch": 1,
+        "cabin": 1,
+        "embarked": 2
+    },
+    {
+        "prediction": 1,
+        "pclass": 2,
+        "sex": 1,
+        "age": 66,
+        "sibs": 4,
+        "parch": 6,
+        "cabin": 3,
+        "embarked": 2
+    },
+    {
+        "prediction": 0,
+        "pclass": 1,
+        "sex": 0,
+        "age": 58,
+        "sibs": 6,
+        "parch": 1,
+        "cabin": 0,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 0,
+        "age": 47,
+        "sibs": 9,
+        "parch": 10,
+        "cabin": 8,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 2,
+        "sex": 1,
+        "age": 14,
+        "sibs": 5,
+        "parch": 4,
+        "cabin": 5,
+        "embarked": 1
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 27,
+        "sibs": 10,
+        "parch": 2,
+        "cabin": 8,
+        "embarked": 3
+    },
+    {
+        "prediction": 0,
+        "pclass": 3,
+        "sex": 1,
+        "age": 22,
+        "sibs": 10,
+        "parch": 2,
+        "cabin": 7,
+        "embarked": 2
+    }
+]
