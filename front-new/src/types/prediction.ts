@@ -1,8 +1,9 @@
+import { Keyable } from "./types";
+
 export interface Prediction {
-    prediction_id: string;
-    prediction_date: Date;
+    id: string;
+    prediction_date: string;
     predicted_by: string;
-    prediction_status: string;
-    predicted_value: number | string;
-    [key: string]: any;
+    input_data: Keyable;
+    prediction: number;
 }

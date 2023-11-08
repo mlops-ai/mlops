@@ -1,24 +1,17 @@
 import Breadcrumb from "@/components/breadcrumb";
-import { Chart, DataArchive, Loading } from "@/components/icons";
+import { Loading } from "@/components/icons";
 import {
     Model as ModelIcon,
     Monitoring as MonitoringIcon,
 } from "@/components/icons";
-import Cycle from "@/components/icons/cycle";
 import ModelDropdownActions from "@/components/models/model-dropdown-actions";
-import ModelDescription from "@/components/monitoring/model/model-description";
-import ModelInfo from "@/components/monitoring/model/model-info";
 import ModelIsEmpty from "@/components/monitoring/model/model-messages/model-is-empty";
-import MonitoringContainer from "@/components/monitoring/monitoring-container";
 import PageHeader from "@/components/page-header";
-import TabItem from "@/components/tabs/tab-item";
-import Tabs from "@/components/tabs/tabs";
 import { useData } from "@/hooks/use-data-hook";
 import { Model } from "@/types/model";
 import { useEffect, useState } from "react";
-import { VscFolderActive } from "react-icons/vsc";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import MonitoringCharts from "./monitoring-charts";
+import MonitoringWrapper from "@/components/monitoring/monitoring-wrapper";
 
 const Monitoring = () => {
     console.log("Monitoring");
@@ -29,14 +22,9 @@ const Monitoring = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
     const data = useData();
-
-    /**
-     * Constant used for switching between model grid and model charts.
-     */
-    const charts = searchParams.get("charts") === "true";
 
     const [modelData, setModelData] = useState<null | Model>(null);
 
@@ -92,18 +80,10 @@ const Monitoring = () => {
     }
 
     const monitoringContent = () => {
-        if (!charts) {
-            return (
-                <div className="flex flex-col w-full">
-                    <ModelInfo model={modelData} />
-                    <ModelDescription
-                        description={modelData.model_description}
-                    />
-                    <MonitoringContainer modelData={modelData} />
-                </div>
-            );
+        if (modelData && modelData.iteration) {
+            return <MonitoringWrapper modelData={modelData} />;
         }
-        return <MonitoringCharts />;
+        return <ModelIsEmpty />;
     };
 
     return (
@@ -116,6 +96,7 @@ const Monitoring = () => {
                     </div>
                 </div>
             )}
+
             <div className="mb-4">
                 <PageHeader
                     title={modelData.model_name}
@@ -143,31 +124,7 @@ const Monitoring = () => {
                 />
             </div>
 
-            <div className="flex flex-col">
-                {modelData.iteration ? (
-                    <>
-                        <div className="mb-4 text-base border-b-2 border-gray-200 dark:border-gray-700">
-                            <Tabs>
-                                <TabItem
-                                    title="Model predictions"
-                                    Icon={Cycle}
-                                    param="charts"
-                                    value="false"
-                                />
-                                <TabItem
-                                    title="Charts"
-                                    Icon={Chart}
-                                    param="charts"
-                                    value="true"
-                                />
-                            </Tabs>
-                        </div>
-                        {monitoringContent()}
-                    </>
-                ) : (
-                    <ModelIsEmpty />
-                )}
-            </div>
+            <div className="flex flex-col">{monitoringContent()}</div>
         </div>
     );
 };

@@ -133,7 +133,7 @@ const CreateModelFromIterationModal = () => {
                     data_to_update
                 )
                 .then((res) => {
-                    onClose();
+                    handleClose();
                     form.reset();
                     dataStore.updateModel(res.data._id, {
                         ...res.data,
@@ -386,8 +386,7 @@ const CreateModelFromIterationModal = () => {
                                                 </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent className="p-0">
-                                                {/* max-h-[calc(60vh)] */}
-                                                <Command>
+                                                <Command shouldFilter={false}>
                                                     <CommandInput
                                                         placeholder="Search for existing model..."
                                                         onValueChange={(

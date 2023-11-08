@@ -1,7 +1,5 @@
 import ReactEcharts from "echarts-for-react";
 
-import { Keyable } from "@/types/types";
-
 import { histogramOptions } from "./histogram/histogram-options";
 
 import {
@@ -11,54 +9,65 @@ import {
     squareRootBins,
     sturgesBins,
 } from "@/lib/utils";
+import { MonitoringChart } from "@/types/monitoring_chart";
+import { Prediction } from "@/types/prediction";
 
-interface HistogramProps {
-    rowData: Keyable[];
-    colName: string;
-    numberOfBins?: number;
-    binMethod?: "squareRoot" | "scott" | "freedmanDiaconis" | "sturges";
+interface MonitoringChartProps {
+    chart_schema: MonitoringChart;
+    predictionsData: Prediction[];
     theme: "dark" | "light" | "system";
 }
 
 const Histogram = ({
-    rowData,
-    colName,
-    numberOfBins,
-    binMethod,
+    chart_schema,
+    predictionsData,
     theme,
-}: HistogramProps) => {
-    const data: number[] = rowData
-        .map((row: any) => row[colName])
-        .sort((a: number, b: number) => a - b);
-
+}: MonitoringChartProps) => {
+    let data: number[] = [];
+    if (chart_schema.first_column !== "prediction") {
+        data = predictionsData
+            .map((row: Prediction) => row.input_data[chart_schema.first_column])
+            .sort((a: number, b: number) => a - b);
+    } else {
+        data = predictionsData
+            .map((row: Prediction) => row.prediction)
+            .sort((a: number, b: number) => a - b);
+    }
     let histogramData;
 
-    if (numberOfBins) {
-        histogramData = generateHistogramData(data, numberOfBins);
-    } else {
-        switch (binMethod) {
-            case "scott":
-                histogramData = scottBins(data);
-                break;
+    switch (chart_schema.bin_method) {
+        case "squareRoot":
+            histogramData = squareRootBins(data);
+            break;
 
-            case "freedmanDiaconis":
-                histogramData = freedmanDiaconisBins(data);
-                break;
+        case "scott":
+            histogramData = scottBins(data);
+            break;
 
-            case "sturges":
-                histogramData = sturgesBins(data);
-                break;
+        case "freedmanDiaconis":
+            histogramData = freedmanDiaconisBins(data);
+            break;
 
-            default:
-                histogramData = squareRootBins(data);
-                break;
-        }
+        case "sturges":
+            histogramData = sturgesBins(data);
+            break;
+
+        case "fixedNumber":
+            histogramData = generateHistogramData(
+                data,
+                chart_schema.bin_number as number
+            );
+            break;
     }
 
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
             <ReactEcharts
-                option={histogramOptions(histogramData, colName, theme)}
+                option={histogramOptions(
+                    histogramData,
+                    chart_schema.first_column,
+                    theme
+                )}
                 theme="customed"
             />
         </div>

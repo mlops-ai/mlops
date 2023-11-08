@@ -1,4 +1,5 @@
 import { Iteration } from "./iteration";
+import { MonitoringChart } from "./monitoring_chart";
 import { Keyable, ModelStatus } from "./types";
 
 export interface Model {
@@ -17,4 +18,6 @@ export interface Model {
     created_at: Date;
     updated_at: Date;
     last_prediction: Date;
+
+    monitoring_charts: MonitoringChart[];
 }

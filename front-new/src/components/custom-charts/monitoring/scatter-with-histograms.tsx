@@ -1,70 +1,91 @@
-import * as echarts from "echarts";
-// @ts-ignore
-import { transform, histogram, HistogramBins } from "echarts-stat";
-
 import ReactEcharts from "echarts-for-react";
-import { Keyable } from "@/types/types";
-import { freedmanDiaconisBins, generateHistogramData, scottBins, squareRootBins, sturgesBins } from "@/lib/utils";
+import {
+    freedmanDiaconisBins,
+    generateHistogramData,
+    scottBins,
+    squareRootBins,
+    sturgesBins,
+} from "@/lib/utils";
 import { scatterWithHistogramsOptions } from "./scatter-with-histograms/scatter-with-histograms-options";
+import { Prediction } from "@/types/prediction";
+import { MonitoringChart } from "@/types/monitoring_chart";
 
-echarts.registerTransform(transform.histogram);
-
-interface ScatterWithHistogramsProps {
-    rowData: Keyable[];
-    firstCol: string;
-    secondCol: string;
-    numberOfBins?: number;
-    binMethod?: "squareRoot" | "scott" | "freedmanDiaconis" | "sturges";
+interface MonitoringChartProps {
+    chart_schema: MonitoringChart;
+    predictionsData: Prediction[];
     theme: "dark" | "light" | "system";
 }
 
 const ScatterWithHistograms = ({
-    rowData,
-    firstCol,
-    secondCol,
-    numberOfBins,
-    binMethod,
+    chart_schema,
+    predictionsData,
     theme,
-}: ScatterWithHistogramsProps) => {
-    const firstColData: number[] = rowData
-        .map((row: any) => row[firstCol])
-        .sort((a: number, b: number) => a - b);
+}: MonitoringChartProps) => {
+    let firstColData: number[] = [];
+    let secondColData: number[] = [];
 
-    const secondColData: number[] = rowData
-        .map((row: any) => row[secondCol])
-        .sort((a: number, b: number) => a - b);
+    if (chart_schema.first_column !== "predicted_value") {
+        firstColData = predictionsData
+            .map((row: Prediction) => row.input_data[chart_schema.first_column])
+            .sort((a: number, b: number) => a - b);
+    } else {
+        firstColData = predictionsData
+            .map((row: Prediction) => row.prediction)
+            .sort((a: number, b: number) => a - b);
+    }
 
-    const data = firstColData.map((value, index) => [value, secondColData[index], rowData[index].predicted_value]);
+    if (chart_schema.second_column !== "predicted_value") {
+        secondColData = predictionsData
+            .map((row: Prediction) => row.input_data[chart_schema.second_column as string])
+            .sort((a: number, b: number) => a - b);
+    } else {
+        secondColData = predictionsData
+            .map((row: Prediction) => row.prediction)
+            .sort((a: number, b: number) => a - b);
+    }
+
+    const data = firstColData.map((value, index) => [
+        value,
+        secondColData[index],
+        predictionsData[index].prediction,
+    ]);
 
     let firstColHistogramData;
     let secondColHistogramData;
 
-    if (numberOfBins) {
-        firstColHistogramData = generateHistogramData(firstColData, numberOfBins);
-        secondColHistogramData = generateHistogramData(secondColData, numberOfBins);
-    } else {
-        switch (binMethod) {
-            case "scott":
-                firstColHistogramData = scottBins(firstColData);
-                secondColHistogramData = scottBins(secondColData);
-                break;
+    switch (chart_schema.bin_method) {
+        case "scott":
+            firstColHistogramData = scottBins(firstColData);
+            secondColHistogramData = scottBins(secondColData);
+            break;
 
-            case "freedmanDiaconis":
-                firstColHistogramData = freedmanDiaconisBins(firstColData);
-                secondColHistogramData = freedmanDiaconisBins(secondColData);
-                break;
+        case "freedmanDiaconis":
+            firstColHistogramData = freedmanDiaconisBins(firstColData);
+            secondColHistogramData = freedmanDiaconisBins(secondColData);
+            break;
 
-            case "sturges":
-                firstColHistogramData = sturgesBins(firstColData);
-                secondColHistogramData = sturgesBins(secondColData);
-                break;
+        case "sturges":
+            firstColHistogramData = sturgesBins(firstColData);
+            secondColHistogramData = sturgesBins(secondColData);
+            break;
 
-            default:
-                firstColHistogramData = squareRootBins(firstColData);
-                secondColHistogramData = squareRootBins(secondColData);
-                break;
-        }
+        case "squareRoot":
+            firstColHistogramData = squareRootBins(firstColData);
+            secondColHistogramData = squareRootBins(secondColData);
+            break;
+        case "fixedNumber":
+            firstColHistogramData = generateHistogramData(
+                firstColData,
+                chart_schema.bin_number as number
+            );
+            secondColHistogramData = generateHistogramData(
+                secondColData,
+                chart_schema.bin_number as number
+            );
+            break;
     }
+
+    console.log(data);
 
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
@@ -73,8 +94,8 @@ const ScatterWithHistograms = ({
                     data,
                     firstColHistogramData,
                     secondColHistogramData,
-                    firstCol,
-                    secondCol,
+                    chart_schema.first_column,
+                    chart_schema.second_column as string,
                     theme
                 )}
                 style={{ height: "500px" }}
