@@ -1,12 +1,11 @@
 import os
 import sys
+import pytest
 sys.path.append('../../back-end')
 sys.path.append('..')
 
-import pytest
-
-import mlops.monitoring
 import mlops.tracking
+import mlops.monitoring
 from mlops.config.config import settings as lib_settings
 from app.config.config import settings as app_settings
 from app.database.init_mongo_db import drop_database
@@ -43,6 +42,7 @@ async def test_create_model_failure(setup):
 
     assert str(exc_info.value) == "Request failed with status code 400: Monitored model name already exists."
 
+
 @pytest.mark.asyncio
 async def test_get_model(setup):
     await drop_database()
@@ -52,6 +52,7 @@ async def test_get_model(setup):
     response = mlops.monitoring.get_model(model_name='test_model')
 
     assert response['model_name'] == 'test_model'
+
 
 @pytest.mark.asyncio
 async def test_set_active_model(setup):
@@ -83,12 +84,7 @@ async def test_create_model_with_iteration(setup):
         iteration.log_metrics(metrics)
 
     iteration_dict = iteration.end_iteration()
-
     model_name = 'test_model'
 
     response = mlops.monitoring.create_model(model_name=model_name, iteration_dict=iteration_dict)
-
     assert response['model_name'] == model_name and response['model_status'] == 'active'
-
-
-

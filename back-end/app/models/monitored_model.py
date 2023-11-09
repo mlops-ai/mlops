@@ -33,7 +33,7 @@ class MonitoredModel(Document):
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
     pinned: bool = Field(default=False, description="Model pinned status")
     predictions_data: Optional[list[PredictionData]] = Field(default=[], description="Predictions data")
-    ml_model: Optional[str] = Field(default=None, description="Loaded ml model")
+    ml_model: Optional[str] = Field(default=None, description="ML model", max_length=10000)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
