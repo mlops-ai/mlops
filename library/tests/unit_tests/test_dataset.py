@@ -8,7 +8,7 @@ from mlops.src.dataset import Dataset
 @pytest.fixture(scope="module")
 async def setup():
     if not app_settings.TESTING:
-        raise RuntimeError("Value of TESTING in ./back-end/.venv should be True")
+        raise RuntimeError("Value of TESTING in ./server/.venv should be True")
 
     await drop_database()
 
