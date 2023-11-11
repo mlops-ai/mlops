@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('../../back-end')
+sys.path.append('../../server')
 sys.path.append('..')
 
 import pytest
@@ -16,7 +16,7 @@ from app.database.init_mongo_db import drop_database
 @pytest.fixture(scope="module")
 async def setup():
     if not app_settings.TESTING:
-        raise RuntimeError("Value of TESTING in ./back-end/.venv should be True")
+        raise RuntimeError("Value of TESTING in ./server/.venv should be True")
 
     await drop_database()
 
