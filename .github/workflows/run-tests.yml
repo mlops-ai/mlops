@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
 
     services:
       mongo:
@@ -27,12 +27,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        cd back-end
+        cd server
         pip install -r requirements.txt
 
     - name: Enable testing mode
       run: |
-        cd back-end
+        cd server
         echo "MONGODB_URL=${{ vars.MONGODB_URL }}" > .env
         echo "MONGODB_DB_NAME=${{ vars.MONGODB_DB_NAME }}" >> .env
         echo "TESTING=${{ vars.TESTING }}" >> .env
@@ -41,12 +41,12 @@ jobs:
 
     - name: Start FastAPI server in the background
       run: |
-        cd back-end
+        cd server
         uvicorn app.app:app --reload &   
 
-    - name: Run backend tests
+    - name: Run server tests
       run: |
-          cd back-end/app/tests
+          cd server/app/tests
           pytest
 
     - name: Run library tests

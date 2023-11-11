@@ -3,7 +3,7 @@ version: '3'
 services:
   fastapi:
     build:
-      context: ./back-end
+      context: server
       dockerfile: Dockerfile
     depends_on:
       - mongo
@@ -31,7 +31,7 @@ services:
     volumes:
       - ./data:/data/db
     env_file:
-      - ./back-end/.env
+      - server/.env
     ports:
       - ${MONGODB_PORT}:${MONGODB_PORT}
     environment:
