@@ -868,3 +868,298 @@ async def test_create_two_monitored_model_to_one_iteration(client: AsyncClient):
     response = await client.post("/monitored-models/", json=monitored_model_2)
     assert response.status_code == 400
     assert response.json()["detail"] == "Iteration is assigned to monitored model."
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_histogram_chart(client: AsyncClient):
+    """
+    Test create monitored model histogram chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    data = [
+        {
+            "X1": 1.0,
+            "X2": 2.0
+        },
+        {
+            "X1": 3.0,
+            "X2": 4.0
+        }
+    ]
+    response = await client.post(f"/monitored-models/{monitored_model_id}/predict", json=data)
+    assert response.status_code == 200
+    assert response.json()[0]["prediction"] == pytest.approx(7.89043535267264)
+    assert response.json()[0]["input_data"]["X1"] == 1.0
+    assert response.json()[1]["prediction"] == pytest.approx(17.685669831629962)
+    assert response.json()[1]["input_data"]["X1"] == 3.0
+    assert response.json()[1]["input_data"]["X2"] == 4.0
+
+    # check monitored model predictions data after prediction
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["predictions_data"]) == 2
+
+    chart = {
+        "chart_type": "histogram",
+        "first_column": "X1",
+        "bin_method": "squareRoot"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+    assert response.json()["chart_type"] == chart["chart_type"]
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 1
+    assert response.json()["interactive_charts"][0]["chart_type"] == chart["chart_type"]
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_countplot_chart(client: AsyncClient):
+    """
+    Test create monitored model countplot chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    chart = {
+        "chart_type": "countplot",
+        "first_column": "X2"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+    assert response.json()["chart_type"] == chart["chart_type"]
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 2
+    assert response.json()["interactive_charts"][1]["chart_type"] == chart["chart_type"]
+    assert response.json()["interactive_charts"][1]["first_column"] == chart["first_column"]
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_scatter_chart(client: AsyncClient):
+    """
+    Test create monitored model scatter chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter",
+        "first_column": "X1",
+        "second_column": "prediction"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 3
+    assert response.json()["interactive_charts"][2]["chart_type"] == chart["chart_type"]
+    assert response.json()["interactive_charts"][2]["first_column"] == chart["first_column"]
+    assert response.json()["interactive_charts"][2]["second_column"] == chart["second_column"]
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_scatter_chart_failure(client: AsyncClient):
+    """
+    Test create monitored model scatter chart failure.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter",
+        "first_column": "X1",
+        "second_column": "X1",
+        "bin_method": "squareRoot"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 400
+    assert response.json()["detail"] == f"First column and second column must be different for chart type \'scatter\'."
+
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_scatter_with_histograms_chart(client: AsyncClient):
+    """
+    Test create monitored model scatter chart failure.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter with histograms",
+        "first_column": "X2",
+        "second_column": "prediction",
+        "bin_method": "fixedNumber",
+        "bin_number": 10
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+    assert response.json()["chart_type"] == chart["chart_type"]
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 4
+    assert response.json()["interactive_charts"][3]["chart_type"] == chart["chart_type"]
+    assert response.json()["interactive_charts"][3]["first_column"] == chart["first_column"]
+    assert response.json()["interactive_charts"][3]["second_column"] == chart["second_column"]
+    assert response.json()["interactive_charts"][3]["bin_method"] == chart["bin_method"]
+    assert response.json()["interactive_charts"][3]["bin_number"] == chart["bin_number"]
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_regression_metrics_chart(client: AsyncClient):
+    """
+    Test create monitored model regression metrics chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    """
+    Test create monitored model scatter chart failure.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "regression_metrics"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 5
+    assert response.json()["interactive_charts"][4]["chart_type"] == chart["chart_type"]
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_histogram_chart_failure_1(client: AsyncClient):
+    """
+    Test create monitored model histogram chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    print(response.json())
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+    chart = {
+        "chart_type": "histogram",
+        "first_column": "X2",
+        "bin_method": "fixedNumber",
+        "bin_number": 1
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 400
+    assert response.json()["detail"] == (f"Invalid type or value for 'bin_number'. Must be integer for bin method "
+                                         f"\'fixedNumber\'. Must be greater than 1.")
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_scatter_chart_failure_2(client: AsyncClient):
+    """
+    Test create monitored model scatter chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter",
+        "first_column": "X1",
+        "second_column": "prediction"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 400
+    assert response.json()["detail"] == (f"Chart type \'{chart['chart_type']}\' already exists for columns "
+                                         f"\'{chart['first_column']}\' and \'{chart['second_column']}\'.")

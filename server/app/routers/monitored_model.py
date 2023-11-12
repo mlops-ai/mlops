@@ -10,6 +10,7 @@ from fastapi import APIRouter, status
 
 from app.models.iteration import Iteration
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
+from app.models.monitored_model_chart import MonitoredModelInteractiveChart
 from app.models.prediction_data import PredictionData
 from app.models.project import Project
 from app.routers.exceptions.experiment import experiment_not_found_exception
@@ -20,7 +21,13 @@ from app.routers.exceptions.monitored_model import monitored_model_not_found_exc
     monitored_model_load_ml_model_exception, monitored_model_prediction_exception, \
     monitored_model_encoding_pkl_file_exception, monitored_model_no_ml_model_to_decode_exception, \
     monitored_model_decoding_pkl_file_exception, monitored_model_has_no_iteration_to_check_exception, \
-    iteration_is_assigned_to_monitored_model_exception
+    iteration_is_assigned_to_monitored_model_exception, monitored_model_has_no_predictions_data_exception, \
+    monitored_model_chart_column_bad_type_exception, monitored_model_chart_bad_bin_method_exception, \
+    monitored_model_chart_bad_bin_type_or_value_exception, monitored_model_chart_bad_bin_number_type_exception, \
+    monitored_model_chart_bad_bin_method_type_exception, monitored_model_chart_columns_different_values_exception, \
+    monitored_model_bad_values_exception, monitored_model_chart_not_found_exception, \
+    monitored_model_chart_existing_pair_of_columns_of_chart_type_exception, \
+    monitored_model_chart_changing_columns_exception
 from app.routers.exceptions.project import project_not_found_exception
 
 monitored_model_router = APIRouter()
@@ -360,6 +367,136 @@ async def monitored_model_predict(id: PydanticObjectId, data: list[dict]) -> lis
 
     return predictions_data
 
+@monitored_model_router.post('/{id}/charts', response_model=MonitoredModelInteractiveChart,
+                             status_code=status.HTTP_201_CREATED)
+async def add_chart_to_monitored_model(id: PydanticObjectId,
+                                       chart: MonitoredModelInteractiveChart) -> MonitoredModelInteractiveChart:
+    """
+    Add chart to monitored model.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **chart (MonitoredModelInteractiveChart)**: Chart to add to monitored model.
+
+    Returns:
+    - **MonitoredModelInteractiveChart**: Added chart.
+    """
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    if not monitored_model.predictions_data:
+        raise monitored_model_has_no_predictions_data_exception()
+
+    data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction} for prediction in
+                         monitored_model.predictions_data])
+
+    if (chart.chart_type, chart.first_column, chart.second_column) in monitored_model.interactive_charts_existed:
+        raise monitored_model_chart_existing_pair_of_columns_of_chart_type_exception(chart.chart_type,
+                                                                                     chart.first_column,
+                                                                                     chart.second_column)
+
+    validated_chart = validate_chart(chart, data)
+    if validated_chart:
+        chart.monitored_model_id = monitored_model.id
+        monitored_model.interactive_charts.append(chart)
+        monitored_model.interactive_charts_existed.add((chart.chart_type, chart.first_column, chart.second_column))
+
+    await monitored_model.save()
+
+    return chart
+
+
+@monitored_model_router.get('/{id}/charts/{chart_id}', response_model=MonitoredModelInteractiveChart)
+async def get_chart_from_monitored_model(id: PydanticObjectId, chart_id: PydanticObjectId) \
+        -> MonitoredModelInteractiveChart:
+    """
+    Get chart from monitored model.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **chart_id (str)**: Chart id.
+
+    Returns:
+    - **MonitoredModelInteractiveChart**: Chart.
+    """
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    chart = next((chart for chart in monitored_model.interactive_charts if chart.id == chart_id), None)
+    if not chart:
+        raise monitored_model_chart_not_found_exception()
+
+    return chart
+
+
+@monitored_model_router.put('/{id}/charts/{chart_id}', response_model=MonitoredModelInteractiveChart, status_code=status.HTTP_200_OK)
+async def update_chart_from_monitored_model(id: PydanticObjectId, chart_id: PydanticObjectId, updated_chart: MonitoredModelInteractiveChart) -> MonitoredModelInteractiveChart:
+    """
+    Update chart from monitored model.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **chart_id (str)**: Chart id.
+    - **chart (MonitoredModelInteractiveChart)**: Chart to update.
+
+    Returns:
+    - **MonitoredModelInteractiveChart**: Updated chart.
+    """
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    chart = next((chart for chart in monitored_model.interactive_charts if chart.id == chart_id), None)
+    if not chart:
+        raise monitored_model_chart_not_found_exception()
+
+    data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction} for prediction in
+                         monitored_model.predictions_data])
+
+    if chart.chart_type == updated_chart.chart_type and chart.first_column == updated_chart.first_column and chart.second_column == updated_chart.second_column:
+        validated_chart = validate_chart(updated_chart, data)
+        updated_chart.monitored_model_id = monitored_model.id
+        chart = updated_chart
+    else:
+        raise monitored_model_chart_changing_columns_exception()
+
+    await monitored_model.save()
+
+    return chart
+
+
+@monitored_model_router.delete('/{id}/charts/{chart_id}', response_model=MonitoredModelInteractiveChart)
+async def delete_chart_from_monitored_model(id: PydanticObjectId, chart_id: PydanticObjectId) -> MonitoredModelInteractiveChart:
+    """
+    Delete chart from monitored model.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **chart_id (str)**: Chart id.
+
+    Returns:
+    - **MonitoredModelInteractiveChart**: Deleted chart.
+    """
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    chart = next((chart for chart in monitored_model.interactive_charts if chart.id == chart_id), None)
+    if not chart:
+        raise monitored_model_chart_not_found_exception()
+
+    monitored_model.interactive_charts_existed.remove((chart.chart_type, chart.first_column, chart.second_column))
+    monitored_model.interactive_charts.remove(chart)
+    await monitored_model.save()
+
+    return chart
+
 
 async def is_name_unique(name: str) -> bool:
     """
@@ -533,3 +670,68 @@ async def get_iteration_from_monitored_model(monitored_model: MonitoredModel) ->
         raise iteration_not_found_exception()
 
     return iteration
+
+
+def validate_chart(chart: MonitoredModelInteractiveChart, data: pd.DataFrame) -> MonitoredModelInteractiveChart:
+    if chart.chart_type == 'histogram':
+        if not pd.api.types.is_numeric_dtype(data[chart.first_column]):
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'numeric', 'first_column')
+        if chart.second_column is not None:
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'None', 'second_column')
+        if chart.bin_method not in MonitoredModelInteractiveChart.Settings.bin_methods:
+            raise monitored_model_chart_bad_bin_method_exception(chart.chart_type)
+        if chart.bin_method == 'fixedNumber':
+            if not isinstance(chart.bin_number, int) or chart.bin_number <= 1:
+                raise monitored_model_chart_bad_bin_type_or_value_exception(chart.bin_method)
+        else:
+            if chart.bin_number is not None:
+                raise monitored_model_chart_bad_bin_number_type_exception(chart.chart_type)
+    elif chart.chart_type == 'countplot':
+        if not pd.api.types.is_string_dtype(data[chart.first_column]) and not pd.api.types.is_numeric_dtype(
+                data[chart.first_column]):
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'string or numeric', 'first_column')
+        if chart.second_column is not None:
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'None', 'second_column')
+        if chart.bin_method is not None:
+            raise monitored_model_chart_bad_bin_method_type_exception(chart.chart_type)
+        if chart.bin_number is not None:
+            raise monitored_model_chart_bad_bin_number_type_exception(chart.chart_type)
+    elif chart.chart_type == 'scatter':
+        if not pd.api.types.is_numeric_dtype(data[chart.first_column]) or not pd.api.types.is_numeric_dtype(data[chart.second_column]):
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'numeric', 'first_column or second_column')
+        if chart.first_column == chart.second_column:
+            raise monitored_model_chart_columns_different_values_exception(chart.chart_type)
+        if chart.bin_method is not None:
+            raise monitored_model_chart_bad_bin_method_type_exception(chart.chart_type)
+        if chart.bin_number is not None:
+            raise monitored_model_chart_bad_bin_number_type_exception(chart.chart_type)
+    elif chart.chart_type == 'scatter with histograms':
+        if not pd.api.types.is_numeric_dtype(data[chart.first_column]) or not pd.api.types.is_numeric_dtype(data[chart.second_column]):
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'numeric', 'first_column or second_column')
+        if chart.first_column == chart.second_column:
+            raise monitored_model_chart_columns_different_values_exception(chart.chart_type)
+        if chart.bin_method not in MonitoredModelInteractiveChart.Settings.bin_methods:
+            raise monitored_model_chart_bad_bin_method_exception(chart.chart_type)
+        if chart.bin_method == 'fixedNumber':
+            if not isinstance(chart.bin_number, int) or chart.bin_number <= 1:
+                raise monitored_model_chart_bad_bin_type_or_value_exception(chart.bin_method)
+        else:
+            if chart.bin_number is not None:
+                raise monitored_model_chart_bad_bin_number_type_exception(chart.chart_type)
+    elif chart.chart_type == 'timeseries':
+        if not pd.api.types.is_numeric_dtype(data[chart.first_column]):
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'numeric', 'first_column')
+        if chart.second_column is not None:
+            raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'None', 'second_column')
+        if chart.bin_method is not None:
+            raise monitored_model_chart_bad_bin_method_type_exception(chart.chart_type)
+        if chart.bin_number is not None:
+            raise monitored_model_chart_bad_bin_number_type_exception(chart.chart_type)
+    elif chart.chart_type == 'regression_metrics':
+        if chart.first_column is not None or chart.second_column is not None or chart.bin_method is not None or chart.bin_number is not None:
+            raise monitored_model_bad_values_exception(chart.chart_type)
+    elif chart.chart_type == 'classification_metrics':
+        if chart.first_column is not None or chart.second_column is not None or chart.bin_method is not None or chart.bin_number is not None:
+            raise monitored_model_bad_values_exception(chart.chart_type)
+
+    return chart
