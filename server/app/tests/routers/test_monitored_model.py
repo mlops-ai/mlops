@@ -1163,3 +1163,38 @@ async def test_create_monitored_model_scatter_chart_failure_2(client: AsyncClien
     assert response.status_code == 400
     assert response.json()["detail"] == (f"Chart type \'{chart['chart_type']}\' already exists for columns "
                                          f"\'{chart['first_column']}\' and \'{chart['second_column']}\'.")
+
+
+@pytest.mark.asyncio
+async def test_delete_monitored_model_chart(client: AsyncClient):
+    """
+    Test delete monitored model chart.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "classification_metrics"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    chart_id = response.json()["interactive_charts"][5]["id"]
+
+    response = await client.delete(f"/monitored-models/{monitored_model_id}/charts/{chart_id}")
+    assert response.status_code == 200
+
