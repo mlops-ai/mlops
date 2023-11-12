@@ -16,12 +16,12 @@ const Timeseries = ({
     theme,
 }: MonitoringChartProps) => {
     let data: any = [];
-    
+
     if (chart_schema.first_column !== "prediction") {
         data = predictionsData
             .map((row) => [
                 new Date(row.prediction_date),
-                row.input_data[chart_schema.first_column],
+                row.input_data[chart_schema.first_column as string],
             ])
             .sort((a: any, b: any) => a[0] - b[0]);
     } else {
@@ -35,7 +35,7 @@ const Timeseries = ({
             <ReactEcharts
                 option={timeseriesOptions(
                     data,
-                    chart_schema.first_column,
+                    chart_schema.first_column as string,
                     theme
                 )}
                 theme="customed"

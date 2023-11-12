@@ -5,6 +5,8 @@ import ScatterWithHistograms from "./scatter-with-histograms";
 import Timeseries from "./timeseries";
 import { MonitoringChart, MonitoringChartType } from "@/types/monitoring_chart";
 import { Prediction } from "@/types/prediction";
+import RegressionMetrics from "./regression-metrics";
+import ClassificationMetrics from "./classification-metrics";
 
 interface MonitoringChartProps {
     type: MonitoringChartType;
@@ -19,6 +21,8 @@ const ChartMap = {
     scatter: Scatter,
     scatter_with_histograms: ScatterWithHistograms,
     timeseries: Timeseries,
+    regression_metrics: RegressionMetrics,
+    classification_metrics: ClassificationMetrics,
 };
 
 const MonitoringChart = ({

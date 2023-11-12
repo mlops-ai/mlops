@@ -22,7 +22,7 @@ const Scatter = ({
         chart_schema.second_column !== "prediction"
     ) {
         data = predictionsData.map((row: Prediction) => [
-            row.input_data[chart_schema.first_column],
+            row.input_data[chart_schema.first_column as string],
             row.input_data[chart_schema.second_column as string],
             row.prediction,
         ]);
@@ -34,7 +34,7 @@ const Scatter = ({
         ]);
     } else if (chart_schema.second_column === "prediction") {
         data = predictionsData.map((row: Prediction) => [
-            row.input_data[chart_schema.first_column],
+            row.input_data[chart_schema.first_column as string],
             row.prediction,
             row.prediction,
         ]);
@@ -45,7 +45,7 @@ const Scatter = ({
             <ReactEcharts
                 option={scatterOptions(
                     data,
-                    chart_schema.first_column,
+                    chart_schema.first_column as string,
                     chart_schema.second_column as string,
                     theme
                 )}

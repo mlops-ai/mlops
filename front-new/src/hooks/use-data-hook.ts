@@ -6,6 +6,7 @@ import { Iteration } from "@/types/iteration";
 import { Keyable } from "@/types/types";
 import { Model } from "@/types/model";
 import { Dataset } from "@/types/dataset";
+import { Prediction } from "@/types/prediction";
 
 interface DataStore {
     projects: Project[] | null;
@@ -41,6 +42,12 @@ interface DataStore {
     addModel: (model: Model) => void;
     deleteModel: (model_id: string) => void;
     updateModel: (model_id: string, model: Model) => void;
+
+    updatePrediction: (
+        model_id: string,
+        prediction_id: string,
+        prediction: Prediction
+    ) => void;
 
     setAll: (
         projectData: Project[],
@@ -315,6 +322,34 @@ export const useData = create<DataStore>((set) => ({
                 if (index === -1) return state;
 
                 state.models[index] = model;
+                return { models: [...state.models] };
+            }
+            return { models: null };
+        });
+    },
+    updatePrediction: (
+        model_id: string,
+        prediction_id: string,
+        prediction: Prediction
+    ) => {
+        set((state) => {
+            if (state.models) {
+                const index = state.models.findIndex(
+                    (model) => model._id === model_id
+                );
+
+                if (index === -1) return state;
+
+                const prediction_index = state.models[
+                    index
+                ].predictions_data.findIndex(
+                    (prediction) => prediction.id === prediction_id
+                );
+
+                if (prediction_index === -1) return state;
+
+                state.models[index].predictions_data[prediction_index] =
+                    prediction;
                 return { models: [...state.models] };
             }
             return { models: null };
