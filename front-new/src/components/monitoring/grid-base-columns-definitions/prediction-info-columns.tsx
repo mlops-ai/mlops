@@ -37,7 +37,14 @@ export const PredictionInfo = () => {
             field: "prediction",
             headerName: "Predicted Value",
             pinned: true,
-            filter: true,
+            filter: "agNumberColumnFilter",
+        },
+        {
+            field: "real_value",
+            headerName: "Real Value",
+            pinned: true,
+            filter: "agNumberColumnFilter",
+            editable: true,
         },
         {
             field: "prediction_date",
@@ -48,9 +55,9 @@ export const PredictionInfo = () => {
             cellRenderer: (val: any) => {
                 return (
                     <span
-                        title={moment(new Date(val.data["prediction_date"])).format(
-                            "DD-MM-YYYY, HH:mm:ss"
-                        )}
+                        title={moment(
+                            new Date(val.data["prediction_date"])
+                        ).format("DD-MM-YYYY, HH:mm:ss")}
                     >
                         {dateToHumanize(val.data["prediction_date"])}
                     </span>

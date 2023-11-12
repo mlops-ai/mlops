@@ -20,7 +20,7 @@ import {
 import { MdSort } from "react-icons/md";
 
 import moment from "moment";
-import { IRowNode } from "ag-grid-community";
+import { CellValueChangedEvent, IRowNode } from "ag-grid-community";
 import { Button } from "../ui/button";
 import {
     Chart,
@@ -31,6 +31,7 @@ import {
 } from "@/components/icons";
 import NoPredictionsHistory from "./no-predictions-history";
 import { useModal } from "@/hooks/use-modal-hook";
+import { useData } from "@/hooks/use-data-hook";
 
 interface MonitoringContainerProps {
     modelData: Model;
@@ -46,6 +47,8 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
     const filterDateRef = useRef<HTMLSpanElement>(null);
 
     const { onOpen } = useModal();
+
+    const data = useData();
 
     const { model_id } = useParams();
 
@@ -185,6 +188,12 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                 return value;
             },
         });
+    }, []);
+
+    const onCellValueChanged = useCallback((params: CellValueChangedEvent) => {
+        if (!gridRef.current) return;
+
+        gridRef.current!.api.applyTransaction({ update: [params.data] });
     }, []);
 
     return (
@@ -359,6 +368,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                     noRowsOverlayComponent={NoPredictionsHistory}
                     isExternalFilterPresent={isExternalFilterPresent}
                     doesExternalFilterPass={doesExternalFilterPass}
+                    onCellValueChanged={onCellValueChanged}
                 />
             </div>
         </>

@@ -3,7 +3,8 @@ import { Keyable } from "@/types/types";
 export const metricsChartOptionsGenerator = (
     theme: "dark" | "light" | "system",
     metrics_names: string[],
-    series: Keyable[]
+    series: Keyable[],
+    title: string
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -28,7 +29,7 @@ export const metricsChartOptionsGenerator = (
         },
         title: {
             left: "center",
-            text: "Metrics Chart",
+            text: title,
             textStyle: {
                 color: theme === "dark" ? "#ffffff" : "#333",
             },

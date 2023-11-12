@@ -2,6 +2,7 @@ import { Chart } from "@/types/chart";
 import { Dataset } from "@/types/dataset";
 import { Iteration } from "@/types/iteration";
 import { Model } from "@/types/model";
+import { Prediction } from "@/types/prediction";
 import { Project } from "@/types/project";
 import { Keyable } from "@/types/types";
 import { type ClassValue, clsx } from "clsx";
@@ -521,7 +522,7 @@ export const countUniqueValues = (data: any[]) => {
             counts[value] = 1;
         }
     }
-    
+
     const unique_values = Object.keys(counts);
     const unique_counts = Object.values(counts);
 
@@ -544,7 +545,6 @@ export const countPredictionByDate = (predictions: Keyable[]) => {
         } else {
             dateCount[key] = 1;
         }
-
     });
 
     const uniqueDates: any = Object.keys(dateCount);
@@ -557,4 +557,177 @@ export const countPredictionByDate = (predictions: Keyable[]) => {
     });
 
     return data;
-}
+};
+
+export const calculateRegressionMetrics = (data: Prediction[]) => {
+    const filteredData = data.filter((prediction: Prediction) => {
+        return prediction.real_value;
+    });
+
+    const n = filteredData.length;
+
+    if (n === 0) {
+        return [0, 0, 0, 0];
+    }
+
+    let yTrue: number[] = [];
+    let yPred: number[] = [];
+
+    filteredData.forEach((prediction: Prediction) => {
+        yTrue.push(prediction.real_value as number);
+        yPred.push(prediction.prediction);
+    });
+
+    const meanYTrue = yTrue.reduce((sum, val) => sum + val, 0) / n;
+
+    const SST = yTrue.reduce(
+        (sum, val: number) => sum + Math.pow(val - meanYTrue, 2),
+        0
+    );
+    const SSR = yTrue.reduce(
+        (sum, val, index) => sum + Math.pow(val - yPred[index], 2),
+        0
+    );
+
+    const r2 = 1 - SSR / SST;
+    const mse = SSR / n;
+    const rmse = Math.sqrt(mse);
+    const mae =
+        yTrue.reduce(
+            (sum, val, index) => sum + Math.abs(val - yPred[index]),
+            0
+        ) / n;
+
+    return [r2, mse, rmse, mae];
+};
+
+export const calculateClassificationMetrics = (data: Prediction[]) => {
+    const filteredData = data.filter((prediction: Prediction) => {
+        return prediction.real_value !== undefined;
+    });
+
+    const n = filteredData.length;
+
+    if (n === 0) {
+        return [0, 0, 0, 0];
+    }
+
+    let yTrue: number[] = [];
+    let yPred: number[] = [];
+
+    filteredData.forEach((prediction: Prediction) => {
+        yTrue.push(prediction.real_value as number);
+        yPred.push(prediction.prediction);
+    });
+
+    const confusionMatrix = calculateConfusionMatrix(yTrue, yPred);
+
+    const metrics: any = {};
+
+    const totalCorrect = confusionMatrix.reduce(
+        (acc, row, i) => acc + row[i],
+        0
+    );
+
+    // Accuracy
+    metrics.accuracy =
+        totalCorrect /
+        confusionMatrix.flat().reduce((acc, val) => acc + val, 0);
+
+    // Precision, Recall, F1-score dla każdej klasy
+    metrics.precision = [];
+    metrics.recall = [];
+    metrics.f1Score = [];
+
+    for (let i = 0; i < confusionMatrix.length; i++) {
+        const truePositive = confusionMatrix[i][i];
+        const falsePositive =
+            confusionMatrix
+                .map((row) => row[i])
+                .reduce((acc, val) => acc + val, 0) - truePositive;
+        const falseNegative = confusionMatrix[i].reduce(
+            (acc, val, j) => acc + (j !== i ? val : 0),
+            0
+        );
+
+        // Precision
+        metrics.precision[i] =
+            truePositive + falsePositive !== 0
+                ? truePositive / (truePositive + falsePositive)
+                : 0;
+
+        // Recall
+        metrics.recall[i] =
+            truePositive + falseNegative !== 0
+                ? truePositive / (truePositive + falseNegative)
+                : 0;
+
+        // F1-score
+        metrics.f1Score[i] =
+            metrics.precision[i] + metrics.recall[i] !== 0
+                ? (2 * metrics.precision[i] * metrics.recall[i]) /
+                  (metrics.precision[i] + metrics.recall[i])
+                : 0;
+    }
+
+    metrics.averageAccuracy = metrics.accuracy;
+    metrics.averagePrecision =
+        metrics.precision.reduce((acc: number, val: number) => acc + val, 0) /
+        metrics.precision.length;
+    metrics.averageRecall =
+        metrics.recall.reduce((acc: number, val: number) => acc + val, 0) /
+        metrics.recall.length;
+    metrics.averageF1Score =
+        metrics.f1Score.reduce((acc: number, val: number) => acc + val, 0) /
+        metrics.f1Score.length;
+
+    console.log(metrics);
+
+    return [
+        metrics.averageAccuracy,
+        metrics.averagePrecision,
+        metrics.averageRecall,
+        metrics.averageF1Score,
+    ];
+};
+
+export const calculateConfusionMatrix = (yTrue: any[], yPred: any[]) => {
+    const numberOfClasses = [...new Set([...yTrue, ...yPred])];
+
+    const confusionMatrix = Array.from({ length: numberOfClasses.length }, () =>
+        Array.from({ length: numberOfClasses.length }, () => 0)
+    );
+
+    for (let i = 0; i < yTrue.length; i++) {
+        const trueClass = yTrue[i];
+        const predictedClass = yPred[i];
+
+        // confusionMatrix[predictedClass][trueClass]++;
+
+        confusionMatrix[trueClass][predictedClass]++;
+    }
+
+    return confusionMatrix;
+};
+
+export const calculateConfusionMatrix2 = (yTrue: any[], yPred: any[]) => {
+    const classes = new Set([...yTrue, ...yPred]);
+    const matrix = [];
+
+    for (const trueClass of classes) {
+        const row = [];
+        for (const predictedClass of classes) {
+            const count = yTrue.reduce(
+                (sum, trueLabel, index) =>
+                    trueLabel === trueClass && yPred[index] === predictedClass
+                        ? sum + 1
+                        : sum,
+                0
+            );
+            row.push(count);
+        }
+        matrix.push(row);
+    }
+
+    return matrix;
+};
