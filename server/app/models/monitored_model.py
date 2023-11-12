@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 from datetime import datetime
 
 from app.models.iteration import Iteration
+from app.models.monitored_model_chart import MonitoredModelInteractiveChart
 from app.models.prediction_data import PredictionData
 
 
@@ -24,6 +25,7 @@ class MonitoredModel(Document):
     - **pinned (bool)**: Monitored model pinned status.
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
     - **ml_model (str)**: ML model
+    - **interactive_charts (list[MonitoredModelInteractiveChart])**: Interactive charts
     - **created_at (datetime)**: Monitored model creation date.
     - **updated_at (datetime)**: Monitored model last update date.
     """
@@ -34,6 +36,9 @@ class MonitoredModel(Document):
     pinned: bool = Field(default=False, description="Model pinned status")
     predictions_data: Optional[list[PredictionData]] = Field(default=[], description="Predictions data")
     ml_model: Optional[str] = Field(default=None, description="Loaded ml model")
+    interactive_charts: Optional[list[MonitoredModelInteractiveChart]] = Field(default=[], description="Interactive "
+                                                                                                       "charts")
+    interactive_charts_existed: Optional[set[tuple[str, Optional[str], Optional[str]]]] = Field(default=set(), description="Interactive charts existed pairs of columns")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
