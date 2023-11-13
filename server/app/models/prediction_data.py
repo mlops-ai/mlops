@@ -12,11 +12,13 @@ class PredictionData(BaseModel):
     - **prediction_date (datetime)**: Prediction date.
     - **input_data (dict)**: Input data.
     - **prediction (Union[float, int])**: Prediction.
+    - **actual (Union[float, int])**: Actual.
     """
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     prediction_date: datetime = Field(default_factory=datetime.now)
     input_data: dict
     prediction: Union[float, int]
+    actual: Union[float, int] = Field(default=None)
 
     def __repr__(self) -> str:
         return f"<PredictionData {self.prediction_date} {self.input_data} {self.prediction}>"
@@ -34,3 +36,21 @@ class PredictionData(BaseModel):
 
     class Settings:
         name = "PredictionData"
+
+
+class UpdatePredictionData(BaseModel):
+    """
+    Update prediction data model.
+
+    Attributes:
+    - **actual (Union[float, int])**: actual prediction value.
+    """
+
+    actual: Union[float, int] = Field(default=None)
+
+    class Config:
+        schema_extra = {
+                    "example": {
+                        "actual": 0.5
+                    }
+                }
