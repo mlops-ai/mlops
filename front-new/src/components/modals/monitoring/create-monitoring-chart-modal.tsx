@@ -70,10 +70,12 @@ const formSchema = z
                 "scatter",
                 "scatter_with_histograms",
                 "timeseries",
+                "classification_metrics",
+                "regression_metrics",
             ],
             { required_error: "Chart type is required." }
         ),
-        first_column: z.string({ required_error: "Column field is required." }),
+        first_column: z.string({ required_error: "Column field is required." }).optional(),
         second_column: z.string().optional(),
         bin_method: z
             .enum([
@@ -352,6 +354,20 @@ const CreateMonitoringChartModal = () => {
                                                     value="timeseries"
                                                 >
                                                     Timeseries
+                                                </SelectItem>
+                                                <SelectItem
+                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                                    key="classification_metrics"
+                                                    value="classification_metrics"
+                                                >
+                                                    Classification metrics
+                                                </SelectItem>
+                                                <SelectItem
+                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                                    key="regression_metrics"
+                                                    value="regression_metrics"
+                                                >
+                                                    Regression metrics
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>

@@ -18,19 +18,19 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
     
     const { theme } = useTheme();
     const monitoringCharts = useMemo(() => {
-        // if (!modelData.monitoring_charts) return [];
-        let monitoring_charts: MonitoringChartSchema[] = [];
+        if (!modelData.monitoring_charts) return [];
+        // let monitoring_charts: MonitoringChartSchema[] = [];
 
-        if (!modelData.monitoring_charts) {
-            monitoring_charts = [
-                {
-                    id: "test",
-                    chart_type: MonitoringChartType.CLASSIFICATION_METRICS,
-                } as MonitoringChartSchema,
-            ]
-        }
+        // if (!modelData.monitoring_charts) {
+        //     monitoring_charts = [
+        //         {
+        //             id: "test",
+        //             chart_type: MonitoringChartType.CLASSIFICATION_METRICS,
+        //         } as MonitoringChartSchema,
+        //     ]
+        // }
         
-        return monitoring_charts.map((chart) => {
+        return modelData.monitoring_charts.map((chart) => {
             return (
                 <MonitoringChart
                     key={chart.id}

@@ -33,6 +33,8 @@ const Histogram = ({
             .map((row: Prediction) => row.prediction)
             .sort((a: number, b: number) => a - b);
     }
+    let minValue = data[0];
+    let maxValue = data[data.length - 1];
     let histogramData;
 
     switch (chart_schema.bin_method) {
@@ -60,12 +62,16 @@ const Histogram = ({
             break;
     }
 
+    console.log(histogramData);
+
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
             <ReactEcharts
                 option={histogramOptions(
                     histogramData,
                     chart_schema.first_column as string,
+                    minValue,
+                    maxValue,
                     theme
                 )}
                 theme="customed"
