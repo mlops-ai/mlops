@@ -160,3 +160,10 @@ def monitored_model_chart_changing_columns_exception():
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Cannot change columns for existing chart."
     )
+
+
+def monitored_model_prediction_not_found_exception():
+    return HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Monitored model prediction with such id not found."
+    )

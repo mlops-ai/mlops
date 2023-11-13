@@ -3,6 +3,7 @@ import os
 from httpx import AsyncClient
 
 from app.database.init_mongo_db import drop_database
+from app.models.monitored_model_chart import MonitoredModelInteractiveChart
 
 
 @pytest.mark.asyncio
@@ -1024,7 +1025,6 @@ async def test_create_monitored_model_scatter_chart_failure(client: AsyncClient)
     assert response.json()["detail"] == f"First column and second column must be different for chart type \'scatter\'."
 
 
-
 @pytest.mark.asyncio
 async def test_create_monitored_model_scatter_with_histograms_chart(client: AsyncClient):
     """
@@ -1119,7 +1119,6 @@ async def test_create_monitored_model_histogram_chart_failure_1(client: AsyncCli
     """
     monitored_model_name = "Engine failure prediction model v8"
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
-    print(response.json())
     assert response.status_code == 200
 
     monitored_model_id = response.json()["_id"]
@@ -1199,3 +1198,112 @@ async def test_delete_monitored_model_chart(client: AsyncClient):
     response = await client.delete(f"/monitored-models/{monitored_model_id}/charts/{chart_id}")
     assert response.status_code == 200
 
+
+@pytest.mark.asyncio
+async def test_add_chart_not_defined_in_schema(client: AsyncClient):
+    """
+    Test add chart not defined in schema.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "not_defined_in_schema"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 400
+    assert response.json()["detail"] == f"Chart type must be one of {MonitoredModelInteractiveChart.Settings.chart_types}"
+
+
+@pytest.mark.asyncio
+async def test_update_actual_value_in_prediction(client: AsyncClient):
+    """
+    Test update actual value in prediction.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    monitored_model_id = response.json()["_id"]
+
+    prediction_id = response.json()["predictions_data"][0]["id"]
+
+    updated_prediction = {
+        "actual": 10.0
+    }
+
+    response = await client.put(f"monitored-models/{monitored_model_id}/predictions/{prediction_id}", json=updated_prediction)
+    assert response.status_code == 200
+    assert response.json()["actual"] == updated_prediction["actual"]
+
+
+
+@pytest.mark.asyncio
+async def test_create_chart_with_actual_value(client: AsyncClient):
+    """
+    Test create chart with actual value.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter",
+        "first_column": "actual",
+        "second_column": "prediction"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 6
+
+
+@pytest.mark.asyncio
+async def test_delete_actual_value_for_prediction(client: AsyncClient):
+    """
+    Test delete actual value for prediction.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    monitored_model_id = response.json()["_id"]
+
+    prediction_id = response.json()["predictions_data"][0]["id"]
+
+    await client.delete(f"monitored-models/{monitored_model_id}/predictions/{prediction_id}/actual")
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert response.json()["predictions_data"][0]["actual"] is None

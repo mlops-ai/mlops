@@ -26,6 +26,7 @@ class MonitoredModel(Document):
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
     - **ml_model (str)**: ML model
     - **interactive_charts (list[MonitoredModelInteractiveChart])**: Interactive charts
+    - **interactive_charts_existed (set[tuple[str, Optional[str], Optional[str]]])**: Interactive charts existed pairs of columns
     - **created_at (datetime)**: Monitored model creation date.
     - **updated_at (datetime)**: Monitored model last update date.
     """
