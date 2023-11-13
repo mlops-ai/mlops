@@ -3,6 +3,8 @@ import { histogramTooltipFormatter } from "@/lib/utils";
 export const histogramOptions = (
     bins: any,
     col: string,
+    minValue: number,
+    maxValue: number,
     theme: "dark" | "light" | "system"
 ) => {
     return {
@@ -48,6 +50,8 @@ export const histogramOptions = (
             name: "bins",
             nameLocation: "center",
             nameGap: 25,
+            // min: Math.floor(minValue),
+            // max: Math.ceil(maxValue),
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -102,9 +106,9 @@ export const histogramOptions = (
             },
         ],
         grid: {
-            left: "5%",
-            right: "5%",
-            bottom: "6%",
+            // left: "5%",
+            // right: "5%",
+            // bottom: "6%",
             containLabel: true,
         },
     };
