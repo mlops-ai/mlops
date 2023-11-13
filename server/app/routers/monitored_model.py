@@ -1,7 +1,7 @@
 import base64
 
 import pandas as pd
-from typing import List
+from typing import List, Union
 import pickle
 from datetime import datetime
 from beanie import PydanticObjectId
@@ -10,7 +10,7 @@ from fastapi import APIRouter, status
 from app.models.iteration import Iteration
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
 from app.models.monitored_model_chart import MonitoredModelInteractiveChart
-from app.models.prediction_data import PredictionData
+from app.models.prediction_data import PredictionData, UpdatePredictionData
 from app.models.project import Project
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
@@ -26,7 +26,7 @@ from app.routers.exceptions.monitored_model import monitored_model_not_found_exc
     monitored_model_chart_bad_bin_method_type_exception, monitored_model_chart_columns_different_values_exception, \
     monitored_model_bad_values_exception, monitored_model_chart_not_found_exception, \
     monitored_model_chart_existing_pair_of_columns_of_chart_type_exception, \
-    monitored_model_chart_changing_columns_exception
+    monitored_model_chart_changing_columns_exception, monitored_model_prediction_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
 
 monitored_model_router = APIRouter()
@@ -366,6 +366,63 @@ async def monitored_model_predict(id: PydanticObjectId, data: list[dict]) -> lis
 
     return predictions_data
 
+
+@monitored_model_router.put('/{id}/predictions/{prediction_id}', response_model=PredictionData, status_code=status.HTTP_200_OK)
+async def monitored_model_set_actual_prediction_value(id: PydanticObjectId, prediction_id: PydanticObjectId, updated_prediction: UpdatePredictionData) -> PredictionData:
+    """
+    Set actual prediction value.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **prediction_id (str)**: Prediction id.
+
+    Returns:
+    - **PredictionData**: Updated prediction.
+    """
+
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    prediction = next((prediction for prediction in monitored_model.predictions_data if prediction.id == prediction_id), None)
+    if not prediction:
+        monitored_model_prediction_not_found_exception()
+
+    prediction.actual = updated_prediction.actual
+    await monitored_model.save()
+
+    return prediction
+
+
+@monitored_model_router.delete('/{id}/predictions/{prediction_id}/actual', response_model=PredictionData, status_code=status.HTTP_200_OK)
+async def monitored_model_delete_prediction_actual(id: PydanticObjectId, prediction_id: PydanticObjectId) -> PredictionData:
+    """
+    Delete actual prediction value.
+
+    Args:
+    - **id (str)**: Monitored model id
+    - **prediction_id (str)**: Prediction id.
+
+    Returns:
+    - **PredictionData**: Updated prediction.
+    """
+
+    monitored_model = await MonitoredModel.get(id)
+
+    if not monitored_model:
+        raise monitored_model_not_found_exception()
+
+    prediction = next((prediction for prediction in monitored_model.predictions_data if prediction.id == prediction_id), None)
+    if not prediction:
+        monitored_model_prediction_not_found_exception()
+
+    prediction.actual = None
+    await monitored_model.save()
+
+    return prediction
+
+
 @monitored_model_router.post('/{id}/charts', response_model=MonitoredModelInteractiveChart,
                              status_code=status.HTTP_201_CREATED)
 async def add_chart_to_monitored_model(id: PydanticObjectId,
@@ -388,8 +445,8 @@ async def add_chart_to_monitored_model(id: PydanticObjectId,
     if not monitored_model.predictions_data:
         raise monitored_model_has_no_predictions_data_exception()
 
-    data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction} for prediction in
-                         monitored_model.predictions_data])
+    data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction, 'actual': prediction.actual} for
+                         prediction in monitored_model.predictions_data])
 
     if (chart.chart_type, chart.first_column, chart.second_column) in monitored_model.interactive_charts_existed:
         raise monitored_model_chart_existing_pair_of_columns_of_chart_type_exception(chart.chart_type,

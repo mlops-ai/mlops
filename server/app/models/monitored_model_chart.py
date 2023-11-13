@@ -7,6 +7,15 @@ from fastapi import HTTPException, status
 class MonitoredModelInteractiveChart(BaseModel):
     """
     Interactive chart model for monitored models.
+
+    Attributes:
+    - **id (PydanticObjectId)**: Interactive chart id.
+    - **monitored_model_id (PydanticObjectId)**: Monitored model id.
+    - **chart_type (str)**: Chart type.
+    - **first_column (str)**: First column name.
+    - **second_column (Optional[str])**: Second column name.
+    - **bin_method (Optional[str])**: Bin method.
+    - **bin_number (Optional[int])**: Bin number.
     """
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     monitored_model_id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="monitored_model_id")
