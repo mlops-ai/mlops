@@ -72,6 +72,7 @@ const LinePlotCompare = ({
 
     return (
         <ReactEcharts
+            style={{ height: "400px" }}
             option={linePlotCompareOptions(
                 theme,
                 series_data,

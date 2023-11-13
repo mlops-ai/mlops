@@ -12,6 +12,7 @@ interface TabItemProps {
 const TabItem = ({ title, Icon, param, value }: TabItemProps) => {
     const [searchParams, setSearchParams] = useSearchParams({
         archived: "false",
+        charts: "false",
     });
 
     const isActive = searchParams.get(param) === value;
@@ -26,6 +27,11 @@ const TabItem = ({ title, Icon, param, value }: TabItemProps) => {
             onClick={() =>
                 setSearchParams(
                     (prev) => {
+                        if (param === "charts") {
+                            prev.delete("archived");
+                        } else {
+                            prev.delete("charts");
+                        }
                         prev.set(param, value);
                         return prev;
                     },

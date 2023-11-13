@@ -41,7 +41,7 @@ export const scatterPlotCompareOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
@@ -73,7 +73,7 @@ export const scatterPlotCompareOptions = (
             type: "value",
             name: y_label,
             nameLocation: "center",
-            nameGap: 30,
+            nameGap: 20,
             min: minValue,
             max: maxValue,
             axisLabel: {
@@ -83,6 +83,7 @@ export const scatterPlotCompareOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
+                onZero: false,
             },
             splitLine: {
                 lineStyle: {
@@ -102,7 +103,17 @@ export const scatterPlotCompareOptions = (
         },
         grid: {
             show: true,
+            bottom: "30%",
         },
+        dataZoom: [
+            {
+                bottom: 40,
+                type: "inside",
+                start: 0,
+                end: 100,
+            },
+            { bottom: 40, start: 0, end: 100 },
+        ],
         series: series,
     };
 };

@@ -30,9 +30,7 @@ const Experiments = () => {
 
     const data = useData();
 
-    const [projectData, setProjectData] = useState<null | undefined | Project>(
-        null
-    );
+    const [projectData, setProjectData] = useState<null | Project>(null);
 
     useEffect(() => {
         // console.log("dp", data.projects);
@@ -42,8 +40,13 @@ const Experiments = () => {
             );
 
             if (!foundProject) {
-                // console.log("test");
-                setProjectData(undefined);
+                return navigate(
+                    `/projects${
+                        searchParams.get("ne") !== "default"
+                            ? `?ne=${searchParams.get("ne")}`
+                            : ""
+                    }`
+                );
             } else {
                 const experiments_ids = foundProject.experiments.map(
                     (experiment) => experiment.id
@@ -128,7 +131,7 @@ const Experiments = () => {
         }
         return [];
     }, [data.projects, projectData]);
-    
+
     // console.log(activeExperiments);
 
     const handleCheckboxChange = (experiment_id: string) => {
@@ -220,16 +223,6 @@ const Experiments = () => {
             });
         }
     };
-
-    if (projectData === undefined) {
-        return navigate(
-            `/projects${
-                searchParams.get("ne") !== "default"
-                    ? `?ne=${searchParams.get("ne")}`
-                    : ""
-            }`
-        );
-    }
 
     if (projectData === null) {
         return (

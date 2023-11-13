@@ -13,6 +13,7 @@ import { Model } from "@/types/model";
 import Cycle from "../icons/cycle";
 import { Dataset } from "@/types/dataset";
 import { Database } from "lucide-react";
+import { Model as ModelIcon } from "../icons";
 
 interface SearchItemData {
     project?: ProjectData;
@@ -235,12 +236,22 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                     <CommandItem
                         className="flex items-center justify-between w-full cursor-pointer"
                         key={data.model._id}
+                        onSelect={() => {
+                            handleClose();
+                            return navigate(
+                                `/models/${data.model?._id}/monitoring${
+                                    searchParams.get("ne") !== "default"
+                                        ? `?ne=${searchParams.get("ne")}`
+                                        : ""
+                                }`
+                            );
+                        }}
                     >
                         <div
                             className="flex items-center mr-3"
                             key={data.model._id}
                         >
-                            <AiOutlineExperiment className="flex-shrink-0 mr-2" />{" "}
+                            <ModelIcon className="flex-shrink-0 mr-2" />{" "}
                             {data.model.model_name}
                         </div>
                         <div className="flex items-center gap-x-1">

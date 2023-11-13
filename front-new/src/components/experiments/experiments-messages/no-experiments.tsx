@@ -14,7 +14,7 @@ const NoExperiments = ({ projectData }: NoExperimentsProps) => {
     const { onOpen } = useModal();
 
     return (
-        <div className="flex flex-col items-center justify-center w-full m-16">
+        <div className="flex flex-col items-center justify-center w-full my-16">
             <AiOutlineExperiment className="flex-grow-0 flex-shrink-0 w-16 h-16 text-mlops-primary-tx dark:text-mlops-primary-tx-dark" />
             <p className="mt-3 mb-1 text-xl font-semibold text-center text-mlops-gray dark:text-zinc-400">
                 Nothing to show.

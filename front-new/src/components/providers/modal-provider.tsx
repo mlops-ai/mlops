@@ -6,20 +6,33 @@ import {
     DeleteProjectModal,
     ArchiveRestoreProjectModal,
 } from "@/components/modals/projects";
-import CreateExperimentModal from "@/components/modals/experiments/create-experiment-modal";
-import DeleteExperimentModal from "@/components/modals/experiments/delete-experiment-modal";
-import EditExperimentModal from "@/components/modals/experiments/edit-experiment-modal";
-import EditIterationModal from "../modals/iterations/edit-iteration-modal";
-import DeleteIterationsModal from "../modals/iterations/delete-iterations-modal";
-import DeleteModelModal from "../modals/models/delete-model-modal";
-import CreateEmptyModelModal from "../modals/models/create-empty-model-modal";
-import EditModelModal from "../modals/models/edit-model-modal";
-import ArchiveRestoreModelModal from "../modals/models/archive-restore-model-modal";
-import CreateModelFromIterationModal from "../modals/models/create-model-from-iteration-modal";
-import CreateDatasetModal from "../modals/datasets/create-dataset-modal";
-import EditDatasetModal from "../modals/datasets/edit-dataset-modal";
-import DeleteDatasetModal from "../modals/datasets/delete-dataset-modal";
-import ArchiveRestoreDatasetModal from "../modals/datasets/archive-restore-dataset-modal";
+
+import {
+    CreateExperimentModal,
+    EditExperimentModal,
+    DeleteExperimentModal,
+} from "@/components/modals/experiments";
+
+import {
+    EditIterationModal,
+    DeleteIterationsModal,
+} from "@/components/modals/iterations";
+
+import {
+    CreateEmptyModelModal,
+    CreateModelFromIterationModal,
+    DeleteModelModal,
+    EditModelModal,
+    ArchiveRestoreModelModal,
+} from "@/components/modals/models";
+
+import {
+    CreateDatasetModal,
+    EditDatasetModal,
+    DeleteDatasetModal,
+    ArchiveRestoreDatasetModal,
+} from "@/components/modals/datasets";
+import CreateMonitoringChartModal from "../modals/monitoring/create-monitoring-chart-modal";
 
 const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     return (
@@ -47,6 +60,8 @@ const ModalProvider = ({ children }: { children: React.ReactNode }) => {
             <DeleteModelModal />
             <EditModelModal />
             <ArchiveRestoreModelModal />
+
+            <CreateMonitoringChartModal />
         </>
     );
 };

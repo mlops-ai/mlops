@@ -70,6 +70,7 @@ const ScatterPlot = ({
 
     return (
         <ReactEcharts
+            style={{ height: "400px" }}
             option={scatterPlotOptions(
                 theme,
                 series_data,

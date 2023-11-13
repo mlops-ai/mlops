@@ -45,17 +45,17 @@ export const linePlotOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
-            trigger: "axis"
+            trigger: "axis",
         },
         xAxis: {
             type: x_axis_type,
             name: x_label ? x_label : "",
             nameLocation: "center",
-            nameGap: 30,
+            nameGap: 20,
             min: min_x ? min_x : minValue,
             max: max_x ? max_x : maxValue,
             axisLabel: {
@@ -86,6 +86,7 @@ export const linePlotOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
+                onZero: false,
             },
             splitLine: {
                 lineStyle: {
@@ -105,7 +106,17 @@ export const linePlotOptions = (
         },
         grid: {
             show: true,
+            bottom: "30%",
         },
+        dataZoom: [
+            {
+                bottom: 40,
+                type: "inside",
+                start: 0,
+                end: 100,
+            },
+            { bottom: 40, start: 0, end: 100 },
+        ],
         series: series,
     };
 };

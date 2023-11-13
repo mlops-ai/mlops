@@ -28,7 +28,8 @@ export type ModalType =
     | "editModel"
     | "deleteModel"
     | "archiveModel"
-    | "restoreModel";
+    | "restoreModel"
+    | "createMonitoringChartModal";
 
 interface DeleteIterations {
     project_id: string;
@@ -43,6 +44,7 @@ interface ModalData {
     deleteIterations?: DeleteIterations;
     model?: Model;
     dataset?: Dataset;
+    baseFeatures?: string[];
 }
 
 interface ModalStore {

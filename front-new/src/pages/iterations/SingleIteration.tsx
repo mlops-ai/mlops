@@ -15,16 +15,6 @@ import { GoIterations } from "react-icons/go";
 import { VscProject } from "react-icons/vsc";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-// import * as echarts from "echarts";
-// import {
-//     TooltipComponent,
-//     GridComponent,
-//     LegendComponent,
-//     LegendScrollComponent,
-//     LegendPlainComponent,
-// } from "echarts/components";
-// import { BarChart } from "echarts/charts";
-// import { CanvasRenderer } from "echarts/renderers";
 import ReactEcharts from "echarts-for-react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { metricsChartOptionsGenerator } from "./single-iteration/metrics-chart-options";
@@ -170,7 +160,8 @@ const SingleIteration = () => {
                     metrics_chart_options = metricsChartOptionsGenerator(
                         theme,
                         metrics_names,
-                        series
+                        series,
+                        "Metrics Chart"
                     );
                 }
             }

@@ -21,8 +21,7 @@ import CopyModelIdMenuItem from "./model-card/model-menu/copy-model-id-menu-item
 import ModalModelMenuItem from "./model-card/model-menu/modal-model-menu-item";
 import { ModelStatus } from "@/types/types";
 import PinUnpinModelMenuItem from "./model-card/model-menu/pin-unpin-model-menu-item";
-import NavigateToModelIterationMenuItem
-    from "@/components/models/model-card/model-menu/navigate-to-model-iteration.tsx";
+import NavigateToModelIterationMenuItem from "@/components/models/model-card/model-menu/navigate-to-model-iteration.tsx";
 
 interface ModelCardProps {
     model: Model;
@@ -94,11 +93,15 @@ const ModelDropdownActions = ({ model, setLoading }: ModelCardProps) => {
                             model={model}
                             ItemType={DropdownMenuItem}
                         />
-                        <DropdownMenuSeparator />
-                        {model.iteration && <NavigateToModelIterationMenuItem
-                            model={model}
-                            ItemType={DropdownMenuItem}
-                        />}
+                        {model.iteration && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <NavigateToModelIterationMenuItem
+                                    model={model}
+                                    ItemType={DropdownMenuItem}
+                                />
+                            </>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </Tooltip>

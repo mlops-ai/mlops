@@ -41,17 +41,17 @@ export const linePlotCompareOptions = (
             },
             subtextStyle: {
                 fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#333",
+                color: theme === "dark" ? "#ffffffcc" : "#aaa",
             },
         },
         tooltip: {
-            trigger: "axis"
+            trigger: "axis",
         },
         xAxis: {
             type: x_axis_type,
             name: x_label,
             nameLocation: "center",
-            nameGap: 30,
+            nameGap: 20,
             min: minValue,
             max: maxValue,
             axisLabel: {
@@ -82,6 +82,7 @@ export const linePlotCompareOptions = (
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
                 },
+                onZero: false,
             },
             splitLine: {
                 lineStyle: {
@@ -101,7 +102,17 @@ export const linePlotCompareOptions = (
         },
         grid: {
             show: true,
+            bottom: "30%",
         },
+        dataZoom: [
+            {
+                bottom: 40,
+                type: "inside",
+                start: 0,
+                end: 100,
+            },
+            { bottom: 40, start: 0, end: 100 },
+        ],
         series: series,
     };
 };
