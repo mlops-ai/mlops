@@ -6,9 +6,9 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
+ENV NODE_OPTIONS="--max_old_space_size=8192"
 RUN npm run build
-RUN npm install -g serve
 
 EXPOSE 3000
 
-CMD ["serve", "-s", "build"]
+CMD ["npm", "run", "preview", "--", "--host"]
