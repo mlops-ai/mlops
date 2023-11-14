@@ -161,7 +161,6 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
     Returns:
     - **MonitoredModel**: Added monitored model.
     """
-
     unique_name = await is_name_unique(monitored_model.model_name)
     if not unique_name:
         raise monitored_model_name_not_unique_exception()
@@ -183,7 +182,8 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
                                                                                  monitored_model.id,
                                                                                  monitored_model.model_name)
         monitored_model.iteration = iteration_with_assigned_model
-        await update_ml_model_to_encoded_in_monitored_model(monitored_model.iteration, monitored_model.id)
+        encoded_ml_model = await update_ml_model_to_encoded_in_monitored_model(monitored_model.iteration)
+        monitored_model.ml_model = encoded_ml_model
 
     await monitored_model.save()
 
@@ -263,7 +263,8 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
             # Update monitored_model's iteration with the updated iteration
             updated_monitored_model.iteration = iteration_with_assigned_model
 
-        await update_ml_model_to_encoded_in_monitored_model(updated_monitored_model.iteration, monitored_model.id)
+        encoded_ml_model = await update_ml_model_to_encoded_in_monitored_model(updated_monitored_model.iteration)
+        updated_monitored_model.ml_model = encoded_ml_model
 
     updated_monitored_model.updated_at = datetime.now()
     await monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
@@ -605,8 +606,7 @@ async def update_assigned_model_in_iteration(iteration_to_found: Iteration, moni
     return iteration
 
 
-async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iteration,
-                                                        monitored_model_id: PydanticObjectId):
+async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iteration):
     """
     Util function for getting iteration and assigning to ml_model MonitoredModel parameter encoded pkl file.
 
@@ -630,13 +630,9 @@ async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iter
     if not iteration:
         raise iteration_not_found_exception()
 
-    monitored_model = await MonitoredModel.get(monitored_model_id)
-    if not monitored_model:
-        raise monitored_model_not_found_exception()
+    encoded_ml_model = await load_ml_model_from_file_and_encode(iteration.path_to_model)
 
-    monitored_model.ml_model = await load_ml_model_from_file_and_encode(iteration.path_to_model)
-
-    await monitored_model.save()
+    return encoded_ml_model
 
 
 async def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
@@ -650,12 +646,14 @@ async def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
         ml_model: Encoded ml model.
     """
     try:
-        # Open and read the pkl file in binary mode
-        with open(pkl_file_path, 'rb') as file:
-            encoded_model = file.read()
+        # Load the model from the file
+        ml_model = pickle.load(open(pkl_file_path, 'rb'))
 
-        # Set the encoded model to the ml_model property
-        ml_model = base64.b64encode(encoded_model).decode("utf-8")
+        # Serialize the model
+        ml_model = pickle.dumps(ml_model)
+
+        # Encode the serialized model as base64
+        ml_model = base64.b64encode(ml_model).decode("utf-8")
 
         return ml_model
 
