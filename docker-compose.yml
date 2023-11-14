@@ -17,7 +17,7 @@ services:
 
   react:
     build:
-      context: ./front-end
+      context: ./client
       dockerfile: Dockerfile
     env_file:
       - .env
