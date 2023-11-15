@@ -5,7 +5,7 @@ from mlops.exceptions.monitoring import failed_to_set_active_model_exception
 import pandas as pd
 
 
-def get_model(model_name: str) -> dict:
+def get_model_by_name(model_name: str) -> dict:
     """
     Function for retrieving mlops monitored model from database
 
@@ -68,7 +68,7 @@ def set_active_model(model_name: str) -> str:
         Information about new active model setup
     """
     try:
-        model = get_model(model_name)
+        model = get_model_by_name(model_name)
     except Exception as e:
         raise failed_to_set_active_model_exception(e)
 
@@ -88,7 +88,7 @@ def predict(model_name: str, data: pd.DataFrame) -> dict:
     Returns:
         List of dictionaries containing results for each executed prediction
     """
-    model = get_model(model_name)
+    model = get_model_by_name(model_name)
 
     data_json = data.to_dict(orient="records")
 

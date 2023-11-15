@@ -3,6 +3,7 @@ import sys
 
 sys.path.append('../../server')
 sys.path.append('..')
+
 import pandas as pd
 import pytest
 
@@ -13,6 +14,7 @@ from server.app.database.init_mongo_db import drop_database
 from mlops.config.config import settings as lib_settings
 
 IN_GITHUB_ACTIONS = os.getenv('GITHUB_ACTIONS') == 'true'
+
 
 # Fixture to set up test environment
 @pytest.fixture(scope="module")
@@ -52,7 +54,7 @@ async def test_get_model(setup):
 
     model = mlops.monitoring.create_model(model_name='test_model')
 
-    response = mlops.monitoring.get_model(model_name='test_model')
+    response = mlops.monitoring.get_model_by_name(model_name='test_model')
 
     assert response['model_name'] == 'test_model'
 
@@ -158,6 +160,7 @@ async def test_predict_success(setup):
 
     assert prediction["input_data"] == data_dict[0]
 
+
 @pytest.mark.asyncio
 @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_failure(setup):
@@ -195,6 +198,7 @@ async def test_predict_failure(setup):
 
     assert str(exc_info.value) == "Request failed with status code 400: Cannot make prediction: could not " \
                                   "convert string to float: 'hello'"
+
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
@@ -236,7 +240,7 @@ async def test_predict_multiple_success(setup):
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
-async def test_predict_multiple_failure_incorect_data_types(setup):
+async def test_predict_multiple_failure_incorrect_data_types(setup):
     await drop_database()
 
     project = mlops.tracking.create_project(title='test_project')
@@ -300,6 +304,7 @@ async def test_create_monitored_model_with_iteration_in_another_model(setup):
 
     assert 'Request failed with status code 400: Iteration is assigned to monitored model.' in str(exc_info.value)
 
+
 @pytest.mark.asyncio
 @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_monitored_model_no_ml_model_to_encode(setup):
@@ -326,6 +331,7 @@ async def test_create_monitored_model_no_ml_model_to_encode(setup):
         failed_response = mlops.monitoring.create_model(model_name='test_model', iteration_dict=iteration_dict)
 
     assert 'Request failed with status code 400: Cannot encode pkl file: could not find MARK' in str(exc_info.value)
+
 
 @pytest.mark.asyncio
 async def test_create_monitored_model_no_ml_model_to_decode(setup):
