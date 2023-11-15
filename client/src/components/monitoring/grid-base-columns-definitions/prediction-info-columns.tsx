@@ -40,7 +40,7 @@ export const PredictionInfo = () => {
             filter: "agNumberColumnFilter",
         },
         {
-            field: "real_value",
+            field: "actual",
             headerName: "Real Value",
             pinned: true,
             filter: "agNumberColumnFilter",

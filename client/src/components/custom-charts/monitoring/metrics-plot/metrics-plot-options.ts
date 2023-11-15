@@ -1,14 +1,11 @@
-import { maxValue, minValue, scatterPlotTooltipFormatter } from "@/lib/utils";
 import { Keyable } from "@/types/types";
 
-export const scatterPlotCompareOptions = (
+export const metricsChartOptionsGenerator = (
     theme: "dark" | "light" | "system",
+    metrics_names: string[],
     series: Keyable[],
-    x_axis_type: string,
-    x_label: string,
-    y_label: string,
-    title: string,
-    subtitle: string
+    onOpen: () => void,
+    title: string
 ) => {
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
@@ -30,62 +27,40 @@ export const scatterPlotCompareOptions = (
                     show: true,
                 },
                 saveAsImage: {},
+                myFeature: {
+                    show: true,
+                    title: 'Delete chart',
+                    icon: 'path://M304.615-160q-26.846 0-45.731-18.884Q240-197.769 240-224.615V-720h-40v-40h160v-30.77h240V-760h160v40h-40v495.385Q720-197 701.5-178.5 683-160 655.385-160h-350.77ZM680-720H280v495.385q0 10.769 6.923 17.692T304.615-200h350.77q9.23 0 16.923-7.692Q680-215.385 680-224.615V-720ZM392.307-280h40.001v-360h-40.001v360Zm135.385 0h40.001v-360h-40.001v360ZM280-720v520-520Z',
+                    iconStyle: {
+                        borderWidth: 0.25,
+                        color: '#ffffff',
+                    },
+                    onclick: () => onOpen(),
+                },
             },
         },
         title: {
             left: "center",
             text: title,
-            subtext: subtitle,
             textStyle: {
-                fontSize: 18,
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
-            subtextStyle: {
-                fontSize: 16,
-                color: theme === "dark" ? "#ffffffcc" : "#aaa",
-            },
         },
-        tooltip: {
-            trigger: "item",
-            formatter: scatterPlotTooltipFormatter,
-        },
+        tooltip: {},
         xAxis: {
-            type: x_axis_type,
-            name: x_label,
-            nameLocation: "center",
-            nameGap: 30,
-            min: minValue,
-            max: maxValue,
+            type: "category",
+            data: metrics_names,
             axisLabel: {
                 color: theme === "dark" ? "#ffffff" : "#666",
             },
             axisLine: {
                 lineStyle: {
                     color: theme === "dark" ? "#ffffff" : "#333",
-                },
-            },
-            splitLine: {
-                lineStyle: {
-                    color: theme === "dark" ? "#374151" : "#ccc",
                 },
             },
         },
         yAxis: {
             type: "value",
-            name: y_label,
-            nameLocation: "center",
-            nameGap: 20,
-            min: minValue,
-            max: maxValue,
-            axisLabel: {
-                color: theme === "dark" ? "#ffffff" : "#666",
-            },
-            axisLine: {
-                lineStyle: {
-                    color: theme === "dark" ? "#ffffff" : "#333",
-                },
-                onZero: false,
-            },
             splitLine: {
                 lineStyle: {
                     color: theme === "dark" ? "#374151" : "#ccc",
@@ -102,19 +77,6 @@ export const scatterPlotCompareOptions = (
                 color: theme === "dark" ? "#ffffff" : "#333",
             },
         },
-        grid: {
-            show: true,
-            bottom: "30%",
-        },
-        dataZoom: [
-            {
-                bottom: 40,
-                type: "inside",
-                start: 0,
-                end: 100,
-            },
-            { bottom: 40, start: 0, end: 100 },
-        ],
         series: series,
     };
 };

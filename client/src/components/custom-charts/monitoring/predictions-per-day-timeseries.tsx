@@ -32,6 +32,7 @@ const PredictionsPerDayTimeseries = ({
                     lastPredictionDate,
                     theme
                 )}
+                style={{ height: "400px"}}
                 theme="customed"
             />
         </div>

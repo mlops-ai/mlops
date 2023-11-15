@@ -3,11 +3,12 @@ import MonitoringChart from "./monitoring-chart";
 import { calculateClassificationMetrics } from "@/lib/utils";
 
 import ReactEcharts from "echarts-for-react";
-import { metricsChartOptionsGenerator } from "@/pages/iterations/single-iteration/metrics-chart-options";
+import { metricsChartOptionsGenerator } from "./metrics-plot/metrics-plot-options";
 
 interface MonitoringChartProps {
     chart_schema: MonitoringChart;
     predictionsData: Prediction[];
+    onOpen: () => void;
     theme: "dark" | "light" | "system";
 }
 
@@ -15,6 +16,7 @@ const metrics_names = ["Accuracy", "Precision", "Recall", "F-Score"];
 
 const ClassificationMetrics = ({
     predictionsData,
+    onOpen,
     theme,
 }: MonitoringChartProps) => {
     const metrics_values = calculateClassificationMetrics(predictionsData);
@@ -37,7 +39,8 @@ const ClassificationMetrics = ({
                     theme,
                     metrics_names,
                     series,
-                    "Classification Metrics"
+                    onOpen,
+                    "Classification metrics"
                 )}
                 theme="customed"
                 style={{ height: "400px" }}

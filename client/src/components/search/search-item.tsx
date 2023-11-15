@@ -266,7 +266,7 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                                             className="flex-shrink-0"
                                             style={{ width: "12px" }}
                                         />
-                                        <span>998</span>
+                                        <span>{data.model.predictions_data ? data.model.predictions_data.length : 0}</span>
                                     </Badge>
                                     <ul className="flex items-center">
                                         <li className="inline-flex items-center text-[13px]">

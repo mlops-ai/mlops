@@ -3,11 +3,12 @@ import MonitoringChart from "./monitoring-chart";
 import { calculateRegressionMetrics } from "@/lib/utils";
 
 import ReactEcharts from "echarts-for-react";
-import { metricsChartOptionsGenerator } from "@/pages/iterations/single-iteration/metrics-chart-options";
+import { metricsChartOptionsGenerator } from "./metrics-plot/metrics-plot-options";
 
 interface MonitoringChartProps {
     chart_schema: MonitoringChart;
     predictionsData: Prediction[];
+    onOpen: () => void;
     theme: "dark" | "light" | "system";
 }
 
@@ -15,6 +16,7 @@ const metrics_names = ["R2", "MSE", "RMSE", "MAE"];
 
 const RegressionMetrics = ({
     predictionsData,
+    onOpen,
     theme,
 }: MonitoringChartProps) => {
     const metrics_values = calculateRegressionMetrics(predictionsData);
@@ -33,7 +35,13 @@ const RegressionMetrics = ({
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
             <ReactEcharts
-                option={metricsChartOptionsGenerator(theme, metrics_names, series, "Regression Metrics")}
+                option={metricsChartOptionsGenerator(
+                    theme,
+                    metrics_names,
+                    series,
+                    onOpen,
+                    "Regression metrics"
+                )}
                 theme="customed"
                 style={{ height: "400px" }}
             />

@@ -12,10 +12,9 @@ import { Model } from "@/types/model";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import MonitoringWrapper from "@/components/monitoring/monitoring-wrapper";
+import ModelNoPredictions from "@/components/monitoring/model/model-messages/model-no-predictions";
 
 const Monitoring = () => {
-    console.log("Monitoring");
-
     const navigate = useNavigate();
 
     const { model_id } = useParams();
@@ -81,7 +80,13 @@ const Monitoring = () => {
 
     const monitoringContent = () => {
         if (modelData && modelData.iteration) {
-            return <MonitoringWrapper modelData={modelData} />;
+            if (
+                modelData.predictions_data &&
+                modelData.predictions_data.length > 0
+            ) {
+                return <MonitoringWrapper modelData={modelData} />;
+            }
+            return <ModelNoPredictions />;
         }
         return <ModelIsEmpty />;
     };

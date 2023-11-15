@@ -7,4 +7,5 @@ export interface Prediction {
     input_data: Keyable;
     prediction: number;
     real_value?: number;
+    actual?: number;
 }

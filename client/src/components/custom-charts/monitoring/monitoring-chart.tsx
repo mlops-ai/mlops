@@ -12,6 +12,7 @@ interface MonitoringChartProps {
     type: MonitoringChartType;
     chart_schema: MonitoringChart;
     predictionsData: Prediction[];
+    onOpen: () => void;
     theme: "dark" | "light" | "system";
 }
 
@@ -29,13 +30,17 @@ const MonitoringChart = ({
     type,
     chart_schema,
     predictionsData,
+    onOpen,
     theme,
 }: MonitoringChartProps) => {
+
     const ChartComponent = ChartMap[type];
+
     return (
         <ChartComponent
             chart_schema={chart_schema}
             predictionsData={predictionsData}
+            onOpen={onOpen}
             theme={theme}
         />
     );

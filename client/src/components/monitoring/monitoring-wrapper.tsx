@@ -8,7 +8,6 @@ import {
 } from "./treeselect-base-columns-definitions/treeselect-base-columns";
 import { TreeSelectBaseNodesExpanded } from "./treeselect-base-columns-definitions/treeselect-base-nodes-expanded";
 
-import { predictions } from "@/test-data/predictions_new";
 import { PredictionInfo } from "./grid-base-columns-definitions/prediction-info-columns";
 import { defaultColDef } from "./grid-base-columns-definitions/default-col-def";
 import { Model } from "@/types/model";
@@ -29,7 +28,9 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
     const treeselect = useTreeselect();
     const grid = useGrid();
 
-    const [searchParams, setSearchParams] = useSearchParams({
+    console.log(modelData);
+
+    const [searchParams] = useSearchParams({
         charts: "false",
     });
 
@@ -41,8 +42,7 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
     useEffect(() => {
         let rowData;
 
-        // rowData = model.predictions_data;
-        rowData = predictions;
+        rowData = modelData.predictions_data;
 
         let TreeSelectBaseColumnsOptionsAll: any = JSON.parse(
             JSON.stringify(TreeSelectBaseColumnsOptions)
