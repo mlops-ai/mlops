@@ -1,16 +1,16 @@
 import os
 import sys
 
-import pandas as pd
-import pytest
 sys.path.append('../../server')
 sys.path.append('..')
+import pandas as pd
+import pytest
 
 import mlops.tracking
 import mlops.monitoring
-from mlops.config.config import settings as lib_settings
 from server.app.config.config import settings as app_settings
 from server.app.database.init_mongo_db import drop_database
+from mlops.config.config import settings as lib_settings
 
 
 # Fixture to set up test environment
