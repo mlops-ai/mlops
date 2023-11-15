@@ -3,7 +3,7 @@ import sys
 
 import pandas as pd
 import pytest
-sys.path.append('../../back-end')
+sys.path.append('../../server')
 sys.path.append('..')
 
 import mlops.tracking
