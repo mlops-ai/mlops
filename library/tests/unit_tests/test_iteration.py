@@ -1,8 +1,8 @@
 import pytest
 
 import mlops.tracking
-from app.config.config import settings as app_settings
-from app.database.init_mongo_db import drop_database
+from server.app.config.config import settings as app_settings
+from server.app.database.init_mongo_db import drop_database
 from mlops.src.iteration import Iteration
 
 
