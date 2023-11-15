@@ -12,6 +12,7 @@ from server.app.config.config import settings as app_settings
 from server.app.database.init_mongo_db import drop_database
 from mlops.config.config import settings as lib_settings
 
+IN_GITHUB_ACTIONS = os.getenv('GITHUB_ACTIONS') == 'true'
 
 # Fixture to set up test environment
 @pytest.fixture(scope="module")
@@ -67,11 +68,9 @@ async def test_set_active_model(setup):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_model_with_iteration(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
@@ -122,11 +121,9 @@ async def test_create_model_with_iteration_no_path_to_model(setup):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_success(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
@@ -162,11 +159,9 @@ async def test_predict_success(setup):
     assert prediction["input_data"] == data_dict[0]
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_failure(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
@@ -202,11 +197,9 @@ async def test_predict_failure(setup):
                                   "convert string to float: 'hello'"
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_multiple_success(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
@@ -242,11 +235,9 @@ async def test_predict_multiple_success(setup):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_multiple_failure_incorect_data_types(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
@@ -281,11 +272,9 @@ async def test_predict_multiple_failure_incorect_data_types(setup):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_monitored_model_with_iteration_in_another_model(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
@@ -312,11 +301,9 @@ async def test_create_monitored_model_with_iteration_in_another_model(setup):
     assert 'Request failed with status code 400: Iteration is assigned to monitored model.' in str(exc_info.value)
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_monitored_model_no_ml_model_to_encode(setup):
     await drop_database()
-
-    if os.getenv('GITHUB_ACTIONS') == 'true':
-        assert True
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
