@@ -19,14 +19,6 @@ const CountPlot = ({
     theme,
 }: MonitoringChartProps) => {
     let data: number[] = [];
-    
-    if (chart_schema.first_column !== "prediction") {
-        data = predictionsData.map(
-            (row: Prediction) => row.input_data[chart_schema.first_column as string]
-        );
-    } else {
-        data = predictionsData.map((row: Prediction) => row.prediction);
-    }
 
     switch (chart_schema.first_column) {
         case "prediction":

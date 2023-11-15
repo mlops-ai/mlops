@@ -17,7 +17,7 @@ const Scatter = ({
     onOpen,
     theme,
 }: MonitoringChartProps) => {
-    let data: any[] = [];
+    let data: any[];
 
     let firstColumn: any[] = [];
     let secondColumn: any[] = [];

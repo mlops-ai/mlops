@@ -26,7 +26,7 @@ const Histogram = ({
     theme,
 }: MonitoringChartProps) => {
 
-    let data: number[] = [];
+    let data: number[];
 
     switch (chart_schema.first_column) {
         case "prediction":

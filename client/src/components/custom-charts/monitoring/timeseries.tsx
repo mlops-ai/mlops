@@ -17,20 +17,7 @@ const Timeseries = ({
     onOpen,
     theme,
 }: MonitoringChartProps) => {
-    let data: any = [];
-
-    if (chart_schema.first_column !== "prediction") {
-        data = predictionsData
-            .map((row) => [
-                new Date(row.prediction_date),
-                row.input_data[chart_schema.first_column as string],
-            ])
-            .sort((a: any, b: any) => a[0] - b[0]);
-    } else {
-        data = predictionsData
-            .map((row) => [new Date(row.prediction_date), row.prediction])
-            .sort((a: any, b: any) => a[0] - b[0]);
-    }
+    let data: any;
 
     switch (chart_schema.first_column) {
         case "prediction":
