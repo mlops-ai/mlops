@@ -866,6 +866,7 @@ async def test_create_two_monitored_model_to_one_iteration(client: AsyncClient):
         "model_status": "active",
         "iteration": iteration_to_model_1
     }
+
     response = await client.post("/monitored-models/", json=monitored_model_2)
     assert response.status_code == 400
     assert response.json()["detail"] == "Iteration is assigned to monitored model."
