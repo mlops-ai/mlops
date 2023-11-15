@@ -24,9 +24,9 @@ const ModelInfo = ({ model }: ModelInfoProps) => {
             );
         }
         return (
-            <div className="flex items-center">
+            <div className="flex items-center font-bold">
                 <GoIterations className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-secondary-tx dark:text-[#D5D5D5]" />
-                <span className="text-sm font-semibold">
+                <span className="text-normal">
                     Based on model from{" "}
                     <a
                         className="italic cursor-pointer hover:underline"

@@ -331,9 +331,32 @@ const SingleIteration = () => {
                         <DataTableContent>
                             <DataTableRow>
                                 <td scope="row" className="px-6 py-4">
-                                    {iterationData.path_to_model !== ""
-                                        ? iterationData.path_to_model
-                                        : "-"}
+                                    {iterationData.assigned_monitored_model_id &&
+                                    iterationData.assigned_monitored_model_name ? (
+                                        <a
+                                            href={`/models/${
+                                                iterationData.assigned_monitored_model_id
+                                            }/monitoring${
+                                                searchParams.get("ne") !==
+                                                "default"
+                                                    ? `?ne=${searchParams.get(
+                                                          "ne"
+                                                      )}`
+                                                    : ""
+                                            }`}
+                                            className="hover:underline text-[#0d6efd]"
+                                        >
+                                            {
+                                                iterationData.assigned_monitored_model_name
+                                            }
+                                        </a>
+                                    ) : iterationData.path_to_model ? (
+                                        <span>
+                                            {iterationData.path_to_model}
+                                        </span>
+                                    ) : (
+                                        "-"
+                                    )}
                                 </td>
                             </DataTableRow>
                         </DataTableContent>
@@ -342,27 +365,49 @@ const SingleIteration = () => {
 
                 <div className="flex flex-col gap-2">
                     <h5 className="text-xl font-semibold">Dataset details</h5>
-                    {iterationData.dataset ? (
-                        <DataTableContainer>
-                            <DataTableHeader
-                                cols={["Dataset Name", "Dataset Version"]}
-                            />
-                            <DataTableContent>
-                                <DataTableRow>
-                                    <td scope="row" className="px-6 py-4">
-                                        {iterationData.dataset.name}
-                                    </td>
-                                    <td scope="row" className="px-6 py-4">
-                                        {iterationData.dataset.version !== ""
-                                            ? iterationData.dataset.version
-                                            : "-"}
-                                    </td>
-                                </DataTableRow>
-                            </DataTableContent>
-                        </DataTableContainer>
-                    ) : (
-                        <p>No dataset details to show.</p>
-                    )}
+                    <DataTableContainer>
+                        <DataTableHeader
+                            cols={["Dataset Name", "Dataset Version"]}
+                        />
+                        <DataTableContent>
+                            <DataTableRow>
+                                {iterationData.dataset ? (
+                                    <>
+                                        <td scope="row" className="px-6 py-4">
+                                            <a
+                                                href={`/datasets${
+                                                    searchParams.get("ne") !==
+                                                    "default"
+                                                        ? `?ne=${searchParams.get(
+                                                              "ne"
+                                                          )}`
+                                                        : ""
+                                                }#${iterationData.dataset.id}`}
+                                                className="hover:underline text-[#0d6efd]"
+                                            >
+                                                {iterationData.dataset.name}
+                                            </a>
+                                        </td>
+                                        <td scope="row" className="px-6 py-4">
+                                            {iterationData.dataset.version !==
+                                            ""
+                                                ? iterationData.dataset.version
+                                                : "-"}
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td scope="row" className="px-6 py-4">
+                                            -
+                                        </td>
+                                        <td scope="row" className="px-6 py-4">
+                                            -
+                                        </td>
+                                    </>
+                                )}
+                            </DataTableRow>
+                        </DataTableContent>
+                    </DataTableContainer>
                 </div>
 
                 <div className="flex flex-col gap-2">

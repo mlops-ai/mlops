@@ -1044,7 +1044,7 @@ async def test_create_monitored_model_scatter_with_histograms_chart(client: Asyn
     monitored_model_id = response.json()["_id"]
 
     chart = {
-        "chart_type": "scatter with histograms",
+        "chart_type": "scatter_with_histograms",
         "first_column": "X2",
         "second_column": "prediction",
         "bin_method": "fixedNumber",

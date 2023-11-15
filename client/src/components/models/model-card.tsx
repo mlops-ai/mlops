@@ -6,12 +6,12 @@ import { Loading } from "@/components/icons";
 
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 
-import { Model } from "@/types/model";
 import ModelCardHeader from "./model-card/model-card-header";
 import ModelCardStatus from "./model-card/model-card-status";
 import ModelCardDescription from "./model-card/model-card-description";
 import ModelCardInfo from "./model-card/model-card-info";
 import ModelContextMenuContent from "./model-card/model-context-menu-content";
+import { Model } from "@/types/model";
 
 interface ModelCardProps {
     model: Model;
@@ -40,7 +40,7 @@ const ModelCard = ({ model }: ModelCardProps) => {
                             description={model.model_description}
                         />
                         <ModelCardInfo
-                            iteration={model.iteration}
+                            model={model}
                         />
                         {isLoading && (
                             <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-full h-full text-center backdrop-blur-[2px] rounded-md">

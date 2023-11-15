@@ -2,7 +2,7 @@ import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useData } from "@/hooks/use-data-hook";
 import { useModal } from "@/hooks/use-modal-hook";
 import { useForm } from "react-hook-form";
@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 
 import { backendConfig } from "@/config/backend";
 
-import { Check, ChevronsUpDown, PlusCircle, X } from "lucide-react";
-import { Loading, Monitoring } from "@/components/icons";
+import { X } from "lucide-react";
+import { Loading } from "@/components/icons";
 
 import {
     Dialog,
@@ -26,40 +26,15 @@ import {
 } from "@/components/ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import SectionSeparator from "@/components/navigation/section-separator";
 
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
-import { CommandList } from "cmdk";
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { Model } from "@/types/model";
+import { Keyable } from "@/types/types";
+import ChartTypeSelect from "./create-monitoring-chart-form/chart-type-select";
+import ColumnSelect from "./create-monitoring-chart-form/column-select";
+import BinMethodSelect from "./create-monitoring-chart-form/bin-method-select";
+import BinNumberInput from "./create-monitoring-chart-form/bin-number-input";
 
 const formSchema = z
     .object({
@@ -75,7 +50,7 @@ const formSchema = z
             ],
             { required_error: "Chart type is required." }
         ),
-        first_column: z.string({ required_error: "Column field is required." }).optional(),
+        first_column: z.string().optional(),
         second_column: z.string().optional(),
         bin_method: z
             .enum([
@@ -93,6 +68,50 @@ const formSchema = z
             })
             .optional(),
     })
+    .refine(
+        (data) => {
+            return !(
+                [
+                    "histogram",
+                    "countplot",
+                    "scatter_with_histograms",
+                    "timeseries",
+                    "scatter",
+                ].includes(data.chart_type) && !data.first_column
+            );
+        },
+        {
+            message: "This field is required.",
+            path: ["first_column"],
+        }
+    )
+    .refine(
+        (data) => {
+            return !(
+                ["scatter_with_histograms", "scatter"].includes(
+                    data.chart_type
+                ) && !data.second_column
+            );
+        },
+        {
+            message: "This field is required.",
+            path: ["second_column"],
+        }
+    )
+    .refine(
+        (data) => {
+            return !(
+                ["histogram", "scatter_with_histograms"].includes(
+                    data.chart_type
+                ) && !data.bin_method
+            );
+        },
+        {
+            message: "This field is required.",
+            path: ["bin_method"],
+        }
+    )
+
     .refine(
         (data) => {
             return !(
@@ -184,7 +203,7 @@ const CreateMonitoringChartModal = () => {
 
     const { url, port } = backendConfig;
 
-    const isModalOpen = isOpen && type === "createMonitoringChartModal";
+    const isModalOpen = isOpen && type === "createMonitoringChart";
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -202,33 +221,111 @@ const CreateMonitoringChartModal = () => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!data.model || !data.baseFeatures) return;
 
-        handleClose();
-        form.reset();
-        dataStore.updateModel(data.model._id, {
-            ...data.model,
-            monitoring_charts: [
-                ...(data.model.monitoring_charts || []),
-                values as MonitoringChart,
-            ],
-        });
+        let chartData: Keyable;
+
+        switch (values.chart_type) {
+            case "histogram":
+                chartData = {
+                    chart_type: values.chart_type,
+                    first_column: values.first_column as string,
+                    second_column: null,
+                    bin_method: values.bin_method,
+                    bin_number:
+                        values.bin_method === "fixedNumber"
+                            ? values.bin_number
+                            : null,
+                };
+                break;
+            case "countplot":
+            case "timeseries":
+                chartData = {
+                    chart_type: values.chart_type,
+                    first_column: values.first_column as string,
+                    second_column: null,
+                    bin_method: null,
+                    bin_number: null,
+                };
+                break;
+            case "scatter":
+                chartData = {
+                    chart_type: values.chart_type,
+                    first_column: values.first_column as string,
+                    second_column: values.second_column as string,
+                    bin_method: null,
+                    bin_number: null,
+                };
+                break;
+            case "scatter_with_histograms":
+                chartData = {
+                    chart_type: values.chart_type,
+                    first_column: values.first_column as string,
+                    second_column: values.second_column as string,
+                    bin_method: values.bin_method,
+                    bin_number:
+                        values.bin_method === "fixedNumber"
+                            ? values.bin_number
+                            : null,
+                };
+                break;
+            case "classification_metrics":
+            case "regression_metrics":
+                chartData = {
+                    chart_type: values.chart_type,
+                    first_column: null,
+                    second_column: null,
+                    bin_method: null,
+                    bin_number: null,
+                };
+                break;
+        }
+
+        await axios
+            .post(
+                `${url}:${port}/monitored-models/${data.model._id}/charts`,
+                chartData
+            )
+            .then((res) => {
+                handleClose();
+                form.reset();
+                dataStore.updateModel(
+                    data.model?._id as string,
+                    {
+                        ...data.model,
+                        interactive_charts: [
+                            ...data.model!.interactive_charts,
+                            res.data,
+                        ],
+                    } as Model
+                );
+
+                createToast({
+                    id: "create-monitoring-chart",
+                    message: "Monitoring chart created successfully!",
+                    type: "success",
+                });
+            })
+            .catch((error: any) => {
+                createToast({
+                    id: "create-monitoring-chart",
+                    message: error.response?.data.detail,
+                    type: "error",
+                });
+            });
     };
 
-    const [open, setOpen] = useState(false);
-    const [open2, setOpen2] = useState(false);
+    const [openChartTypeSelect, setOpenChartTypeSelect] = useState(false);
+    const [openFirstColumnSelect, setOpenFirstColumnSelect] = useState(false);
+    const [openSecondColumnSelect, setOpenSecondColumnSelect] = useState(false);
+    const [openBinMethodSelect, setOpenBinMethodSelect] = useState(false);
 
-    const handleCloseCommand = () => {
+    const handleCloseSelect = (
+        open: boolean,
+        setOpen: Dispatch<SetStateAction<boolean>>
+    ) => {
         if (open) {
             setOpen(false);
         } else {
             setOpen(true);
-        }
-    };
-
-    const handleCloseCommand2 = () => {
-        if (open2) {
-            setOpen2(false);
-        } else {
-            setOpen2(true);
         }
     };
 
@@ -245,30 +342,67 @@ const CreateMonitoringChartModal = () => {
     };
 
     const onInteractOutside = (e: any) => {
-        if (isLoading || toast.isActive("create-model-from-iteration")) {
+        if (isLoading || toast.isActive("create-monitoring-chart")) {
             e.preventDefault();
         }
     };
 
     if (!isModalOpen) return null;
 
-    // const isFormDisabled = () => {
-    //     if (form.getValues().existing_model !== "") {
-    //         return false;
-    //     }
-    //     if (isLoading || !form.formState.isDirty) {
-    //         return true;
-    //     }
-    //     return false;
-    // };
+    const isFormDisabled = () => {
+        const formValues = form.getValues();
+
+        if (!formValues.chart_type) return true;
+
+        if (
+            [
+                "histogram",
+                "countplot",
+                "scatter_with_histograms",
+                "timeseries",
+                "scatter",
+            ].includes(formValues.chart_type) &&
+            !formValues.first_column
+        )
+            return true;
+
+        if (
+            ["scatter_with_histograms", "scatter"].includes(
+                formValues.chart_type
+            ) &&
+            !formValues.second_column
+        )
+            return true;
+
+        if (
+            ["histogram", "scatter_with_histograms"].includes(
+                formValues.chart_type
+            ) &&
+            !formValues.bin_method
+        )
+            return true;
+
+        if (
+            ["histogram", "scatter_with_histograms"].includes(
+                formValues.chart_type
+            ) &&
+            formValues.bin_method === "fixedNumber" &&
+            (!formValues.bin_number || formValues.bin_number < 2)
+        )
+            return true;
+
+        return false;
+    };
 
     const baseFeatures = [
         ...(data.baseFeatures as string[]),
         "prediction",
+        "actual",
     ].filter((feature) => feature !== secondColumnValue);
     const baseFeatures2 = [
         ...(data.baseFeatures as string[]),
         "prediction",
+        "actual",
     ].filter((feature) => feature !== firstColumnValue);
 
     return (
@@ -296,83 +430,12 @@ const CreateMonitoringChartModal = () => {
                             onSubmit={form.handleSubmit(onSubmit)}
                             className="py-2"
                         >
-                            <FormField
-                                name="chart_type"
-                                control={form.control}
-                                render={({ field }) => (
-                                    <FormItem className="px-4 mb-2">
-                                        <FormLabel className="font-semibold text-md">
-                                            Chart type
-                                        </FormLabel>
-                                        <Select
-                                            disabled={isLoading}
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            {...field}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx">
-                                                    <SelectValue placeholder="Select chart type ..." />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <FormDescription>
-                                                Required (one of the options)
-                                            </FormDescription>
-                                            <FormMessage />
-                                            <SelectContent>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="histogram"
-                                                    value="histogram"
-                                                >
-                                                    Histogram
-                                                </SelectItem>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="countplot"
-                                                    value="countplot"
-                                                >
-                                                    Countplot
-                                                </SelectItem>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="scatter"
-                                                    value="scatter"
-                                                >
-                                                    Scatter
-                                                </SelectItem>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="scatter_with_histograms"
-                                                    value="scatter_with_histograms"
-                                                >
-                                                    Scatter with histograms
-                                                </SelectItem>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="timeseries"
-                                                    value="timeseries"
-                                                >
-                                                    Timeseries
-                                                </SelectItem>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="classification_metrics"
-                                                    value="classification_metrics"
-                                                >
-                                                    Classification metrics
-                                                </SelectItem>
-                                                <SelectItem
-                                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                    key="regression_metrics"
-                                                    value="regression_metrics"
-                                                >
-                                                    Regression metrics
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )}
+                            <ChartTypeSelect
+                                form={form}
+                                openChartTypeSelect={openChartTypeSelect}
+                                setOpenChartTypeSelect={setOpenChartTypeSelect}
+                                handleCloseSelect={handleCloseSelect}
+                                disabled={isLoading}
                             />
 
                             {/* HISTOGRAM - START */}
@@ -385,211 +448,34 @@ const CreateMonitoringChartModal = () => {
                                         </div>
                                         <SectionSeparator />
                                     </h2>
-                                    <FormField
-                                        control={form.control}
-                                        name="first_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    Column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open}
-                                                    onOpenChange={
-                                                        handleCloseCommand
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "first_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Histogram will be based on
-                                                    this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+
+                                    <ColumnSelect
+                                        form={form}
+                                        column="first_column"
+                                        baseFeatures={baseFeatures}
+                                        description="Histogram will be based on this column."
+                                        openColumnSelect={openFirstColumnSelect}
+                                        setOpenColumnSelect={
+                                            setOpenFirstColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
-                                    <FormField
-                                        name="bin_method"
-                                        control={form.control}
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="font-semibold text-md">
-                                                    Bin method
-                                                </FormLabel>
-                                                <Select
-                                                    disabled={isLoading}
-                                                    onValueChange={
-                                                        field.onChange
-                                                    }
-                                                    defaultValue={field.value}
-                                                    {...field}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx">
-                                                            <SelectValue placeholder="Select bin method ..." />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <FormDescription>
-                                                        Required (one of the
-                                                        options)
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                    <SelectContent>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="squareRoot"
-                                                            value="squareRoot"
-                                                        >
-                                                            Square root
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="freedmanDiaconis"
-                                                            value="freedmanDiaconis"
-                                                        >
-                                                            Freedman-Diaconis
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="scott"
-                                                            value="scott"
-                                                        >
-                                                            Scott
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="sturges"
-                                                            value="sturges"
-                                                        >
-                                                            Sturges
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="fixedNumber"
-                                                            value="fixedNumber"
-                                                        >
-                                                            Fixed number
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </FormItem>
-                                        )}
+
+                                    <BinMethodSelect
+                                        form={form}
+                                        openBinMethodSelect={
+                                            openBinMethodSelect
+                                        }
+                                        setOpenBinMethodSelect={
+                                            setOpenBinMethodSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
+
                                     {binMethodValue === "fixedNumber" && (
-                                        <FormField
-                                            name="bin_number"
-                                            control={form.control}
-                                            render={({ field }) => (
-                                                <FormItem className="px-4 mb-2">
-                                                    <FormLabel className="font-semibold text-md">
-                                                        Bin number
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx"
-                                                            disabled={isLoading}
-                                                            min={2}
-                                                            placeholder="Bin number ..."
-                                                            type="number"
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>
-                                                        Required (min. 2)
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        <BinNumberInput form={form} disabled={isLoading} />
                                     )}
                                 </>
                             )}
@@ -606,117 +492,18 @@ const CreateMonitoringChartModal = () => {
                                         </div>
                                         <SectionSeparator />
                                     </h2>
-                                    <FormField
-                                        control={form.control}
-                                        name="first_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    Column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open}
-                                                    onOpenChange={
-                                                        handleCloseCommand
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "first_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Countplot will be based on
-                                                    this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+
+                                    <ColumnSelect
+                                        form={form}
+                                        column="first_column"
+                                        baseFeatures={baseFeatures}
+                                        description="Countplot will be based on this column."
+                                        openColumnSelect={openFirstColumnSelect}
+                                        setOpenColumnSelect={
+                                            setOpenFirstColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
                                 </>
                             )}
@@ -733,229 +520,33 @@ const CreateMonitoringChartModal = () => {
                                         </div>
                                         <SectionSeparator />
                                     </h2>
-                                    <FormField
-                                        control={form.control}
-                                        name="first_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    First column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open}
-                                                    onOpenChange={
-                                                        handleCloseCommand
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select first column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "first_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Scatter will be based on
-                                                    this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+
+                                    <ColumnSelect
+                                        form={form}
+                                        column="first_column"
+                                        baseFeatures={baseFeatures}
+                                        description="Scatter will be based on this column."
+                                        openColumnSelect={openFirstColumnSelect}
+                                        setOpenColumnSelect={
+                                            setOpenFirstColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name="second_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    Second column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open2}
-                                                    onOpenChange={
-                                                        handleCloseCommand2
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures2?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures2?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures2?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select second column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures2?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "second_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand2();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Scatter will be based on
-                                                    this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+
+                                    <ColumnSelect
+                                        form={form}
+                                        column="second_column"
+                                        baseFeatures={baseFeatures2}
+                                        description="Scatter will be based on this column."
+                                        openColumnSelect={
+                                            openSecondColumnSelect
+                                        }
+                                        setOpenColumnSelect={
+                                            setOpenSecondColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
                                 </>
                             )}
@@ -972,323 +563,49 @@ const CreateMonitoringChartModal = () => {
                                         </div>
                                         <SectionSeparator />
                                     </h2>
-                                    <FormField
-                                        control={form.control}
-                                        name="first_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    Column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open}
-                                                    onOpenChange={
-                                                        handleCloseCommand
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "first_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Scatter and histogram will
-                                                    be based on this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+
+                                    <ColumnSelect
+                                        form={form}
+                                        column="first_column"
+                                        baseFeatures={baseFeatures}
+                                        description="Scatter and histograms will be based on this column."
+                                        openColumnSelect={openFirstColumnSelect}
+                                        setOpenColumnSelect={
+                                            setOpenFirstColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name="second_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    Second column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open2}
-                                                    onOpenChange={
-                                                        handleCloseCommand2
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures2?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures2?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures2?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select second column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures2?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "second_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand2();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Scatter and histogram will
-                                                    be based on this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+
+                                    <ColumnSelect
+                                        form={form}
+                                        column="second_column"
+                                        baseFeatures={baseFeatures2}
+                                        description="Scatter and histograms will be based on this column."
+                                        openColumnSelect={
+                                            openSecondColumnSelect
+                                        }
+                                        setOpenColumnSelect={
+                                            setOpenSecondColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
-                                    <FormField
-                                        name="bin_method"
-                                        control={form.control}
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="font-semibold text-md">
-                                                    Bin method
-                                                </FormLabel>
-                                                <Select
-                                                    disabled={isLoading}
-                                                    onValueChange={
-                                                        field.onChange
-                                                    }
-                                                    defaultValue={field.value}
-                                                    {...field}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx">
-                                                            <SelectValue placeholder="Select bin method ..." />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <FormDescription>
-                                                        Required (one of the
-                                                        options)
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                    <SelectContent>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="squareRoot"
-                                                            value="squareRoot"
-                                                        >
-                                                            Square root
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="freedmanDiaconis"
-                                                            value="freedmanDiaconis"
-                                                        >
-                                                            Freedman-Diaconis
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="scott"
-                                                            value="scott"
-                                                        >
-                                                            Scott
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="sturges"
-                                                            value="sturges"
-                                                        >
-                                                            Sturges
-                                                        </SelectItem>
-                                                        <SelectItem
-                                                            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                            key="fixedNumber"
-                                                            value="fixedNumber"
-                                                        >
-                                                            Fixed number
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </FormItem>
-                                        )}
+
+                                    <BinMethodSelect
+                                        form={form}
+                                        openBinMethodSelect={
+                                            openBinMethodSelect
+                                        }
+                                        setOpenBinMethodSelect={
+                                            setOpenBinMethodSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
+
                                     {binMethodValue === "fixedNumber" && (
-                                        <FormField
-                                            name="bin_number"
-                                            control={form.control}
-                                            render={({ field }) => (
-                                                <FormItem className="px-4 mb-2">
-                                                    <FormLabel className="font-semibold text-md">
-                                                        Bin number
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx"
-                                                            disabled={isLoading}
-                                                            min={2}
-                                                            placeholder="Bin number ..."
-                                                            type="number"
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>
-                                                        Required (min. 2)
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        <BinNumberInput form={form} disabled={isLoading} />
                                     )}
                                 </>
                             )}
@@ -1305,117 +622,17 @@ const CreateMonitoringChartModal = () => {
                                         </div>
                                         <SectionSeparator />
                                     </h2>
-                                    <FormField
-                                        control={form.control}
-                                        name="first_column"
-                                        render={({ field }) => (
-                                            <FormItem className="px-4 mb-2">
-                                                <FormLabel className="block font-semibold text-md">
-                                                    Column
-                                                </FormLabel>
-                                                <Popover
-                                                    open={open}
-                                                    onOpenChange={
-                                                        handleCloseCommand
-                                                    }
-                                                >
-                                                    <PopoverTrigger
-                                                        asChild
-                                                        disabled={
-                                                            baseFeatures?.length ===
-                                                            0
-                                                        }
-                                                    >
-                                                        <FormControl>
-                                                            <Button
-                                                                variant="outline"
-                                                                role="combobox"
-                                                                className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
-                                                            >
-                                                                {baseFeatures?.length ===
-                                                                0
-                                                                    ? "No columns available ..."
-                                                                    : field.value
-                                                                    ? baseFeatures?.find(
-                                                                          (
-                                                                              baseFeature: string
-                                                                          ) =>
-                                                                              baseFeature ===
-                                                                              field.value
-                                                                      )
-                                                                    : "Select column ..."}
-                                                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="p-0">
-                                                        <Command
-                                                            filter={(
-                                                                value,
-                                                                search
-                                                            ) => {
-                                                                if (
-                                                                    value.includes(
-                                                                        search
-                                                                    )
-                                                                )
-                                                                    return 1;
-                                                                return 0;
-                                                            }}
-                                                        >
-                                                            <CommandInput placeholder="Search for column ..." />
-                                                            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
-                                                                <CommandEmpty>
-                                                                    No columns
-                                                                    found.
-                                                                </CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {baseFeatures?.map(
-                                                                        (
-                                                                            baseFeature: string
-                                                                        ) => (
-                                                                            <CommandItem
-                                                                                value={
-                                                                                    baseFeature
-                                                                                }
-                                                                                key={
-                                                                                    baseFeature
-                                                                                }
-                                                                                onSelect={() => {
-                                                                                    form.setValue(
-                                                                                        "first_column",
-                                                                                        baseFeature
-                                                                                    );
-                                                                                    handleCloseCommand();
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        "mr-2 h-4 w-4",
-                                                                                        baseFeature ===
-                                                                                            field.value
-                                                                                            ? "opacity-100"
-                                                                                            : "opacity-0"
-                                                                                    )}
-                                                                                />
-                                                                                {
-                                                                                    baseFeature
-                                                                                }
-                                                                            </CommandItem>
-                                                                        )
-                                                                    )}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <FormDescription>
-                                                    Timeseries will be based on
-                                                    this column.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+                                    <ColumnSelect
+                                        form={form}
+                                        column="first_column"
+                                        baseFeatures={baseFeatures}
+                                        description="Timeseries will be based on this column."
+                                        openColumnSelect={openFirstColumnSelect}
+                                        setOpenColumnSelect={
+                                            setOpenFirstColumnSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
                                     />
                                 </>
                             )}
@@ -1425,9 +642,17 @@ const CreateMonitoringChartModal = () => {
                             <SectionSeparator />
                             <DialogFooter className="px-4 pt-4 pb-2">
                                 <Button
+                                    variant="mlopsDanger"
+                                    onClick={() => form.reset()}
+                                    type="reset"
+                                    disabled={isLoading}
+                                >
+                                    Reset form
+                                </Button>
+                                <Button
                                     variant="mlopsPrimary"
                                     type="submit"
-                                    // disabled={isFormDisabled()}
+                                    disabled={isFormDisabled() || isLoading}
                                 >
                                     <Loading
                                         className={cn(
@@ -1435,7 +660,7 @@ const CreateMonitoringChartModal = () => {
                                             isLoading && "inline"
                                         )}
                                     />
-                                    Create model
+                                    Create chart
                                 </Button>
                             </DialogFooter>
                         </form>

@@ -1,20 +1,24 @@
 import Cycle from "@/components/icons/cycle";
 import Timeline from "@/components/icons/timeline";
-import { numberBetween } from "@/lib/utils";
-import { Iteration } from "@/types/iteration";
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { Model } from "@/types/model";
 import moment from "moment-timezone";
 import { GoIterations } from "react-icons/go";
-import {useSearchParams} from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 interface ModelCardInfoProps {
-    iteration?: Iteration;
+    model: Model;
 }
 
-const ModelCardInfo = ({ iteration }: ModelCardInfoProps) => {
-
+const ModelCardInfo = ({ model }: ModelCardInfoProps) => {
     const [searchParams] = useSearchParams();
     const IterationBlock = () => {
-        if (!iteration) {
+        if (!model.iteration) {
             return (
                 <div className="flex items-center">
                     <GoIterations className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-secondary-tx dark:text-[#D5D5D5]" />
@@ -29,42 +33,72 @@ const ModelCardInfo = ({ iteration }: ModelCardInfoProps) => {
                 <GoIterations className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-secondary-tx dark:text-[#D5D5D5]" />
                 <span className="text-sm font-semibold">
                     Based on model from{" "}
-                    <a
-                        className="italic cursor-pointer hover:underline"
-                        href={`/projects/${iteration.project_id}/experiments/${iteration.experiment_id}/iterations/${iteration.id}${
-                            searchParams.get("ne") !== "default"
-                                ? `?ne=${searchParams.get("ne")}`
-                                : ""
-                        }`}
-                    >
-                        {iteration.iteration_name}
-                    </a>{" "}
+                    <ContextMenu>
+                        <ContextMenuTrigger>
+                            <a
+                                className="italic cursor-pointer hover:underline"
+                                href={`/projects/${
+                                    model.iteration.project_id
+                                }/experiments/${
+                                    model.iteration.experiment_id
+                                }/iterations/${model.iteration.id}${
+                                    searchParams.get("ne") !== "default"
+                                        ? `?ne=${searchParams.get("ne")}`
+                                        : ""
+                                }`}
+                            >
+                                {model.iteration.iteration_name}
+                            </a>{" "}
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                            <ContextMenuItem>
+                                <a
+                                    href={`/projects/${
+                                        model.iteration.project_id
+                                    }/experiments/${
+                                        model.iteration.experiment_id
+                                    }/iterations/${model.iteration.id}${
+                                        searchParams.get("ne") !== "default"
+                                            ? `?ne=${searchParams.get("ne")}`
+                                            : ""
+                                    }`}
+                                    target="_blank"
+                                    className="flex items-center w-100"
+                                >
+                                    <GoIterations className="flex-shrink-0 w-5 h-5 mr-2 dark:text-[#D5D5D5]" />
+                                    Open iteration view in new tab
+                                </a>
+                            </ContextMenuItem>
+                        </ContextMenuContent>
+                    </ContextMenu>{" "}
                     iteration.
                 </span>
             </div>
         );
     };
 
-    const hasPredictionHistory = Math.random() < 0.5;
-    const predictionHistory = numberBetween(0, 3);
-
     const PredictionHistoryBlock = () => {
-        if (iteration) {
-            if (hasPredictionHistory && predictionHistory > 0) {
+        if (model.iteration) {
+            if (model.predictions_data && model.predictions_data.length > 0) {
                 return (
                     <>
                         <div className="flex items-center mb-2">
                             <Cycle className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-secondary-tx dark:text-[#D5D5D5]" />
                             <span className="text-sm font-semibold">
-                                {predictionHistory} historical prediction
-                                {predictionHistory > 1 ? "s" : ""}
+                                {model.predictions_data.length} historical
+                                prediction
+                                {model.predictions_data.length > 1 ? "s" : ""}
                             </span>
                         </div>
                         <div className="flex items-center">
                             <Timeline className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-secondary-tx dark:text-[#D5D5D5]" />
                             <span className="text-sm font-semibold">
                                 Last prediction on{" "}
-                                {moment(Date.now()).format("DD.MM.YYYY, HH:mm")}
+                                {moment(
+                                    model.predictions_data[
+                                        model.predictions_data.length - 1
+                                    ].prediction_date
+                                ).format("DD.MM.YYYY, HH:mm")}
                             </span>
                         </div>
                     </>
@@ -80,11 +114,6 @@ const ModelCardInfo = ({ iteration }: ModelCardInfoProps) => {
                 );
             }
         }
-        //     return <span className="text-sm text-zinc-400">0 experiments</span>
-        // } else if (experimentsCount === 1) {
-        //     return <span className="text-sm font-semibold">1 experiment</span>
-        // }
-        // return <span className="text-sm font-semibold">{experimentsCount} experiments</span>
     };
 
     return (

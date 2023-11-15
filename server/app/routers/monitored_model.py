@@ -762,7 +762,7 @@ def validate_chart(chart: MonitoredModelInteractiveChart, data: pd.DataFrame) ->
             raise monitored_model_chart_bad_bin_method_type_exception(chart.chart_type)
         if chart.bin_number is not None:
             raise monitored_model_chart_bad_bin_number_type_exception(chart.chart_type)
-    elif chart.chart_type == 'scatter with histograms':
+    elif chart.chart_type == 'scatter_with_histograms':
         if not pd.api.types.is_numeric_dtype(data[chart.first_column]) or not pd.api.types.is_numeric_dtype(data[chart.second_column]):
             raise monitored_model_chart_column_bad_type_exception(chart.chart_type, 'numeric', 'first_column or second_column')
         if chart.first_column == chart.second_column:

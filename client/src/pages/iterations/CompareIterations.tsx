@@ -156,15 +156,21 @@ const CompareIterations = () => {
         imageCharts,
     ] = useMemo(() => {
         if (iterationsData) {
+            console.log(iterationsData);
+
             let ids: string[] = [];
-            let iterations_names: string[] = [];
-            let experiments_names: string[] = [];
+            let iterations_names: Keyable = {
+                names: [],
+                links: [],
+                anchors: [],
+            };
+            let experiments_names: any[] = [];
             let created_dates: string[] = [];
             let run_by: string[] = [];
 
-            let models_paths: string[] = [];
+            let models_paths: any[] = [];
 
-            let datasets_names: string[] = [];
+            let datasets_names: any[] = [];
             let datasets_versions: string[] = [];
 
             let parameters: any[] = [];
@@ -179,22 +185,79 @@ const CompareIterations = () => {
 
             iterationsData.iterations.forEach((iteration: Iteration) => {
                 ids.push(iteration.id);
-                iterations_names.push(iteration.iteration_name);
-                experiments_names.push(iteration.experiment_name);
+                iterations_names.names.push(iteration.iteration_name);
+                iterations_names.links.push(
+                    `/projects/${iteration.project_id}/experiments/${
+                        iteration.experiment_id
+                    }/iterations/${iteration.id}${
+                        searchParams.get("ne") !== "default"
+                            ? `?ne=${searchParams.get("ne")}`
+                            : ""
+                    }`
+                );
+                experiments_names.push(
+                    <a
+                        href={`/projects/${project_id}/experiments?experiments=${
+                            iteration.experiment_id
+                        }${
+                            searchParams.get("ne") !== "default"
+                                ? `&ne=${searchParams.get("ne")}`
+                                : ""
+                        }`}
+                        className="hover:underline text-[#0d6efd]"
+                    >
+                        {iteration.experiment_name}
+                    </a>
+                );
                 created_dates.push(
-                    moment(iteration.created_at).format("DD.MM.YYYY, HH:mm")
+                    moment(iteration.created_at).format("DD.MM.YYYY, HH:mm:ss")
                 );
                 run_by.push(iteration.user_name);
 
-                models_paths.push(
+                if (
+                    iteration.assigned_monitored_model_id &&
+                    iteration.assigned_monitored_model_name
+                ) {
+                    models_paths.push(
+                        <a
+                            href={`/models/${
+                                iteration.assigned_monitored_model_id
+                            }/monitoring${
+                                searchParams.get("ne") !== "default"
+                                    ? `?ne=${searchParams.get("ne")}`
+                                    : ""
+                            }`}
+                            className="hover:underline text-[#0d6efd]"
+                        >
+                            {iteration.assigned_monitored_model_name}
+                        </a>
+                    );
+                } else if (
+                    iteration.path_to_model &&
                     iteration.path_to_model !== ""
-                        ? iteration.path_to_model
-                        : "-"
-                );
+                ) {
+                    models_paths.push(<span>{iteration.path_to_model}</span>);
+                } else {
+                    models_paths.push(<span>-</span>);
+                }
 
                 datasets_names.push(
-                    iteration.dataset ? iteration.dataset.name : "-"
+                    iteration.dataset ? (
+                        <a
+                            href={`/datasets${
+                                searchParams.get("ne") !== "default"
+                                    ? `?ne=${searchParams.get("ne")}`
+                                    : ""
+                            }#${iteration.dataset.id}`}
+                            className="hover:underline text-[#0d6efd]"
+                        >
+                            {iteration.dataset.name}
+                        </a>
+                    ) : (
+                        "-"
+                    )
                 );
+
                 datasets_versions.push(
                     iteration.dataset && iteration.dataset.version !== ""
                         ? iteration.dataset.version
@@ -216,7 +279,21 @@ const CompareIterations = () => {
             /**
              * Find iterations with duplicated names and add number to the end of the name.
              */
-            iterations_names = addDuplicateNumber(iterations_names);
+            iterations_names.names = addDuplicateNumber(iterations_names.names);
+            iterations_names.anchors = iterations_names.names.map(
+                (iteration_name: string, index: number) => {
+                    return (
+                        <a
+                            href={iterations_names.links[index]}
+                            className="hover:underline text-[#0d6efd]"
+                        >
+                            {iteration_name}
+                        </a>
+                    );
+                }
+            );
+
+            console.log(iterations_names);
 
             /**
              * Prepare parameters data
@@ -303,7 +380,7 @@ const CompareIterations = () => {
                     const series: Keyable[] = metricsValuesArraysTransposed.map(
                         (values: any, index: number) => {
                             return {
-                                name: iterations_names[index],
+                                name: iterations_names.names[index],
                                 data: values,
                                 type: "bar",
                                 emphasis: {
@@ -332,7 +409,7 @@ const CompareIterations = () => {
                     ) {
                         return {
                             interactive_charts: iteration.interactive_charts,
-                            iteration_name: iterations_names[index],
+                            iteration_name: iterations_names.names[index],
                         };
                     }
                     return { interactive_charts: [], iteration_name: "" };
@@ -431,7 +508,7 @@ const CompareIterations = () => {
                             imageChartsCountCumsum.push(imageChartsCount);
                             return {
                                 charts: filtered_charts,
-                                iteration_name: iterations_names[index],
+                                iteration_name: iterations_names.names[index],
                             };
                         }
                         return { charts: [], iteration_name: "" };
@@ -517,7 +594,7 @@ const CompareIterations = () => {
         }
 
         return [null, null, null, null, null, null, [], null];
-    }, [iterationsData, theme]);
+    }, [iterationsData, theme, searchParams]);
 
     if (!data.projects || !iterationsData) {
         return (
@@ -609,7 +686,8 @@ const CompareIterations = () => {
                             <DataTableRowWithHeader
                                 header="Iteration Name"
                                 cells={
-                                    iterationsDetails?.iterations_names as string[]
+                                    iterationsDetails?.iterations_names
+                                        .anchors as any[]
                                 }
                             />
                             <DataTableRowWithHeader
@@ -654,7 +732,15 @@ const CompareIterations = () => {
 
                 <div className="flex flex-col gap-2">
                     <h5 className="text-xl font-semibold">Datasets details</h5>
-                    <DataTableContainer refContainer={datasets_data}>
+                    <DataTableContainer
+                        refContainer={datasets_data}
+                        refs={[
+                            iterations_data,
+                            models_data,
+                            parameters_data,
+                            metrics_data,
+                        ]}
+                    >
                         <DataTableContent>
                             <DataTableRowWithHeader
                                 header="Dataset Name"

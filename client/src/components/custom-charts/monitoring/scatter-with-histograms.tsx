@@ -8,47 +8,96 @@ import {
 } from "@/lib/utils";
 import { scatterWithHistogramsOptions } from "./scatter-with-histograms/scatter-with-histograms-options";
 import { Prediction } from "@/types/prediction";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { BinMethods, MonitoringChart } from "@/types/monitoring_chart";
+import { Keyable } from "@/types/types";
 
 interface MonitoringChartProps {
     chart_schema: MonitoringChart;
     predictionsData: Prediction[];
+    onOpen: () => void;
     theme: "dark" | "light" | "system";
 }
 
 const ScatterWithHistograms = ({
     chart_schema,
     predictionsData,
+    onOpen,
     theme,
 }: MonitoringChartProps) => {
-    let firstColData: number[] = [];
-    let secondColData: number[] = [];
+    let firstColData: any[] = [];
+    let secondColData: any[] = [];
 
-    if (chart_schema.first_column !== "predicted_value") {
-        firstColData = predictionsData
-            .map((row: Prediction) => row.input_data[chart_schema.first_column as string])
-            .sort((a: number, b: number) => a - b);
-    } else {
-        firstColData = predictionsData
-            .map((row: Prediction) => row.prediction)
-            .sort((a: number, b: number) => a - b);
+    let filterArray: Keyable = {
+        column: "",
+        filter: [],
+    };
+
+    switch (chart_schema.first_column) {
+        case "prediction":
+            firstColData = predictionsData.map(
+                (row: Prediction) => row.prediction
+            );
+            break;
+
+        case "actual":
+            firstColData = predictionsData.map((row: Prediction) => row.actual);
+            filterArray.column = "first_column";
+            filterArray.filter = firstColData.map(
+                (value) => value !== null && value !== undefined
+            );
+            break;
+        default:
+            firstColData = predictionsData.map(
+                (row: Prediction) =>
+                    row.input_data[chart_schema.first_column as string]
+            );
+            break;
     }
 
-    if (chart_schema.second_column !== "predicted_value") {
-        secondColData = predictionsData
-            .map((row: Prediction) => row.input_data[chart_schema.second_column as string])
-            .sort((a: number, b: number) => a - b);
-    } else {
-        secondColData = predictionsData
-            .map((row: Prediction) => row.prediction)
-            .sort((a: number, b: number) => a - b);
+    switch (chart_schema.second_column) {
+        case "prediction":
+            secondColData = predictionsData.map(
+                (row: Prediction) => row.prediction
+            );
+            break;
+
+        case "actual":
+            secondColData = predictionsData.map(
+                (row: Prediction) => row.actual
+            );
+            filterArray.column = "second_column";
+            filterArray.filter = secondColData.map(
+                (value) => value !== null && value !== undefined
+            );
+            break;
+        default:
+            secondColData = predictionsData.map(
+                (row: Prediction) =>
+                    row.input_data[chart_schema.second_column as string]
+            );
+            break;
     }
 
-    const data = firstColData.map((value, index) => [
-        value,
-        secondColData[index],
-        predictionsData[index].prediction,
-    ]);
+    const data = firstColData
+        .map((_, index) => [
+            firstColData[index],
+            secondColData[index],
+            predictionsData[index].prediction,
+        ])
+        .filter((_, index) => filterArray.filter[index]);
+
+    firstColData = firstColData
+        .filter((_, index) => filterArray.column === 'first_column' ? filterArray.filter[index]: true)
+        .sort((a: number, b: number) => a - b);
+    secondColData = secondColData
+        .filter((_, index) => filterArray.column === 'second_column' ? filterArray.filter[index]: true)
+        .sort((a: number, b: number) => a - b);
+
+    let minValueFirstCol = firstColData[0];
+    let maxValueFirstCol = firstColData[firstColData.length - 1];
+
+    let minValueSecondCol = secondColData[0];
+    let maxValueSecondCol = secondColData[secondColData.length - 1];
 
     let firstColHistogramData;
     let secondColHistogramData;
@@ -85,8 +134,6 @@ const ScatterWithHistograms = ({
             break;
     }
 
-    console.log(data);
-
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
             <ReactEcharts
@@ -96,6 +143,12 @@ const ScatterWithHistograms = ({
                     secondColHistogramData,
                     chart_schema.first_column as string,
                     chart_schema.second_column as string,
+                    chart_schema.bin_method as BinMethods,
+                    minValueFirstCol,
+                    maxValueFirstCol,
+                    minValueSecondCol,
+                    maxValueSecondCol,
+                    onOpen,
                     theme
                 )}
                 style={{ height: "500px" }}

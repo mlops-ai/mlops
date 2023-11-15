@@ -10,6 +10,7 @@ export const boxPlotOptions = (
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
         toolbox: {
+            orient: "vertical",
             iconStyle: {
                 borderColor: theme === "dark" ? "#ffffff" : "#666",
             },
