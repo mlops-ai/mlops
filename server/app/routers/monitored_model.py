@@ -1,5 +1,4 @@
 import base64
-import os
 
 import pandas as pd
 from typing import List, Union
@@ -124,6 +123,7 @@ async def get_monitored_model_by_name(name: str) -> MonitoredModel:
     Returns:
     - **MonitoredModel**: Monitored model
     """
+
     monitored_model = await MonitoredModel.find_one(MonitoredModel.model_name == name)
     if not monitored_model:
         raise monitored_model_not_found_exception()
