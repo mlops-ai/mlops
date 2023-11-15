@@ -8,8 +8,8 @@ import base64
 
 import mlops.tracking
 from mlops.config.config import settings as lib_settings
-from app.config.config import settings as app_settings
-from app.database.init_mongo_db import drop_database
+from server.app.config.config import settings as app_settings
+from server.app.database.init_mongo_db import drop_database
 
 
 # Fixture to set up test environment
