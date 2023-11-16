@@ -29,7 +29,7 @@ const ScatterWithHistograms = ({
 
     let filterArray: Keyable = {
         column: "",
-        filter: [],
+        filter: Array.from({ length: predictionsData.length }, () => true),
     };
 
     switch (chart_schema.first_column) {
@@ -85,6 +85,8 @@ const ScatterWithHistograms = ({
             predictionsData[index].prediction,
         ])
         .filter((_, index) => filterArray.filter[index]);
+
+    console.log(data);
 
     firstColData = firstColData
         .filter((_, index) => filterArray.column === 'first_column' ? filterArray.filter[index]: true)
