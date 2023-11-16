@@ -8,12 +8,14 @@ front-end/coverage
 front-end/build
 front-end/package-lock.json
 
-front-new/dist
-front-new/node_modules
+client/dist
+client/node_modules
+client/package-lock.json
+
 # Docker
 /data
 # **/*.env
-# back-end/*.env
+# server/*.env
 
 # Notebooks
 /.ipynb_checkpoints

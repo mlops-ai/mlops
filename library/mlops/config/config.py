@@ -9,6 +9,7 @@ class Settings:
         self.url: str = "http://127.0.0.1:8000"
         self.active_project_id = None
         self.active_experiment_id = None
+        self.active_model: str = None
         self.user_name: str = self.get_username()
 
     @staticmethod
@@ -28,5 +29,7 @@ class Settings:
     def change_active_experiment(self, experiment_id: str):
         self.active_experiment_id = experiment_id
 
+    def change_active_model(self, model_name: str):
+        self.active_model = model_name
 
 settings = Settings()

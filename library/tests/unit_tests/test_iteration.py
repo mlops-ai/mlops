@@ -1,15 +1,15 @@
 import pytest
 
 import mlops.tracking
-from app.config.config import settings as app_settings
-from app.database.init_mongo_db import drop_database
+from server.app.config.config import settings as app_settings
+from server.app.database.init_mongo_db import drop_database
 from mlops.src.iteration import Iteration
 
 
 @pytest.fixture(scope="module")
 async def setup():
     if not app_settings.TESTING:
-        raise RuntimeError("Value of TESTING in ./back-end/.venv should be True")
+        raise RuntimeError("Value of TESTING in ./server/.venv should be True")
 
     await drop_database()
 

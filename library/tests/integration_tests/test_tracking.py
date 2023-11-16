@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append('../../back-end')
+
+sys.path.append('../../server')
 sys.path.append('..')
 
 import pytest
@@ -8,15 +9,15 @@ import base64
 
 import mlops.tracking
 from mlops.config.config import settings as lib_settings
-from app.config.config import settings as app_settings
-from app.database.init_mongo_db import drop_database
+from server.app.config.config import settings as app_settings
+from server.app.database.init_mongo_db import drop_database
 
 
 # Fixture to set up test environment
 @pytest.fixture(scope="module")
 async def setup():
     if not app_settings.TESTING:
-        raise RuntimeError("Value of TESTING in ./back-end/.venv should be True")
+        raise RuntimeError("Value of TESTING in ./server/.venv should be True")
 
     await drop_database()
 
@@ -136,7 +137,7 @@ async def test_create_dataset_success(setup):
     await drop_database()
 
     dataset = mlops.tracking.create_dataset(dataset_name='test_dataset', path_to_dataset='https://www.kaggle.com/c'
-                                                                                    '/titanic/download/train.csv')
+                                                                                         '/titanic/download/train.csv')
 
     assert dataset['dataset_name'] == 'test_dataset'
 
@@ -364,12 +365,14 @@ async def test_start_iteration_with_line_chart(setup):
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart_name="Chart 1", chart_type="line", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+        iteration.log_chart(chart_name="Chart 1", chart_type="line", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
+                            x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
+
 
 @pytest.mark.asyncio
 async def test_start_iteration_with_pie_chart(setup):
@@ -383,12 +386,14 @@ async def test_start_iteration_with_pie_chart(setup):
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+        iteration.log_chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
+                            x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
+
 
 @pytest.mark.asyncio
 async def test_start_iteration_with_bar_chart(setup):
@@ -402,12 +407,14 @@ async def test_start_iteration_with_bar_chart(setup):
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart_name="Chart 1", chart_type="bar", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+        iteration.log_chart(chart_name="Chart 1", chart_type="bar", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
+                            x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
+
 
 @pytest.mark.asyncio
 async def test_start_iteration_with_scatter_chart(setup):
@@ -421,12 +428,14 @@ async def test_start_iteration_with_scatter_chart(setup):
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart_name="Chart 1", chart_type="scatter", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+        iteration.log_chart(chart_name="Chart 1", chart_type="scatter", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
+                            x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
+
 
 @pytest.mark.asyncio
 async def test_start_iteration_with_box_chart(setup):
@@ -440,12 +449,15 @@ async def test_start_iteration_with_box_chart(setup):
         iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
-        iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3, 4, 5],[1, 2, 3, 4, 5],[1, 2, 3, 4, 5]],y_data_names=["1","2","3"], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+        iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]],
+                            y_data=[[1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5]], y_data_names=["1", "2", "3"],
+                            x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
     result = iteration.end_iteration()
 
     assert result['iteration_name'] == 'test_iteration'
     assert result['parameters'] == {'test_parameter': 100}
+
 
 @pytest.mark.asyncio
 async def test_start_iteration_with_box_chart_failed(setup):
@@ -460,11 +472,14 @@ async def test_start_iteration_with_box_chart_failed(setup):
             iteration.log_model_name('test_iteration.py')
             iteration.log_parameter('test_parameter', 100)
             iteration.log_metric('test_accuracy', 0.98)
-            iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+            iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
+                                x_label="Age", y_label="Survived", chart_title='test', comparable=False)
 
         result = iteration.end_iteration()
 
-    assert str(exc_info.value) == "Iteration not created. Request failed with status code 400: Error: For each element in x_data, there must be a list of y_data"
+    assert str(
+        exc_info.value) == "Iteration not created. Request failed with status code 400: Error: For each element in x_data, there must be a list of y_data"
+
 
 @pytest.mark.asyncio
 async def test_start_iteration_with_box_chart_failed_with_wrong_y_data_format(setup):
@@ -479,8 +494,11 @@ async def test_start_iteration_with_box_chart_failed_with_wrong_y_data_format(se
             iteration.log_model_name('test_iteration.py')
             iteration.log_parameter('test_parameter', 100)
             iteration.log_metric('test_accuracy', 0.98)
-            iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3],[1, 2, 3],[1, 2, 3]], x_label="Age", y_label="Survived", chart_title='test', comparable=False)
+            iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]],
+                                y_data=[[1, 2, 3], [1, 2, 3], [1, 2, 3]], x_label="Age", y_label="Survived",
+                                chart_title='test', comparable=False)
 
         result = iteration.end_iteration()
 
-    assert str(exc_info.value) == "Iteration not created. Request failed with status code 400: Length of y_data must contain 5 values: min, q1, median, q3, max"
+    assert str(
+        exc_info.value) == "Iteration not created. Request failed with status code 400: Length of y_data must contain 5 values: min, q1, median, q3, max"
