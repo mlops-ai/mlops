@@ -1,6 +1,7 @@
 import { Iteration } from "./iteration";
 import { MonitoringChart } from "./monitoring_chart";
-import { Keyable, ModelStatus } from "./types";
+import { Prediction } from "./prediction";
+import { ModelStatus } from "./types";
 
 export interface Model {
     _id: string;
@@ -12,12 +13,12 @@ export interface Model {
     iteration?: Iteration;
     pinned: boolean;
 
-    predictions_data: Keyable[];
-    ml_model: string;
+    predictions_data: Prediction[];
+    ml_model?: string;
+
+    interactive_charts: MonitoringChart[];
+    // interactive_charts_existed:
 
     created_at: Date;
     updated_at: Date;
-    last_prediction: Date;
-
-    monitoring_charts: MonitoringChart[];
 }

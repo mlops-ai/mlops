@@ -32,6 +32,9 @@ import {
 import NoPredictionsHistory from "./no-predictions-history";
 import { useModal } from "@/hooks/use-modal-hook";
 import { useData } from "@/hooks/use-data-hook";
+import axios from "axios";
+import { backendConfig } from "@/config/backend";
+import { createToast } from "@/lib/toast";
 
 interface MonitoringContainerProps {
     modelData: Model;
@@ -55,6 +58,8 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
     const [searchParams] = useSearchParams({
         ne: "default",
     });
+
+    const { url, port } = backendConfig;
 
     const [dateFilterState, setDateFilterState] = useState<string>("ALLTIME");
 
@@ -190,8 +195,37 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
         });
     }, []);
 
+    const updateActualValue = async (row: any) => {
+        await axios
+            .put(
+                `${url}:${port}/monitored-models/${modelData._id}/predictions/${row.id}`,
+                {
+                    actual: row.actual !== '' ? row.actual : null,
+                }
+            )
+            .then((res) => {
+
+                data.updatePrediction(modelData._id, row.id, res.data);
+
+                createToast({
+                    id: "update-actual-prediction-value",
+                    message: "Real value updated successfully!",
+                    type: "success",
+                });
+            })
+            .catch((error: any) => {
+                createToast({
+                    id: "update-actual-prediction-value",
+                    message: error.response?.data.detail,
+                    type: "error",
+                });
+            });
+    };
+
     const onCellValueChanged = useCallback((params: CellValueChangedEvent) => {
         if (!gridRef.current) return;
+
+        updateActualValue(params.data);
 
         gridRef.current!.api.applyTransaction({ update: [params.data] });
     }, []);
@@ -298,7 +332,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                         size="grid"
                         onClick={() => {
                             document.body.style.overflow = "hidden";
-                            onOpen("createMonitoringChartModal", {
+                            onOpen("createMonitoringChart", {
                                 model: modelData,
                                 baseFeatures: grid.baseFeatures,
                             });

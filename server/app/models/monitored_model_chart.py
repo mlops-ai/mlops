@@ -50,7 +50,7 @@ class MonitoredModelInteractiveChart(BaseModel):
 
     class Settings:
         name = "MonitoredModelInteractiveChart"
-        chart_types = ["histogram", "countplot", "scatter", "scatter with histograms", "timeseries",
+        chart_types = ["histogram", "countplot", "scatter", "scatter_with_histograms", "timeseries",
                        "regression_metrics", "classification_metrics"]
         bin_methods = ["squareRoot", "scott", "freedmanDiaconis", "sturges", "fixedNumber"]
 

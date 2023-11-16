@@ -43,6 +43,8 @@ interface DataStore {
     deleteModel: (model_id: string) => void;
     updateModel: (model_id: string, model: Model) => void;
 
+    deleteMonitoringChart: (model_id: string, chart_id: string) => void;
+
     updatePrediction: (
         model_id: string,
         prediction_id: string,
@@ -312,6 +314,7 @@ export const useData = create<DataStore>((set) => ({
             return { models: null };
         });
     },
+
     updateModel: (model_id: string, model: Model) => {
         set((state) => {
             if (state.models) {
@@ -327,6 +330,25 @@ export const useData = create<DataStore>((set) => ({
             return { models: null };
         });
     },
+
+    deleteMonitoringChart: (model_id: string, chart_id: string) => {
+        set((state) => {
+            if (state.models) {
+                const index = state.models.findIndex(
+                    (model) => model._id === model_id
+                );
+
+                if (index === -1) return state;
+
+                state.models[index].interactive_charts = state.models[
+                    index
+                ].interactive_charts.filter((chart) => chart.id !== chart_id);
+                return { models: [...state.models] };
+            }
+            return { models: null };
+        });
+    },
+
     updatePrediction: (
         model_id: string,
         prediction_id: string,

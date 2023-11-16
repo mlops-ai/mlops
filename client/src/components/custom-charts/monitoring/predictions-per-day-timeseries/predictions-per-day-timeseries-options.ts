@@ -9,6 +9,7 @@ export const predictionsPerDayTimeseriesOptions = (
     return {
         backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
         toolbox: {
+            orient: "vertical",
             iconStyle: {
                 borderColor: theme === "dark" ? "#ffffff" : "#666",
             },
@@ -20,6 +21,10 @@ export const predictionsPerDayTimeseriesOptions = (
                 },
                 brush: {
                     type: "polygon",
+                },
+                magicType: {
+                    show: true,
+                    type: ["line", "bar"],
                 },
                 restore: {
                     show: true,
@@ -107,6 +112,9 @@ export const predictionsPerDayTimeseriesOptions = (
             },
         },
         grid: {
+            top: "20%",
+            bottom: "14%",
+            containLabel: true,
             show: true,
         },
         series: {

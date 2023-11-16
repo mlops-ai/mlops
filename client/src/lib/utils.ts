@@ -2,6 +2,7 @@ import { Chart } from "@/types/chart";
 import { Dataset } from "@/types/dataset";
 import { Iteration } from "@/types/iteration";
 import { Model } from "@/types/model";
+import { MonitoringChart } from "@/types/monitoring_chart";
 import { Prediction } from "@/types/prediction";
 import { Project } from "@/types/project";
 import { Keyable } from "@/types/types";
@@ -315,7 +316,7 @@ export const scatterPlotTooltipFormatter2 = (args: any) => {
     return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
         args.data[0],
         args.data[1],
-    ].join(", ")})<br />predicted_value: ${args.data[2]}`;
+    ].join(", ")})<br />prediction: ${args.data[2]}`;
 };
 
 export const groupCustomCharts = (charts: Chart[]) => {
@@ -420,17 +421,13 @@ export const getParameterTypes = (objects: Keyable[]) => {
 };
 
 export const generateHistogramData = (values: number[], numBins: number) => {
-    // Znajdź minimum i maksimum wśród wartości
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
 
-    // Oblicz szerokość każdego pojemnika
     const binWidth = (maxValue - minValue) / numBins;
 
-    // Inicjalizuj tablicę wynikową
     const histogramData = [];
 
-    // Inicjalizuj pojemniki i zlicz liczbę elementów w każdym pojemniku
     for (let i = 0; i < numBins; i++) {
         const binStart = minValue + i * binWidth;
         const binEnd = binStart + binWidth;
@@ -439,7 +436,7 @@ export const generateHistogramData = (values: number[], numBins: number) => {
 
         if (i === numBins - 1) {
             binCount = values.filter(
-                (value) => value >= binStart && value <= binEnd
+                (value) => value >= binStart && value <= maxValue
             ).length;
         } else {
             binCount = values.filter(
@@ -561,7 +558,7 @@ export const countPredictionByDate = (predictions: Keyable[]) => {
 
 export const calculateRegressionMetrics = (data: Prediction[]) => {
     const filteredData = data.filter((prediction: Prediction) => {
-        return prediction.real_value;
+        return prediction.actual;
     });
 
     const n = filteredData.length;
@@ -574,7 +571,7 @@ export const calculateRegressionMetrics = (data: Prediction[]) => {
     let yPred: number[] = [];
 
     filteredData.forEach((prediction: Prediction) => {
-        yTrue.push(prediction.real_value as number);
+        yTrue.push(prediction.actual as number);
         yPred.push(prediction.prediction);
     });
 
@@ -603,7 +600,7 @@ export const calculateRegressionMetrics = (data: Prediction[]) => {
 
 export const calculateClassificationMetrics = (data: Prediction[]) => {
     const filteredData = data.filter((prediction: Prediction) => {
-        return prediction.real_value !== undefined;
+        return prediction.actual !== undefined && prediction.actual !== null;
     });
 
     const n = filteredData.length;
@@ -616,7 +613,7 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
     let yPred: number[] = [];
 
     filteredData.forEach((prediction: Prediction) => {
-        yTrue.push(prediction.real_value as number);
+        yTrue.push(prediction.actual as number);
         yPred.push(prediction.prediction);
     });
 
@@ -629,12 +626,10 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
         0
     );
 
-    // Accuracy
     metrics.accuracy =
         totalCorrect /
         confusionMatrix.flat().reduce((acc, val) => acc + val, 0);
 
-    // Precision, Recall, F1-score dla każdej klasy
     metrics.precision = [];
     metrics.recall = [];
     metrics.f1Score = [];
@@ -650,19 +645,16 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
             0
         );
 
-        // Precision
         metrics.precision[i] =
             truePositive + falsePositive !== 0
                 ? truePositive / (truePositive + falsePositive)
                 : 0;
 
-        // Recall
         metrics.recall[i] =
             truePositive + falseNegative !== 0
                 ? truePositive / (truePositive + falseNegative)
                 : 0;
 
-        // F1-score
         metrics.f1Score[i] =
             metrics.precision[i] + metrics.recall[i] !== 0
                 ? (2 * metrics.precision[i] * metrics.recall[i]) /
@@ -681,8 +673,6 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
         metrics.f1Score.reduce((acc: number, val: number) => acc + val, 0) /
         metrics.f1Score.length;
 
-    console.log(metrics);
-
     return [
         metrics.averageAccuracy,
         metrics.averagePrecision,
@@ -692,17 +682,21 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
 };
 
 export const calculateConfusionMatrix = (yTrue: any[], yPred: any[]) => {
-    const numberOfClasses = [...new Set([...yTrue, ...yPred])];
+    const classes = [...new Set([...yTrue, ...yPred])];
 
-    const confusionMatrix = Array.from({ length: numberOfClasses.length }, () =>
-        Array.from({ length: numberOfClasses.length }, () => 0)
+    const classesMap: Keyable = {};
+
+    for (let i = 0; i < classes.length; i++) {
+        classesMap[classes[i]] = i;
+    }
+
+    const confusionMatrix = Array.from({ length: classes.length }, () =>
+        Array.from({ length: classes.length }, () => 0)
     );
 
     for (let i = 0; i < yTrue.length; i++) {
-        const trueClass = yTrue[i];
-        const predictedClass = yPred[i];
-
-        // confusionMatrix[predictedClass][trueClass]++;
+        const trueClass = classesMap[yTrue[i]];
+        const predictedClass = classesMap[yPred[i]];
 
         confusionMatrix[trueClass][predictedClass]++;
     }
@@ -710,24 +704,21 @@ export const calculateConfusionMatrix = (yTrue: any[], yPred: any[]) => {
     return confusionMatrix;
 };
 
-export const calculateConfusionMatrix2 = (yTrue: any[], yPred: any[]) => {
-    const classes = new Set([...yTrue, ...yPred]);
-    const matrix = [];
-
-    for (const trueClass of classes) {
-        const row = [];
-        for (const predictedClass of classes) {
-            const count = yTrue.reduce(
-                (sum, trueLabel, index) =>
-                    trueLabel === trueClass && yPred[index] === predictedClass
-                        ? sum + 1
-                        : sum,
-                0
-            );
-            row.push(count);
-        }
-        matrix.push(row);
+export const generateChartTitle = (chart: MonitoringChart) => {
+    switch (chart.chart_type) {
+        case "histogram":
+            return `Histogram of ${chart.first_column}`;
+        case "scatter":
+            return `Scatter plot of ${chart.first_column} and ${chart.second_column}`;
+        case "scatter_with_histograms":
+            return `Comparison of ${chart.first_column} and ${chart.second_column} with histograms`;
+        case "countplot":
+            return `Countplot of ${chart.first_column}`;
+        case "timeseries":
+            return `Timeseries of ${chart.first_column}`;
+        case "regression_metrics":
+            return `Regression metrics`;
+        case "classification_metrics":
+            return `Classification metrics`;
     }
-
-    return matrix;
-};
+}

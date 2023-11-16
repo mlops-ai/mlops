@@ -6,6 +6,7 @@ import { Iteration } from "@/types/iteration";
 import { Keyable } from "@/types/types";
 import { Model } from "@/types/model";
 import { Dataset } from "@/types/dataset";
+import { MonitoringChart } from "@/types/monitoring_chart";
 
 export type ModalType =
     | "createProject"
@@ -29,7 +30,8 @@ export type ModalType =
     | "deleteModel"
     | "archiveModel"
     | "restoreModel"
-    | "createMonitoringChartModal";
+    | "createMonitoringChart"
+    | "deleteMonitoringChart";
 
 interface DeleteIterations {
     project_id: string;
@@ -45,6 +47,7 @@ interface ModalData {
     model?: Model;
     dataset?: Dataset;
     baseFeatures?: string[];
+    monitoringChart?: MonitoringChart;
 }
 
 interface ModalStore {

@@ -7,27 +7,43 @@ import { MonitoringChart } from "@/types/monitoring_chart";
 interface MonitoringChartProps {
     chart_schema: MonitoringChart;
     predictionsData: Prediction[];
+    onOpen: () => void;
     theme: "dark" | "light" | "system";
 }
 
 const Timeseries = ({
     chart_schema,
     predictionsData,
+    onOpen,
     theme,
 }: MonitoringChartProps) => {
-    let data: any = [];
+    let data: any;
 
-    if (chart_schema.first_column !== "prediction") {
-        data = predictionsData
-            .map((row) => [
-                new Date(row.prediction_date),
-                row.input_data[chart_schema.first_column as string],
-            ])
-            .sort((a: any, b: any) => a[0] - b[0]);
-    } else {
-        data = predictionsData
-            .map((row) => [new Date(row.prediction_date), row.prediction])
-            .sort((a: any, b: any) => a[0] - b[0]);
+    switch (chart_schema.first_column) {
+        case "prediction":
+            data = predictionsData
+                .map((row) => [new Date(row.prediction_date), row.prediction])
+                .sort((a: any, b: any) => a[0] - b[0]);
+            break;
+
+        case "actual":
+            data = predictionsData
+                .filter(
+                    (row: Prediction) =>
+                        row.actual !== null && row.actual !== undefined
+                )
+                .map((row) => [new Date(row.prediction_date), row.actual])
+                .sort((a: any, b: any) => a[0] - b[0]);
+            break;
+            
+        default:
+            data = predictionsData
+                .map((row) => [
+                    new Date(row.prediction_date),
+                    row.input_data[chart_schema.first_column as string],
+                ])
+                .sort((a: any, b: any) => a[0] - b[0]);
+            break;
     }
 
     return (
@@ -36,6 +52,7 @@ const Timeseries = ({
                 option={timeseriesOptions(
                     data,
                     chart_schema.first_column as string,
+                    onOpen,
                     theme
                 )}
                 theme="customed"
