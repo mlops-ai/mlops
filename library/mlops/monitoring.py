@@ -76,7 +76,7 @@ def set_active_model(model_name: str) -> str:
     return f"Active model set to: {settings.active_model}"
 
 
-def predict(model_name: str, data: pd.DataFrame) -> dict:
+def send_prediction(model_name: str, data: pd.DataFrame) -> dict:
     """
     Function to invoke a prediction from monitored model. Function takes a pandas dataframe, where every record is
     taken as a separate prediction.

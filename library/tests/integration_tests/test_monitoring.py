@@ -154,7 +154,7 @@ async def test_predict_success(setup):
 
     data_dict = data.to_dict(orient="records")
 
-    response = mlops.monitoring.predict(model_name=model_name, data=data)
+    response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
 
     prediction = response[0]
 
@@ -194,7 +194,7 @@ async def test_predict_failure(setup):
     data_dict = data.to_dict(orient="records")
 
     with pytest.raises(Exception) as exc_info:
-        failed_response = mlops.monitoring.predict(model_name=model_name, data=data)
+        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
 
     assert str(exc_info.value) == "Request failed with status code 400: Cannot make prediction: could not " \
                                   "convert string to float: 'hello'"
@@ -233,7 +233,7 @@ async def test_predict_multiple_success(setup):
 
     num_of_predictions = len(data)
 
-    response = mlops.monitoring.predict(model_name=model_name, data=data)
+    response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
 
     assert len(response) == num_of_predictions
 
@@ -270,7 +270,7 @@ async def test_predict_multiple_failure_incorrect_data_types(setup):
     ])
 
     with pytest.raises(Exception) as exc_info:
-        failed_response = mlops.monitoring.predict(model_name=model_name, data=data)
+        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
 
     assert 'Request failed with status code 400' in str(exc_info.value)
 
@@ -360,7 +360,7 @@ async def test_create_monitored_model_no_ml_model_to_decode(setup):
     }, orient="columns")
 
     with pytest.raises(Exception) as exc_info:
-        failed_response = mlops.monitoring.predict(model_name=model_name, data=data)
+        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
 
     assert "Request failed with status code 400: Monitored model has no iteration. Model status must be 'idle' or " \
            "'archived'." in str(exc_info.value)
