@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from httpx import AsyncClient
 
@@ -223,3 +225,73 @@ async def test_get_remaining_projects(client: AsyncClient):
     assert response.status_code == 200
     assert len(response.json()) == 2
     assert response.json()[0]["title"] == "Test project"
+
+
+@pytest.mark.asyncio
+async def test_delete_project_with_iteration_assigned_to_monitored_model(client: AsyncClient):
+    """
+    Test delete project if there are iterations inside assigned to monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    project = {
+        "title": "Red Bull Racing project",
+        "description": "Description not empty"
+    }
+    response = await client.post("/projects/", json=project)
+    project_id = response.json()["_id"]
+    assert response.status_code == 201
+    assert response.json()["title"] == project["title"]
+    assert response.json()["description"] == project["description"]
+
+    experiment = {
+        "name": "Test experiment"
+    }
+    response = await client.post(f"/projects/{project_id}/experiments/", json=experiment)
+    experiment_id = response.json()["id"]
+    assert response.status_code == 201
+
+    response = await client.get(f"/projects/{project_id}")
+    assert response.status_code == 200
+    assert len(response.json()["experiments"]) == 1
+
+    iteration = {
+        "iteration_name": "Iteration test v1",
+        "metrics": {"accuracy": 0.9, "precision": 0.9, "recall": 0.9, "f1": 0.9},
+        "parameters": {"batch_size": 64, "epochs": 1000, "learning_rate": 0.19},
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
+        )
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    iteration_to_model_1 = response.json()
+
+    monitored_model_1 = {
+        "model_name": "Engine failure prediction model v8",
+        "model_description": "Test monitored model description",
+        "model_status": "idle"
+    }
+
+    response = await client.post("/monitored-models/", json=monitored_model_1)
+    monitored_model_id = response.json()["_id"]
+    monitored_model_name = response.json()["model_name"]
+
+    monitored_model_changed_v1 = {
+        "model_status": "active",
+        "iteration": iteration_to_model_1
+    }
+
+    monitored_model_response = await client.put(f"/monitored-models/{monitored_model_id}",
+                                                json=monitored_model_changed_v1)
+
+    response = await client.delete(f"/projects/{project_id}")
+    assert response.status_code == 400
+    assert response.json()["detail"] == ("Iteration in experiment in project is assigned to monitored model. "
+                                         "Cannot delete it. Please delete monitored model first.")

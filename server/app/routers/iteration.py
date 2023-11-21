@@ -211,11 +211,11 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     if not iteration:
         raise iteration_not_found_exception()
 
-    if iteration.dataset:
-        await delete_iteration_from_dataset_deleting_iteration(iteration)
-
     if iteration.assigned_monitored_model_id:
         raise iteration_assigned_to_monitored_model_exception()
+
+    if iteration.dataset:
+        await delete_iteration_from_dataset_deleting_iteration(iteration)
 
     experiment.iterations.remove(iteration)
     await project.save()
