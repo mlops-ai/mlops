@@ -21,11 +21,3 @@ mlops_ai.egg-info/SOURCES.txt
 mlops_ai.egg-info/dependency_links.txt
 mlops_ai.egg-info/requires.txt
 mlops_ai.egg-info/top_level.txt
-tests/__init__.py
-tests/integration_tests/__init__.py
-tests/integration_tests/test_monitoring.py
-tests/integration_tests/test_tracking.py
-tests/unit_tests/__init__.py
-tests/unit_tests/test_dataset.py
-tests/unit_tests/test_iteration.py
-tests/unit_tests/test_plot.py
