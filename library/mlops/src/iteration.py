@@ -1,11 +1,11 @@
-import requests
 import os
 import base64
+import requests
 
 from mlops.config.config import settings
-from mlops.exceptions.tracking import request_failed_exception
-import requests
 from mlops.src.chart import Chart
+from mlops.src.mailgun import MailGun
+from mlops.exceptions.tracking import request_failed_exception
 from mlops.exceptions.iteration import (
     iteration_request_failed_exception,
     model_path_not_exist_exception
@@ -220,4 +220,13 @@ class Iteration:
         if app_response.status_code == 201:
             return response_json
         else:
+            # this is a bit confusing, but mailgun for exception needs to be invoked twice
+            # one is for the Iteration class exceptions itself, it is invoked inside tracking start_iteration() function
+            # and the other one here is for the exceptions after sending the request to the API
+            mailgun = MailGun()
+            detail = response_json['detail']
+            mailgun.send_tracking_failure(
+                f"Request failed with status code {app_response.status_code}: {detail}"
+            )
+
             raise iteration_request_failed_exception(app_response)
