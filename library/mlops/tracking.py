@@ -255,7 +255,8 @@ def start_iteration(iteration_name: str, project_id: str = None,
     iteration = Iteration(
         iteration_name=iteration_name,
         project_id=project_id,
-        experiment_id=experiment_id
+        experiment_id=experiment_id,
+        send_email=send_email
     )
     mailgun = MailGun()
     exception_occurred = False
@@ -264,7 +265,8 @@ def start_iteration(iteration_name: str, project_id: str = None,
         yield iteration
     except Exception as e:
         exception_occurred = True
-        mailgun.send_tracking_failure(str(e))
+        if send_email or settings.send_emails:
+            mailgun.send_tracking_failure(str(e))
         raise e
     finally:
         if not exception_occurred:

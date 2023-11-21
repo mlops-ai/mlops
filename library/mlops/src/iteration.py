@@ -17,11 +17,17 @@ class Iteration:
     Class for logging iteration data.
     """
 
-    def __init__(self, iteration_name: str, project_id: str = None, experiment_id: str = None):
+    def __init__(
+            self, iteration_name: str,
+            project_id: str = None,
+            experiment_id: str = None,
+            send_email: bool = False
+    ):
         self.iteration_name: str = iteration_name
         self.project_id: str = project_id
         self.experiment_id: str = experiment_id
         self.user_name: str = settings.user_name
+        self.send_email: bool = send_email
         self.model_name: str = "model"
         self.path_to_model: str = ""
         self.parameters: dict = {}
@@ -225,8 +231,9 @@ class Iteration:
             # and the other one here is for the exceptions after sending the request to the API
             mailgun = MailGun()
             detail = response_json['detail']
-            mailgun.send_tracking_failure(
-                f"Request failed with status code {app_response.status_code}: {detail}"
-            )
+            if self.send_email or settings.send_emails:
+                mailgun.send_tracking_failure(
+                    f"Request failed with status code {app_response.status_code}: {detail}"
+                )
 
             raise iteration_request_failed_exception(app_response)
