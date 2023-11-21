@@ -1,4 +1,5 @@
 from mlops.config.config import settings
+from mlops.exceptions.mailgun import mail_request_failed_exception
 
 from json2html import json2html
 import requests
@@ -76,7 +77,7 @@ class MailGun:
                     </html>
                     """
 
-        return requests.post(
+        response = requests.post(
             f"https://api.mailgun.net/v3/{self.domain}/messages",
             auth=("api", f"{self.api_key}"),
             data={"from": f"MLOps mailgun <mailgun@{self.domain}>",
@@ -84,6 +85,11 @@ class MailGun:
                   "subject": "MLOps iteration created successfully",
                   "html": html_content}
         )
+
+        if response.status_code == 200:
+            return response
+        else:
+            raise mail_request_failed_exception(response)
 
     def send_tracking_failure(self, iteration_exception_response: str) -> requests.Response:
         """
@@ -142,7 +148,7 @@ class MailGun:
                     </html>
                     """
 
-        return requests.post(
+        response = requests.post(
             f"https://api.mailgun.net/v3/{self.domain}/messages",
             auth=("api", f"{self.api_key}"),
             data={"from": f"MLOps mailgun <mailgun@{self.domain}>",
@@ -150,3 +156,8 @@ class MailGun:
                   "subject": "MLOps iteration failed",
                   "html": html_content}
         )
+
+        if response.status_code == 200:
+            return response
+        else:
+            raise mail_request_failed_exception(response)
