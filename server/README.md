@@ -16,3 +16,5 @@ Follow to http://localhost:8000/ to see the API Swagger documentation.
 
 Change .env file `TESTING` to True. Then follow to `server/app/tests` folder and run `pytest` to run all tests.
 Alternatively run tests from your IDE.
+
+## Notes
