@@ -25,7 +25,7 @@ Open-source tool for **tracking** & **monitoring** machine learning models.
 
 End-to-end machine learning projects require long-term lifecycles during which different models are evaluated,
 with various hyperparameters or data representations. 
-Then, out of all the experiments, a final model must be selected for deployment in production environment.
+Then, out of all the experiments, a final model must be selected for deployment in the production environment.
 There are some solutions available to manage the model creation process, such as [mlflow](https://mlflow.org/)
 or [neptune.ai](https://neptune.ai/). However, none of them support the functionality of monitoring a deployed model in production.
 
