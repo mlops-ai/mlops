@@ -1,74 +1,89 @@
 import ReactEcharts from "echarts-for-react";
 
 import { scatterOptions } from "./scatter/scatter-options";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { MonitoringChartProps } from "@/types/monitoring-chart";
 import { Prediction } from "@/types/prediction";
-
-interface MonitoringChartProps {
-    chart_schema: MonitoringChart;
-    predictionsData: Prediction[];
-    onOpen: () => void;
-    theme: "dark" | "light" | "system";
-}
 
 const Scatter = ({
     chart_schema,
     predictionsData,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
-    let data: any[];
+    let seriesData: any[] = [];
 
-    let firstColumn: any[] = [];
-    let secondColumn: any[] = [];
+    let xColumn: any[] = [];
 
-    switch (chart_schema.first_column) {
+    switch (chart_schema.x_axis_column) {
         case "prediction":
-            firstColumn = predictionsData
-                .map((row: Prediction) => row.prediction)
+            xColumn = predictionsData.map((row: Prediction) => row.prediction);
             break;
 
         case "actual":
-            firstColumn = predictionsData
-                .map((row: Prediction) => row.actual)
+            xColumn = predictionsData.map((row: Prediction) => row.actual);
             break;
         default:
-            firstColumn = predictionsData
-                .map((row: Prediction) => row.input_data[chart_schema.first_column as string])
+            xColumn = predictionsData.map(
+                (row: Prediction) =>
+                    row.input_data[chart_schema.x_axis_column as string]
+            );
             break;
     }
 
-    switch (chart_schema.second_column) {
-        case "prediction":
-            secondColumn = predictionsData
-                .map((row: Prediction) => row.prediction)
-            break;
+    for (let i = 0; i < chart_schema.y_axis_columns!.length; i++) {
+        let yColumnData: any[] = [];
 
-        case "actual":
-            secondColumn = predictionsData
-                .map((row: Prediction) => row.actual)
-            break;
-        default:
-            secondColumn = predictionsData
-                .map((row: Prediction) => row.input_data[chart_schema.second_column as string])
-            break;
+        switch (chart_schema.y_axis_columns![i]) {
+            case "prediction":
+                yColumnData = predictionsData.map(
+                    (row: Prediction) => row.prediction
+                );
+                break;
+
+            case "actual":
+                yColumnData = predictionsData.map(
+                    (row: Prediction) => row.actual
+                );
+                break;
+            default:
+                yColumnData = predictionsData.map(
+                    (row: Prediction) =>
+                        row.input_data[chart_schema.y_axis_columns![i] as string]
+                );
+                break;
+        }
+
+        let data;
+
+        data = xColumn.map((_, index: number) => [
+            xColumn[index],
+            yColumnData[index],
+            predictionsData[index].prediction,
+        ]);
+
+        seriesData.push({
+            name: `(${chart_schema.x_axis_column}, ${
+                chart_schema.y_axis_columns![i]
+            })`,
+            type: "scatter",
+            xAxisIndex: 0,
+            yAxisIndex: 0,
+            encode: { tooltip: [0, 1] },
+            data: data,
+        });
     }
-
-    data = firstColumn.map((_, index: number) => [
-        firstColumn[index],
-        secondColumn[index],
-        predictionsData[index].prediction,
-    ])
 
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
             <ReactEcharts
                 option={scatterOptions(
-                    data,
-                    chart_schema.first_column as string,
-                    chart_schema.second_column as string,
+                    chart_schema.x_axis_column as string,
+                    chart_schema.y_axis_columns as string[],
                     onOpen,
-                    theme
+                    onEdit,
+                    theme,
+                    seriesData
                 )}
                 theme="customed"
                 style={{ height: "400px" }}

@@ -2,12 +2,13 @@ import ReactEcharts from "echarts-for-react";
 
 import { timeseriesOptions } from "./timeseries/timeseries-options";
 import { Prediction } from "@/types/prediction";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { MonitoringChart } from "@/types/monitoring-chart";
 
 interface MonitoringChartProps {
     chart_schema: MonitoringChart;
     predictionsData: Prediction[];
     onOpen: () => void;
+    onEdit: () => void;
     theme: "dark" | "light" | "system";
 }
 
@@ -15,45 +16,56 @@ const Timeseries = ({
     chart_schema,
     predictionsData,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
-    let data: any;
+    let seriesData: any[] = [];
 
-    switch (chart_schema.first_column) {
-        case "prediction":
-            data = predictionsData
-                .map((row) => [new Date(row.prediction_date), row.prediction])
-                .sort((a: any, b: any) => a[0] - b[0]);
-            break;
+    for (let i = 0; i < chart_schema.y_axis_columns!.length; i++) {
+        let columnData;
 
-        case "actual":
-            data = predictionsData
-                .filter(
-                    (row: Prediction) =>
-                        row.actual !== null && row.actual !== undefined
-                )
-                .map((row) => [new Date(row.prediction_date), row.actual])
-                .sort((a: any, b: any) => a[0] - b[0]);
-            break;
-            
-        default:
-            data = predictionsData
-                .map((row) => [
+        switch (chart_schema.y_axis_columns![i]) {
+            case "prediction":
+                columnData = predictionsData.map((row) => [
                     new Date(row.prediction_date),
-                    row.input_data[chart_schema.first_column as string],
-                ])
-                .sort((a: any, b: any) => a[0] - b[0]);
-            break;
+                    row.prediction,
+                ]);
+                break;
+
+            case "actual":
+                columnData = predictionsData
+                    .filter(
+                        (row: Prediction) =>
+                            row.actual !== null && row.actual !== undefined
+                    )
+                    .map((row) => [new Date(row.prediction_date), row.actual]);
+                break;
+
+            default:
+                columnData = predictionsData.map((row) => [
+                    new Date(row.prediction_date),
+                    row.input_data[chart_schema.y_axis_columns![i] as string],
+                ]);
+                break;
+        }
+        seriesData.push({
+            name: chart_schema.y_axis_columns![i] as string,
+            type: "line",
+            showSymbol: false,
+            data: columnData,
+        });
     }
 
     return (
         <div className="px-6 py-4 bg-white border border-gray-300 rounded-lg shadow-md dark:border-gray-600 dark:bg-gray-800">
             <ReactEcharts
+                style={{ height: "400px", width: "100%" }}
                 option={timeseriesOptions(
-                    data,
-                    chart_schema.first_column as string,
+                    chart_schema.y_axis_columns as string[],
                     onOpen,
-                    theme
+                    onEdit,
+                    theme,
+                    seriesData
                 )}
                 theme="customed"
             />

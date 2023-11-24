@@ -2,9 +2,9 @@ import { useTheme } from "@/components/providers/theme-provider";
 
 import PredictionsPerDayTimeseries from "@/components/custom-charts/monitoring/predictions-per-day-timeseries";
 import { Model } from "@/types/model";
-import { useMemo } from "react";
 import MonitoringChart from "@/components/custom-charts/monitoring/monitoring-chart";
 import { useModal } from "@/hooks/use-modal-hook";
+import { useGrid } from "@/hooks/use-grid-hook";
 
 interface MonitoringChartsProps {
     modelData: Model;
@@ -15,7 +15,9 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
 
     const { onOpen } = useModal();
 
-    const monitoringCharts = useMemo(() => {
+    const grid = useGrid();
+
+    const monitoringCharts = () => {
         if (!modelData.interactive_charts) return [];
 
         return modelData.interactive_charts.map((chart) => {
@@ -32,10 +34,17 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
                             model: modelData,
                         })
                     }
+                    onEdit={() =>
+                        onOpen("editMonitoringChart", {
+                            monitoringChart: chart,
+                            model: modelData,
+                            baseFeatures: grid.baseFeatures,
+                        })
+                    }
                 />
             );
         });
-    }, [modelData, modelData.interactive_charts, theme]);
+    };
 
     return (
         <div className="grid grid-cols-1 gap-6">
@@ -43,7 +52,7 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
                 rowData={modelData.predictions_data}
                 theme={theme}
             />
-            {monitoringCharts}
+            {monitoringCharts()}
         </div>
     );
 };

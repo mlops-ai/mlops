@@ -1,31 +1,26 @@
-import { Prediction } from "@/types/prediction";
-import MonitoringChart from "./monitoring-chart";
 import { calculateClassificationMetrics } from "@/lib/utils";
 
 import ReactEcharts from "echarts-for-react";
 import { metricsChartOptionsGenerator } from "./metrics-plot/metrics-plot-options";
-
-interface MonitoringChartProps {
-    chart_schema: MonitoringChart;
-    predictionsData: Prediction[];
-    onOpen: () => void;
-    theme: "dark" | "light" | "system";
-}
-
-const metrics_names = ["Accuracy", "Precision", "Recall", "F-Score"];
+import { MonitoringChartProps } from "@/types/monitoring-chart";
+import { classificationMetricsMap } from "@/config/maping";
 
 const ClassificationMetrics = ({
     predictionsData,
+    chart_schema,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
     const metrics_values = calculateClassificationMetrics(predictionsData);
 
-    let series = metrics_names.map((name, index) => {
-        let data = Array(metrics_names.length).fill(0);
-        data[index] = metrics_values[index];
+    let series = chart_schema.metrics!.map((name, index) => {
+        let data = Array(chart_schema.metrics!.length).fill(0);
+        data[index] = metrics_values[name as keyof typeof metrics_values];
         return {
-            name: name,
+            name: classificationMetricsMap[
+                name as keyof typeof classificationMetricsMap
+            ],
             data: data,
             type: "bar",
             stack: "stack",
@@ -37,9 +32,10 @@ const ClassificationMetrics = ({
             <ReactEcharts
                 option={metricsChartOptionsGenerator(
                     theme,
-                    metrics_names,
+                    chart_schema.metrics!,
                     series,
                     onOpen,
+                    onEdit,
                     "Classification metrics"
                 )}
                 theme="customed"

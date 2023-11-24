@@ -267,20 +267,17 @@ const Models = () => {
         );
     };
 
-    console.log("Models", data.models);
-    console.log("Projects", data.projects);
-
     /**
      * Models page render
      */
     return (
         <>
             <div className="mb-4">
-                <PageHeader title="Models" />
+                <PageHeader title="Monitored models" />
                 <Breadcrumb
                     items={[
                         {
-                            name: "Models",
+                            name: "Monitored models",
                             Icon: Monitoring,
                             href: "/models",
                         },

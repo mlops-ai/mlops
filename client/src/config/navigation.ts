@@ -13,7 +13,7 @@ export const mainNavigationItems = [
         icon: Database,
     },
     {
-        title: "Models",
+        title: "Monitored models",
         path: "/models",
         icon: Monitoring,
     },

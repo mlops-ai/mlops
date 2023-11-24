@@ -24,7 +24,7 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import SectionSeparator from "@/components/navigation/section-separator";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { MonitoringChart } from "@/types/monitoring-chart";
 
 const DeleteMonitoringChartModal = () => {
     const { type, isOpen, onClose, data } = useModal();
@@ -40,27 +40,36 @@ const DeleteMonitoringChartModal = () => {
     const handleDeleteChart = async () => {
         if (!data.monitoringChart) return;
 
+        console.log(data.model?._id, data.monitoringChart?.id);
+
+        console.log(data.model)
+        
+        onClose();
+        dataStore.deleteMonitoringChart(data.model?._id as string, data.monitoringChart?.id as string);
+
+        console.log(data.model)
+        
         setIsLoading(true);
-        await axios
-            .delete(
-                `${url}:${port}/monitored-models/${data.model?._id}/charts/${data.monitoringChart.id}`
-            )
-            .then(() => {
-                onClose();
-                dataStore.deleteMonitoringChart(data.model?._id as string, data.monitoringChart?.id as string);
-                createToast({
-                    id: "delete-monitoring-chart",
-                    message: `Monitoring chart deleted successfully!`,
-                    type: "success",
-                });
-            })
-            .catch((error: any) => {
-                createToast({
-                    id: "delete-monitoring-chart",
-                    message: error.response?.data.detail,
-                    type: "error",
-                });
-            });
+        // await axios
+        //     .delete(
+        //         `${url}:${port}/monitored-models/${data.model?._id}/charts/${data.monitoringChart.id}`
+        //     )
+        //     .then(() => {
+        //         onClose();
+        //         dataStore.deleteMonitoringChart(data.model?._id as string, data.monitoringChart?.id as string);
+        //         createToast({
+        //             id: "delete-monitoring-chart",
+        //             message: `Monitoring chart deleted successfully!`,
+        //             type: "success",
+        //         });
+        //     })
+        //     .catch((error: any) => {
+        //         createToast({
+        //             id: "delete-monitoring-chart",
+        //             message: error.response?.data.detail,
+        //             type: "error",
+        //         });
+        //     });
         setIsLoading(false);
     };
 

@@ -6,7 +6,7 @@ import { Iteration } from "@/types/iteration";
 import { Keyable } from "@/types/types";
 import { Model } from "@/types/model";
 import { Dataset } from "@/types/dataset";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { MonitoringChart } from "@/types/monitoring-chart";
 
 export type ModalType =
     | "createProject"
@@ -31,7 +31,8 @@ export type ModalType =
     | "archiveModel"
     | "restoreModel"
     | "createMonitoringChart"
-    | "deleteMonitoringChart";
+    | "deleteMonitoringChart"
+    | "editMonitoringChart";
 
 interface DeleteIterations {
     project_id: string;

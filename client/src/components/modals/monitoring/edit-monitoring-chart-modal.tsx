@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 /**
  * Hooks
  */
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useData } from "@/hooks/use-data-hook";
 import { useModal } from "@/hooks/use-modal-hook";
 import { set, useForm } from "react-hook-form";
@@ -58,21 +58,35 @@ import { Model } from "@/types/model";
  * Form validation schema
  */
 import { createMonitoringChartFormSchema as formSchema } from "@/lib/validators";
-import { BinMethod, MonitoringChartType } from "@/types/monitoring-chart";
+import {
+    BinMethod,
+    MonitoringChart,
+    MonitoringChartType,
+} from "@/types/monitoring-chart";
 import ColumnSelectMultiple from "./create-monitoring-chart-form/column-select-multiple";
+import { Keyable } from "@/types/types";
 
-const CreateMonitoringChartModal = () => {
+const EditMonitoringChartModal = () => {
     const { type, isOpen, onClose, data } = useModal();
 
     const dataStore = useData();
 
     const { url, port } = backendConfig;
 
-    const isModalOpen = isOpen && type === "createMonitoringChart";
+    const isModalOpen = isOpen && type === "editMonitoringChart";
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        defaultValues: useMemo(() => {
+            return {
+                chart_type: data.monitoringChart?.chart_type,
+            };
+        }, [data.monitoringChart]),
     });
+
+    useEffect(() => {
+        form.reset(data.monitoringChart);
+    }, [data.monitoringChart]);
 
     const { watch } = form;
 
@@ -84,28 +98,41 @@ const CreateMonitoringChartModal = () => {
     const yAxisColumnsValue = watch("y_axis_columns");
     const metricsValue = watch("metrics");
 
+    // console.log(data.baseFeatures);
+
+    // console.log(form.getValues());
+
+    console.log(form.formState.errors);
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!data.model || !data.baseFeatures) return;
 
+        if (data.monitoringChart?.chart_type !== values.chart_type) return;
+
         const chartData = prepareCreateMonitoringChartFormData(values);
 
-        console.log(values);
-
-        chartData["id"] = Math.random().toString(36);
-        console.log(chartData);
+        chartData.id = data.monitoringChart?.id as string;
 
         handleClose();
         form.reset();
-        dataStore.updateModel(
-            data.model?._id as string,
-            {
-                ...data.model,
-                interactive_charts: [
-                    ...data.model!.interactive_charts,
-                    chartData,
-                ],
-            } as Model
+        dataStore.updateMonitoringChart(
+            data.model._id,
+            data.monitoringChart?.id as string,
+            chartData as MonitoringChart
         );
+
+        // handleClose();
+        // form.reset();
+        // dataStore.updateModel(
+        //     data.model?._id as string,
+        //     {
+        //         ...data.model,
+        //         interactive_charts: [
+        //             ...data.model!.interactive_charts,
+        //             chartData,
+        //         ],
+        //     } as Model
+        // );
 
         // await axios
         //     .post(
@@ -171,7 +198,7 @@ const CreateMonitoringChartModal = () => {
     };
 
     const onInteractOutside = (e: any) => {
-        if (isLoading || toast.isActive("create-monitoring-chart")) {
+        if (isLoading || toast.isActive("edit-monitoring-chart")) {
             e.preventDefault();
         }
     };
@@ -263,7 +290,7 @@ const CreateMonitoringChartModal = () => {
                 >
                     <DialogHeader className="p-4">
                         <DialogTitle className="text-2xl font-medium">
-                            Create monitoring chart
+                            Edit monitoring chart
                         </DialogTitle>
                     </DialogHeader>
                     <SectionSeparator />
@@ -277,7 +304,7 @@ const CreateMonitoringChartModal = () => {
                                 openChartTypeSelect={openChartTypeSelect}
                                 setOpenChartTypeSelect={setOpenChartTypeSelect}
                                 handleCloseSelect={handleCloseSelect}
-                                disabled={isLoading}
+                                disabled={true}
                             />
 
                             {/* HISTOGRAM - START */}
@@ -567,7 +594,7 @@ const CreateMonitoringChartModal = () => {
                                             isLoading && "inline"
                                         )}
                                     />
-                                    Create chart
+                                    Edit chart
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -585,4 +612,4 @@ const CreateMonitoringChartModal = () => {
     );
 };
 
-export default CreateMonitoringChartModal;
+export default EditMonitoringChartModal;

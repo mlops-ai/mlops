@@ -8,20 +8,14 @@ import {
 } from "@/lib/utils";
 import { scatterWithHistogramsOptions } from "./scatter-with-histograms/scatter-with-histograms-options";
 import { Prediction } from "@/types/prediction";
-import { BinMethods, MonitoringChart } from "@/types/monitoring_chart";
+import { BinMethod, MonitoringChartProps } from "@/types/monitoring-chart";
 import { Keyable } from "@/types/types";
-
-interface MonitoringChartProps {
-    chart_schema: MonitoringChart;
-    predictionsData: Prediction[];
-    onOpen: () => void;
-    theme: "dark" | "light" | "system";
-}
 
 const ScatterWithHistograms = ({
     chart_schema,
     predictionsData,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
     let firstColData: any[] = [];
@@ -32,7 +26,7 @@ const ScatterWithHistograms = ({
         filter: Array.from({ length: predictionsData.length }, () => true),
     };
 
-    switch (chart_schema.first_column) {
+    switch (chart_schema.x_axis_column) {
         case "prediction":
             firstColData = predictionsData.map(
                 (row: Prediction) => row.prediction
@@ -41,7 +35,7 @@ const ScatterWithHistograms = ({
 
         case "actual":
             firstColData = predictionsData.map((row: Prediction) => row.actual);
-            filterArray.column = "first_column";
+            filterArray.column = "x_axis_column";
             filterArray.filter = firstColData.map(
                 (value) => value !== null && value !== undefined
             );
@@ -49,12 +43,12 @@ const ScatterWithHistograms = ({
         default:
             firstColData = predictionsData.map(
                 (row: Prediction) =>
-                    row.input_data[chart_schema.first_column as string]
+                    row.input_data[chart_schema.x_axis_column as string]
             );
             break;
     }
 
-    switch (chart_schema.second_column) {
+    switch (chart_schema.y_axis_columns![0]) {
         case "prediction":
             secondColData = predictionsData.map(
                 (row: Prediction) => row.prediction
@@ -65,7 +59,7 @@ const ScatterWithHistograms = ({
             secondColData = predictionsData.map(
                 (row: Prediction) => row.actual
             );
-            filterArray.column = "second_column";
+            filterArray.column = "y_axis_columns";
             filterArray.filter = secondColData.map(
                 (value) => value !== null && value !== undefined
             );
@@ -73,7 +67,7 @@ const ScatterWithHistograms = ({
         default:
             secondColData = predictionsData.map(
                 (row: Prediction) =>
-                    row.input_data[chart_schema.second_column as string]
+                    row.input_data[chart_schema.y_axis_columns![0] as string]
             );
             break;
     }
@@ -86,13 +80,19 @@ const ScatterWithHistograms = ({
         ])
         .filter((_, index) => filterArray.filter[index]);
 
-    console.log(data);
-
     firstColData = firstColData
-        .filter((_, index) => filterArray.column === 'first_column' ? filterArray.filter[index]: true)
+        .filter((_, index) =>
+            filterArray.column === "x_axis_column"
+                ? filterArray.filter[index]
+                : true
+        )
         .sort((a: number, b: number) => a - b);
     secondColData = secondColData
-        .filter((_, index) => filterArray.column === 'second_column' ? filterArray.filter[index]: true)
+        .filter((_, index) =>
+            filterArray.column === "y_axis_column"
+                ? filterArray.filter[index]
+                : true
+        )
         .sort((a: number, b: number) => a - b);
 
     let minValueFirstCol = firstColData[0];
@@ -143,14 +143,15 @@ const ScatterWithHistograms = ({
                     data,
                     firstColHistogramData,
                     secondColHistogramData,
-                    chart_schema.first_column as string,
-                    chart_schema.second_column as string,
-                    chart_schema.bin_method as BinMethods,
+                    chart_schema.x_axis_column as string,
+                    chart_schema.y_axis_columns![0] as string,
+                    chart_schema.bin_method as BinMethod,
                     minValueFirstCol,
                     maxValueFirstCol,
                     minValueSecondCol,
                     maxValueSecondCol,
                     onOpen,
+                    onEdit,
                     theme
                 )}
                 style={{ height: "500px" }}

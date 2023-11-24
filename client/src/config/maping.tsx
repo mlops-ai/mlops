@@ -1,4 +1,4 @@
-import { BinMethods, MonitoringChartType } from "@/types/monitoring_chart";
+import { BinMethod, ClassificationMetric, MonitoringChartType, RegressionMetric } from "@/types/monitoring-chart";
 import { ProjectStatus } from "@/types/types";
 
 export const projectStatusesMap = {
@@ -26,21 +26,41 @@ export const monitoringChartTypesMap = {
     [MonitoringChartType.REGRESSION_METRICS]: <p>Regression metrics</p>,
     [MonitoringChartType.COUNTPLOT]: <p>Countplot</p>,
     [MonitoringChartType.SCATTER]: <p>Scatter</p>,
-    [MonitoringChartType.SCATTER_WITH_HISTOGRAMS]: <p>Scatter with histograms</p>
+    [MonitoringChartType.SCATTER_WITH_HISTOGRAMS]: <p>Scatter with histograms</p>,
+    [MonitoringChartType.CONFUSION_MATRIX]: <p>Confusion matrix</p>,
 }
 
 export const binMethodsMap = {
-    [BinMethods.SQUARE_ROOT]: <p>Square root rule</p>,
-    [BinMethods.SCOTT]: <p>Scott rule</p>,
-    [BinMethods.FREEDMAN_DIACONIS]: <p>Freedman-Diaconis rule</p>,
-    [BinMethods.STURGES]: <p>Sturges rule</p>,
-    [BinMethods.FIXED_NUMBER]: <p>Fixed number of bins</p>,
+    [BinMethod.SQUARE_ROOT]: <p>Square root rule</p>,
+    [BinMethod.SCOTT]: <p>Scott rule</p>,
+    [BinMethod.FREEDMAN_DIACONIS]: <p>Freedman-Diaconis rule</p>,
+    [BinMethod.STURGES]: <p>Sturges rule</p>,
+    [BinMethod.FIXED_NUMBER]: <p>Fixed number of bins</p>,
 };
 
 export const binMethodsChartMap = {
-    [BinMethods.SQUARE_ROOT]: 'Square root rule',
-    [BinMethods.SCOTT]: 'Scott rule',
-    [BinMethods.FREEDMAN_DIACONIS]: 'Freedman-Diaconis rule',
-    [BinMethods.STURGES]: 'Sturges rule',
-    [BinMethods.FIXED_NUMBER]: 'Fixed number of bins',
+    [BinMethod.SQUARE_ROOT]: 'Square root rule',
+    [BinMethod.SCOTT]: 'Scott rule',
+    [BinMethod.FREEDMAN_DIACONIS]: 'Freedman-Diaconis rule',
+    [BinMethod.STURGES]: 'Sturges rule',
+    [BinMethod.FIXED_NUMBER]: 'Fixed number of bins',
+};
+
+export const classificationMetricsMap = {
+    [ClassificationMetric.MCC]: "MCC (Matthews Correlation Coefficient)",
+    [ClassificationMetric.ACCURACY]: "Accuracy",
+    [ClassificationMetric.F1_SCORE]: "F1 Score",
+    [ClassificationMetric.PRECISION]: "Precision",
+    [ClassificationMetric.RECALL]: "Recall",
+};
+
+export const regressionMetricsMap = {
+    [RegressionMetric.R2_SCORE]: "R2",
+    [RegressionMetric.MEAN_ABSOLUTE_ERROR]: "MAE",
+    [RegressionMetric.MEAN_SQUARED_ERROR]: "MSE",
+    [RegressionMetric.ROOT_MEAN_SQUARED_ERROR]: "RMSE",
+    [RegressionMetric.ROOT_MEAN_SQUARED_LOG_ERROR]: "RMSLE",
+    [RegressionMetric.MEAN_SQUARED_LOG_ERROR]: "MSLE",
+    [RegressionMetric.MEDIAN_ABSOLUTE_ERROR]: "MedianAE",
+    [RegressionMetric.SYMMETRIC_MEAN_ABSOLUTE_PERCENTAGE_ERROR]: "SMAPE",
 };

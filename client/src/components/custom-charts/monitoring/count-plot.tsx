@@ -3,37 +3,36 @@ import ReactEcharts from "echarts-for-react";
 import { countUniqueValues } from "@/lib/utils";
 import { countPlotOptions } from "./count-plot/count-plot-options";
 import { Prediction } from "@/types/prediction";
-import { MonitoringChart } from "@/types/monitoring_chart";
-
-interface MonitoringChartProps {
-    chart_schema: MonitoringChart;
-    predictionsData: Prediction[];
-    onOpen: () => void;
-    theme: "dark" | "light" | "system";
-}
+import { MonitoringChartProps } from "@/types/monitoring-chart";
 
 const CountPlot = ({
     chart_schema,
     predictionsData,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
     let data: number[] = [];
 
-    switch (chart_schema.first_column) {
+    switch (chart_schema.x_axis_column) {
         case "prediction":
             data = predictionsData.map((row: Prediction) => row.prediction);
             break;
 
         case "actual":
-            data = predictionsData.map((row: Prediction) => row.actual as number);
+            data = predictionsData.map(
+                (row: Prediction) => row.actual as number
+            );
             break;
         default:
             data = predictionsData.map(
-                (row: Prediction) => row.input_data[chart_schema.first_column as string]
+                (row: Prediction) =>
+                    row.input_data[chart_schema.x_axis_column as string]
             );
             break;
     }
+
+    console.log(data);
 
     const [uniqueValues, counts] = countUniqueValues(data);
 
@@ -43,8 +42,9 @@ const CountPlot = ({
                 option={countPlotOptions(
                     uniqueValues,
                     counts,
-                    chart_schema.first_column as string,
+                    chart_schema.x_axis_column as string,
                     onOpen,
+                    onEdit,
                     theme
                 )}
                 style={{ height: "400px" }}

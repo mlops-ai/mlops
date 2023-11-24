@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
 import {
     Command,
+    CommandEmpty,
     CommandGroup,
+    CommandInput,
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
 import {
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -17,24 +20,17 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { binMethodsMap } from "@/config/maping";
 import { cn } from "@/lib/utils";
-import { BinMethod } from "@/types/monitoring-chart";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 
-const binMethods = [
-    BinMethod.SQUARE_ROOT,
-    BinMethod.FREEDMAN_DIACONIS,
-    BinMethod.SCOTT,
-    BinMethod.STURGES,
-    BinMethod.FIXED_NUMBER,
-];
-
-interface BinMethodSelectProps {
+interface ColumnSelectProps {
     form: any;
-    openBinMethodSelect: boolean;
-    setOpenBinMethodSelect: Dispatch<SetStateAction<boolean>>;
+    column: "x_axis_column" | "y_axis_columns";
+    baseFeatures: string[];
+    description: string;
+    openColumnSelect: boolean;
+    setOpenColumnSelect: Dispatch<SetStateAction<boolean>>;
     handleCloseSelect: (
         open: boolean,
         setOpen: Dispatch<SetStateAction<boolean>>
@@ -42,84 +38,83 @@ interface BinMethodSelectProps {
     disabled: boolean;
 }
 
-const BinMethodSelect = ({
-    form,
-    openBinMethodSelect,
-    setOpenBinMethodSelect,
-    handleCloseSelect,
-    disabled,
-}: BinMethodSelectProps) => {
+const ColumnSelect = ({form, column, baseFeatures, description, openColumnSelect, setOpenColumnSelect, handleCloseSelect, disabled}: ColumnSelectProps) => {
     return (
         <FormField
-            name="bin_method"
             control={form.control}
+            name={column}
             render={({ field }) => (
                 <FormItem className="px-4 mb-2">
-                    <FormLabel className="font-semibold text-md">
-                        Bin method
+                    <FormLabel className="block font-semibold text-md">
+                        X-Axis column
                     </FormLabel>
                     <Popover
-                        open={openBinMethodSelect}
+                        open={openColumnSelect}
                         onOpenChange={() =>
                             handleCloseSelect(
-                                openBinMethodSelect,
-                                setOpenBinMethodSelect
+                                openColumnSelect,
+                                setOpenColumnSelect
                             )
                         }
                     >
-                        <PopoverTrigger asChild disabled={disabled}>
+                        <PopoverTrigger
+                            asChild
+                            disabled={baseFeatures?.length === 0 || disabled}
+                        >
                             <FormControl>
                                 <Button
                                     variant="outline"
                                     role="combobox"
                                     className="w-full justify-between transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx p-3"
                                 >
-                                    {field.value
-                                        ? binMethodsMap[
-                                              binMethods?.find(
-                                                  (binMethod: string) =>
-                                                      binMethod === field.value
-                                              ) as BinMethod
-                                          ]
-                                        : "Select bin method ..."}
+                                    {baseFeatures?.length === 0
+                                        ? "No columns available ..."
+                                        : field.value
+                                        ? column === "y_axis_columns" ? field.value[0] : field.value
+                                        : "Select column ..."}
                                     <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
                                 </Button>
                             </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="p-0">
-                            <Command className="w-100">
-                                <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                            <Command
+                                filter={(value, search) => {
+                                    if (value.includes(search)) return 1;
+                                    return 0;
+                                }}
+                            >
+                                <CommandInput placeholder="Search for column ..." />
+                                <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
+                                    <CommandEmpty>
+                                        No columns found.
+                                    </CommandEmpty>
                                     <CommandGroup>
-                                        {binMethods?.map(
-                                            (binMethod: string) => (
+                                        {baseFeatures?.map(
+                                            (baseFeature: string) => (
                                                 <CommandItem
-                                                    value={binMethod}
-                                                    key={binMethod}
+                                                    value={baseFeature}
+                                                    key={baseFeature}
                                                     onSelect={() => {
                                                         form.setValue(
-                                                            "bin_method",
-                                                            binMethod
+                                                            column,
+                                                            column === "y_axis_columns" ? [baseFeature] : baseFeature
                                                         );
                                                         handleCloseSelect(
-                                                            openBinMethodSelect,
-                                                            setOpenBinMethodSelect
+                                                            openColumnSelect,
+                                                            setOpenColumnSelect
                                                         );
                                                     }}
                                                 >
                                                     <Check
                                                         className={cn(
                                                             "mr-2 h-4 w-4",
-                                                            binMethod ===
+                                                            baseFeature ===
                                                                 field.value
                                                                 ? "opacity-100"
                                                                 : "opacity-0"
                                                         )}
                                                     />
-                                                    {
-                                                        binMethodsMap[
-                                                            binMethod as BinMethod
-                                                        ]
-                                                    }
+                                                    {baseFeature}
                                                 </CommandItem>
                                             )
                                         )}
@@ -128,6 +123,9 @@ const BinMethodSelect = ({
                             </Command>
                         </PopoverContent>
                     </Popover>
+                    <FormDescription>
+                        {description}
+                    </FormDescription>
                     <FormMessage />
                 </FormItem>
             )}
@@ -135,4 +133,4 @@ const BinMethodSelect = ({
     );
 };
 
-export default BinMethodSelect;
+export default ColumnSelect;

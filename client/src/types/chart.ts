@@ -3,7 +3,7 @@ export enum ChartType {
     BAR = "bar",
     PIE = "pie",
     SCATTER = "scatter",
-    BOXPLOT = "boxplot"
+    BOXPLOT = "boxplot",
 }
 export interface Chart {
     id: string;
