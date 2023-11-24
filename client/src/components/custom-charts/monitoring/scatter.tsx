@@ -4,6 +4,9 @@ import { scatterOptions } from "./scatter/scatter-options";
 import { MonitoringChartProps } from "@/types/monitoring-chart";
 import { Prediction } from "@/types/prediction";
 
+/**
+ * Scatter chart component.
+ */
 const Scatter = ({
     chart_schema,
     predictionsData,
@@ -15,6 +18,9 @@ const Scatter = ({
 
     let xColumn: any[] = [];
 
+    /**
+     * Extract x column data.
+     */
     switch (chart_schema.x_axis_column) {
         case "prediction":
             xColumn = predictionsData.map((row: Prediction) => row.prediction);
@@ -31,6 +37,9 @@ const Scatter = ({
             break;
     }
 
+    /**
+     * Prepare series data.
+     */
     for (let i = 0; i < chart_schema.y_axis_columns!.length; i++) {
         let yColumnData: any[] = [];
 

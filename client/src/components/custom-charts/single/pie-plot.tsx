@@ -2,6 +2,9 @@ import { Chart } from "@/types/chart";
 import ReactEcharts from "echarts-for-react";
 import { piePlotOptions } from "./pie-plot/pie-plot-options";
 
+/**
+ * Pie plot component.
+ */
 const PiePlot = ({
     chart_data,
     theme,
@@ -11,6 +14,9 @@ const PiePlot = ({
 }) => {
     let data: any[] = [];
 
+    /**
+     * Prepare data for series.
+     */
     chart_data.x_data[0].forEach((x_value, index) => {
         data.push({
             value: chart_data.y_data[0][index],
@@ -20,6 +26,9 @@ const PiePlot = ({
 
     let series_data: any[] = [];
 
+    /**
+     * Prepare series data.
+     */
     series_data.push({
         data: data,
         type: chart_data.chart_type,

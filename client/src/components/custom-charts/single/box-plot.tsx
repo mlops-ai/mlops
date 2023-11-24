@@ -2,6 +2,9 @@ import { Chart } from "@/types/chart";
 import ReactEcharts from "echarts-for-react";
 import { boxPlotOptions } from "./box-plot/box-plot-options";
 
+/**
+ * Box plot component. 
+ */
 const BoxPlot = ({
     chart_data,
     theme,

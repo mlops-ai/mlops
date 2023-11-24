@@ -1,3 +1,12 @@
+/**
+ * Function for generating the options (configuration) object for a timeseries chart.
+ * @param y_columns Array of column names.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param onEdit Function to open edit monitoring chart modal.
+ * @param theme Page theme.
+ * @param seriesData Chart series data.
+ * @returns Object containing the options for a timeseries chart.
+ */
 export const timeseriesOptions = (
     y_columns: string[],
     onOpen: () => void,

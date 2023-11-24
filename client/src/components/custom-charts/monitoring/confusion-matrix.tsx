@@ -5,13 +5,22 @@ import ReactEcharts from "echarts-for-react";
 
 import { confusionMatrixOptions } from "./confusion-matrix/confusion-matrix-options";
 
+/**
+ * Confusion matrix chart component.
+ */
 const ConfusionMatrix = ({
     predictionsData,
     onOpen,
     theme,
 }: MonitoringChartProps) => {
+    /**
+     * Calculate confusion matrix.
+     */
     const matrixData = calculateConfusionMatrixForMapPlot(predictionsData);
 
+    /**
+     * Prepare reversed mapping.
+     */
     const reversedMapping = Object.keys(matrixData.classesMap).reduce(
         (acc, key) => {
             acc[matrixData.classesMap[key]] = key;
@@ -24,6 +33,9 @@ const ConfusionMatrix = ({
 
     const data = [];
 
+    /**
+     * Prepare data for confusion matrix.
+     */
     let minValue = 0;
     let maxValue = 0;
     for (let i = 0; i < classes.length; i++) {

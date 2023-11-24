@@ -12,6 +12,9 @@ interface MonitoringChartProps {
     theme: "dark" | "light" | "system";
 }
 
+/**
+ * Timeseries chart component.
+ */
 const Timeseries = ({
     chart_schema,
     predictionsData,
@@ -21,6 +24,9 @@ const Timeseries = ({
 }: MonitoringChartProps) => {
     let seriesData: any[] = [];
 
+    /**
+     * Prepare series data.
+     */
     for (let i = 0; i < chart_schema.y_axis_columns!.length; i++) {
         let columnData;
 

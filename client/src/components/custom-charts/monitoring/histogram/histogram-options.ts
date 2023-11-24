@@ -2,6 +2,18 @@ import { binMethodsChartMap } from "@/config/maping";
 import { histogramTooltipFormatter } from "@/lib/utils";
 import { BinMethod } from "@/types/monitoring-chart";
 
+/**
+ * Function for generating the options (configuration) object for a histogram chart.
+ * @param bins Histogram bins data for series.
+ * @param col Column name.
+ * @param minValue Minimum value of column.
+ * @param maxValue Maximum value of column.
+ * @param binMethod Bin method used to generate histogram bins.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param onEdit Function to open edit monitoring chart modal.
+ * @param theme Page theme.
+ * @returns Object containing the options for a histogram chart.
+ */
 export const histogramOptions = (
     bins: any,
     col: string,

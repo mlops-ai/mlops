@@ -1,5 +1,15 @@
 import { scatterPlotTooltipFormatter } from "@/lib/utils";
 
+/**
+ * Function for generating the options (configuration) object for a scatter plot chart.
+ * @param x_axis_column Column name for x-axis.
+ * @param y_columns Column names for y-axis.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param onEdit Function to open edit monitoring chart modal.
+ * @param theme Page theme.
+ * @param seriesData Chart series data.
+ * @returns Object containing the options for a scatter plot chart.
+ */
 export const scatterOptions = (
     x_axis_column: string,
     y_columns: string[],

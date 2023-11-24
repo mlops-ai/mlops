@@ -12,6 +12,9 @@ import {
 import { BinMethod, MonitoringChartProps } from "@/types/monitoring-chart";
 import { Prediction } from "@/types/prediction";
 
+/**
+ * Histogram chart component.
+ */
 const Histogram = ({
     chart_schema,
     predictionsData,
@@ -21,6 +24,9 @@ const Histogram = ({
 }: MonitoringChartProps) => {
     let data: number[];
 
+    /**
+     * Extract x column data.
+     */
     switch (chart_schema.x_axis_column) {
         case "prediction":
             data = predictionsData
@@ -52,6 +58,9 @@ const Histogram = ({
 
     let histogramData;
 
+    /**
+     * Prepare histogram data.
+     */
     switch (chart_schema.bin_method) {
         case "squareRoot":
             histogramData = squareRootBins(data);

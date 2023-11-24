@@ -5,6 +5,9 @@ import { metricsChartOptionsGenerator } from "./metrics-plot/metrics-plot-option
 import { MonitoringChartProps } from "@/types/monitoring-chart";
 import { regressionMetricsMap } from "@/config/maping";
 
+/**
+ * Regression metrics chart component.
+ */
 const RegressionMetrics = ({
     predictionsData,
     chart_schema,
@@ -12,8 +15,14 @@ const RegressionMetrics = ({
     onEdit,
     theme,
 }: MonitoringChartProps) => {
+    /**
+     * Calculate regression metrics.
+     */
     const metrics_values = calculateRegressionMetrics(predictionsData);
 
+    /**
+     * Prepare series data.
+     */
     let series = chart_schema.metrics!.map((name: string, index) => {
         let data = Array(chart_schema.metrics!.length).fill(0);
         data[index] = metrics_values[name as keyof typeof metrics_values];

@@ -3,6 +3,9 @@ import ReactEcharts from "echarts-for-react";
 import { barPlotCompareOptions } from "./bar-plot/bar-plot-compare-options";
 import { getMostFrequentValues } from "@/lib/utils";
 
+/**
+ * Bar plot compare component.
+ */
 const BarPlotCompare = ({
     charts,
     theme,
@@ -12,6 +15,9 @@ const BarPlotCompare = ({
 }) => {
     let series_data: any[] = [];
 
+    /**
+     * Prepare series data.
+     */
     charts.forEach((chart_data) => {
         if (chart_data.y_data.length >= 2) {
             chart_data.y_data.forEach((y_data, index) => {
@@ -46,6 +52,9 @@ const BarPlotCompare = ({
         }
     });
 
+    /**
+     * Get most frequent values of title, subtitle, x_label, y_label for all charts in group.
+     */
     const [title, subtitle, x_label, y_label] = getMostFrequentValues(charts);
 
     return (

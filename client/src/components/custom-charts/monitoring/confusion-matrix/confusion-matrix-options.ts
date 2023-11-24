@@ -1,3 +1,14 @@
+/**
+ * Function for generating the options (configuration) object for a confusion matrix map chart.
+ * @param classes Array of class names.
+ * @param data Data for series.
+ * @param minValue Minimum value for the visual map.
+ * @param maxValue Maximum value for the visual map.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param theme Page theme.
+ * @param map Map of class names to class labels.
+ * @returns Object containing the options for a confusion matrix map chart.
+ */
 export const confusionMatrixOptions = (
     classes: any[],
     data: any[],

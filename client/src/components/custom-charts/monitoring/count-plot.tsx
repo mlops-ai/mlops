@@ -5,6 +5,9 @@ import { countPlotOptions } from "./count-plot/count-plot-options";
 import { Prediction } from "@/types/prediction";
 import { MonitoringChartProps } from "@/types/monitoring-chart";
 
+/**
+ * Count plot chart component.
+ */
 const CountPlot = ({
     chart_schema,
     predictionsData,
@@ -14,6 +17,9 @@ const CountPlot = ({
 }: MonitoringChartProps) => {
     let data: number[] = [];
 
+    /**
+     * Prepare data for count plot.
+     */
     switch (chart_schema.x_axis_column) {
         case "prediction":
             data = predictionsData.map((row: Prediction) => row.prediction);
@@ -32,8 +38,9 @@ const CountPlot = ({
             break;
     }
 
-    console.log(data);
-
+    /**
+     * Calculate unique values and counts.
+     */
     const [uniqueValues, counts] = countUniqueValues(data);
 
     return (

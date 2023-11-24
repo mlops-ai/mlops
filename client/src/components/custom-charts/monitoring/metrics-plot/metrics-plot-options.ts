@@ -1,5 +1,15 @@
 import { Keyable } from "@/types/types";
 
+/**
+ * Function for generating the options (configuration) object for a metrics chart.
+ * @param theme Page theme.
+ * @param metrics_names Array of metric names.
+ * @param series Chart series data.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param onEdit Function to open edit monitoring chart modal.
+ * @param title Chart title.
+ * @returns Object containing the options for a metrics chart.
+ */
 export const metricsChartOptionsGenerator = (
     theme: "dark" | "light" | "system",
     metrics_names: string[],

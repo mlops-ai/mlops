@@ -29,6 +29,9 @@ const ChartMap = {
     confusion_matrix: ConfusionMatrix,
 };
 
+/**
+ * Monitoring chart component wrapper.
+ */
 const MonitoringChart = ({
     type,
     chart_schema,

@@ -1,5 +1,16 @@
 import { Keyable } from "@/types/types";
 
+/**
+ * Function for generating the options (configuration) object for a comparasion bar plot.
+ * @param theme Page theme.
+ * @param x_data Chart x-axis data.
+ * @param series Chart series data.
+ * @param x_label Chart x-axis label.
+ * @param y_label Chart y-axis label.
+ * @param title Chart title.
+ * @param subtitle Chart subtitle.
+ * @returns Object containing the options for a comparasion bar plot.
+ */
 export const barPlotCompareOptions = (
     theme: "dark" | "light" | "system",
     x_data: any[][],

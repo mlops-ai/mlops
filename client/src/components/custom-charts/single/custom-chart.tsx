@@ -20,6 +20,9 @@ const ChartMap = {
     boxplot: BoxPlot,
 };
 
+/**
+ * Custom chart component wrapper.
+ */
 const CustomChart = ({
     type,
     theme,

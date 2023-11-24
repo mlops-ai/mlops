@@ -5,6 +5,9 @@ import { metricsChartOptionsGenerator } from "./metrics-plot/metrics-plot-option
 import { MonitoringChartProps } from "@/types/monitoring-chart";
 import { classificationMetricsMap } from "@/config/maping";
 
+/**
+ * Classification metrics chart component.
+ */
 const ClassificationMetrics = ({
     predictionsData,
     chart_schema,
@@ -12,8 +15,14 @@ const ClassificationMetrics = ({
     onEdit,
     theme,
 }: MonitoringChartProps) => {
+    /**
+     * Calculate classification metrics.
+     */
     const metrics_values = calculateClassificationMetrics(predictionsData);
 
+    /**
+     * Prepare series data.
+     */
     let series = chart_schema.metrics!.map((name, index) => {
         let data = Array(chart_schema.metrics!.length).fill(0);
         data[index] = metrics_values[name as keyof typeof metrics_values];

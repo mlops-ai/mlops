@@ -1,7 +1,10 @@
+import ReactEcharts from "echarts-for-react";
 import { Chart } from "@/types/chart";
 import { barPlotOptions } from "./bar-plot/bar-plot-options";
-import ReactEcharts from "echarts-for-react";
 
+/**
+ * Bar plot component. 
+ */
 const BarPlot = ({
     chart_data,
     iteration_name,
@@ -13,6 +16,9 @@ const BarPlot = ({
 }) => {
     let series_data: any[] = [];
 
+    /**
+     * Prepare series data.
+     */
     if (chart_data.y_data.length >= 2) {
         chart_data.y_data.forEach((y_data, index) => {
             series_data.push({

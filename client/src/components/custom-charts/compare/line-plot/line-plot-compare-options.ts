@@ -1,6 +1,17 @@
 import { maxValue, minValue } from "@/lib/utils";
 import { Keyable } from "@/types/types";
 
+/**
+ * Function for generating the options (configuration) object for a comparasion line plot.
+ * @param theme Page theme.
+ * @param series Chart series data.
+ * @param x_axis_type Chart x-axis type.
+ * @param x_label Chart x-axis label.
+ * @param y_label Chart y-axis label.
+ * @param title Chart title.
+ * @param subtitle Chart subtitle.
+ * @returns Object containing the options for a comparasion line plot.
+ */
 export const linePlotCompareOptions = (
     theme: "dark" | "light" | "system",
     series: Keyable[],

@@ -5,6 +5,23 @@ import {
 } from "@/lib/utils";
 import { BinMethod } from "@/types/monitoring-chart";
 
+/**
+ * Function for generating the options (configuration) object for a scatter plot chart.
+ * @param data Data for series.
+ * @param firstColBins Histogram bins data for first column.
+ * @param secondColBins Histogram bins data for second column.
+ * @param firstCol Column name for first column.
+ * @param secondCol Column name for second column.
+ * @param binMethod Bin method used to generate histogram bins.
+ * @param minValueFirstCol Minimum value of first column.
+ * @param maxValueFirstCol Maximum value of first column.
+ * @param minValueSecondCol Minimum value of second column.
+ * @param maxValueSecondCol Maximum value of second column.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param onEdit Function to open edit monitoring chart modal.
+ * @param theme Page theme.
+ * @returns Object containing the options for a scatter plot chart.
+ */
 export const scatterWithHistogramsOptions = (
     data: any,
     firstColBins: any,

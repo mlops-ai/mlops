@@ -1,3 +1,13 @@
+/**
+ * Function for generating the options (configuration) object for a count plot.
+ * @param unique_values Array of unique values.
+ * @param value_counts Array of value counts.
+ * @param col Column name.
+ * @param onOpen Function to open delete monitoring chart modal.
+ * @param onEdit Function to open edit monitoring chart modal.
+ * @param theme Page theme.
+ * @returns Object containing the options for a count plot.
+ */
 export const countPlotOptions = (
     unique_values: any,
     value_counts: any,

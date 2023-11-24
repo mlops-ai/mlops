@@ -11,6 +11,9 @@ import { Prediction } from "@/types/prediction";
 import { BinMethod, MonitoringChartProps } from "@/types/monitoring-chart";
 import { Keyable } from "@/types/types";
 
+/**
+ * Scatter with histograms chart component.
+ */
 const ScatterWithHistograms = ({
     chart_schema,
     predictionsData,
@@ -26,6 +29,9 @@ const ScatterWithHistograms = ({
         filter: Array.from({ length: predictionsData.length }, () => true),
     };
 
+    /**
+     * Extract x column data.
+     */
     switch (chart_schema.x_axis_column) {
         case "prediction":
             firstColData = predictionsData.map(
@@ -48,6 +54,9 @@ const ScatterWithHistograms = ({
             break;
     }
 
+    /**
+     * Extract y column data.
+     */
     switch (chart_schema.y_axis_columns![0]) {
         case "prediction":
             secondColData = predictionsData.map(
@@ -72,6 +81,9 @@ const ScatterWithHistograms = ({
             break;
     }
 
+    /**
+     * Prepare data for series.
+     */
     const data = firstColData
         .map((_, index) => [
             firstColData[index],
@@ -104,6 +116,9 @@ const ScatterWithHistograms = ({
     let firstColHistogramData;
     let secondColHistogramData;
 
+    /**
+     * Prepare histogram data.
+     */
     switch (chart_schema.bin_method) {
         case "scott":
             firstColHistogramData = scottBins(firstColData);
