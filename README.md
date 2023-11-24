@@ -29,7 +29,7 @@ Then, out of all the experiments, a final model must be selected for deployment 
 There are some solutions available to manage the model creation process, such as [mlflow](https://mlflow.org/)
 or [neptune.ai](https://neptune.ai/). However, none of them support the functionality of monitoring a deployed model in production.
 
-As part of mlops project, we aim to create a ready-to-use tool for professionals in the Machine Learning industry 
+As part of the mlops project, we aim to create a ready-to-use tool for professionals in the Machine Learning industry 
 allowing them not only to **manage experiments during model creation process (tracking module)**, 
 but also **monitoring a deployed model working on real-world production data (monitoring module)**
 
