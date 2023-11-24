@@ -40,6 +40,7 @@ const PiePlot = ({
                 chart_data.chart_title,
                 chart_data.chart_subtitle
             )}
+            notMerge={true}
             theme="customed"
         />
     );

@@ -19,6 +19,7 @@ import Tabs from "../tabs/tabs";
 import TabItem from "../tabs/tab-item";
 import { Chart, Cycle } from "../icons";
 import MonitoringCharts from "./monitoring-charts";
+import { useTheme } from "../providers/theme-provider";
 
 interface MonitoringWrapperProps {
     modelData: Model;
@@ -123,9 +124,11 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
         grid.setAll(rowData, defaultColDef, gridColumnsAll, baseFeatures);
     }, []);
 
-    const monitoringCharts = useMemo(() => {
+    const { theme } = useTheme();
+
+    const monitoringCharts = () => {
         return <MonitoringCharts modelData={modelData} />;
-    }, [modelData]);
+    };
 
     const monitoringWrapperContent = () => {
         if (!charts) {
@@ -139,7 +142,7 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
                 </>
             );
         }
-        return monitoringCharts;
+        return <MonitoringCharts modelData={modelData} />;
     };
 
     return (

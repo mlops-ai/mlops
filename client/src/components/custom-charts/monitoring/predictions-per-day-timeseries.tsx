@@ -32,6 +32,7 @@ const PredictionsPerDayTimeseries = ({
                     lastPredictionDate,
                     theme
                 )}
+                notMerge={true}
                 style={{ height: "400px"}}
                 theme="customed"
             />

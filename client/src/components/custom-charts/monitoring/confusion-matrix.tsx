@@ -54,6 +54,7 @@ const ConfusionMatrix = ({
                     theme,
                     reversedMapping
                 )}
+                notMerge={true}
                 theme="customed"
                 style={{ height: "500px" }}
             />

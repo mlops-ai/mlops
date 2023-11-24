@@ -38,6 +38,7 @@ const ClassificationMetrics = ({
                     onEdit,
                     "Classification metrics"
                 )}
+                notMerge={true}
                 theme="customed"
                 style={{ height: "400px" }}
             />

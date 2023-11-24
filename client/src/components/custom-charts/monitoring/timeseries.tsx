@@ -67,6 +67,7 @@ const Timeseries = ({
                     theme,
                     seriesData
                 )}
+                notMerge={true}
                 theme="customed"
             />
         </div>

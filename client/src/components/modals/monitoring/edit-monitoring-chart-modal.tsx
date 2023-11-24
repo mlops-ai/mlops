@@ -77,32 +77,30 @@ const EditMonitoringChartModal = () => {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: useMemo(() => {
-            return {
-                chart_type: data.monitoringChart?.chart_type,
-            };
-        }, [data.monitoringChart]),
     });
 
+    // console.log(data.monitoringChart);
+
     useEffect(() => {
+        console.log("useEffect")
+        console.log(data.monitoringChart)
         form.reset(data.monitoringChart);
     }, [data.monitoringChart]);
+
+    // console.log(data.monitoringChart);
 
     const { watch } = form;
 
     const isLoading = form.formState.isSubmitting;
+
 
     const chartTypeValue = watch("chart_type");
     const binMethodValue = watch("bin_method");
     const xAxisColumnValue = watch("x_axis_column");
     const yAxisColumnsValue = watch("y_axis_columns");
     const metricsValue = watch("metrics");
-
-    // console.log(data.baseFeatures);
-
-    // console.log(form.getValues());
-
-    console.log(form.formState.errors);
+    
+    // console.log(metricsValue);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!data.model || !data.baseFeatures) return;
@@ -114,7 +112,6 @@ const EditMonitoringChartModal = () => {
         chartData.id = data.monitoringChart?.id as string;
 
         handleClose();
-        form.reset();
         dataStore.updateMonitoringChart(
             data.model._id,
             data.monitoringChart?.id as string,
@@ -186,7 +183,7 @@ const EditMonitoringChartModal = () => {
     };
 
     const handleClose = () => {
-        form.reset();
+        // form.reset();
         onClose();
         document.body.style.overflow = "auto";
     };

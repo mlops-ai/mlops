@@ -82,6 +82,7 @@ const LinePlotCompare = ({
                 title,
                 subtitle
             )}
+            notMerge={true}
             theme="customed"
         />
     );

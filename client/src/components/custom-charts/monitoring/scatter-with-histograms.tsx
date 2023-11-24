@@ -154,6 +154,7 @@ const ScatterWithHistograms = ({
                     onEdit,
                     theme
                 )}
+                notMerge={true}
                 style={{ height: "500px" }}
                 theme="customed"
             />

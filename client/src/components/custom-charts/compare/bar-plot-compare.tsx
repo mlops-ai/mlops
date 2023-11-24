@@ -59,6 +59,7 @@ const BarPlotCompare = ({
                 title,
                 subtitle
             )}
+            notMerge={true}
             theme="customed"
         />
     );

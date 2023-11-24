@@ -82,6 +82,7 @@ const ScatterPlotCompare = ({
                 title,
                 subtitle
             )}
+            notMerge={true}
             theme="customed"
         />
     );

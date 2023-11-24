@@ -36,6 +36,7 @@ const RegressionMetrics = ({
                     onEdit,
                     "Regression metrics"
                 )}
+                notMerge={true}
                 theme="customed"
                 style={{ height: "400px" }}
             />

@@ -85,6 +85,7 @@ const Scatter = ({
                     theme,
                     seriesData
                 )}
+                notMerge={true}
                 theme="customed"
                 style={{ height: "400px" }}
             />

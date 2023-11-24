@@ -47,6 +47,7 @@ const CountPlot = ({
                     onEdit,
                     theme
                 )}
+                notMerge={true}
                 style={{ height: "400px" }}
                 theme="customed"
             />

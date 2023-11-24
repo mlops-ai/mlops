@@ -47,8 +47,6 @@ const Histogram = ({
             break;
     }
     
-    console.log(data);
-    
     let minValue = data[0];
     let maxValue = data[data.length - 1];
 
@@ -92,6 +90,7 @@ const Histogram = ({
                     onEdit,
                     theme
                 )}
+                notMerge={true}
                 style={{ height: "400px" }}
                 theme="customed"
             />
