@@ -1289,6 +1289,39 @@ async def test_create_chart_with_actual_value(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_delete_chart_check_if_no_such_chart_in_monitored_model(client:AsyncClient):
+    """
+    Test delete chart check if no such chart in monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    monitored_model_id = response.json()["_id"]
+
+    chart = response.json()["interactive_charts"][0]
+    chart_id = chart["id"]
+
+    chart_metadata = [chart["chart_type"], chart["x_axis_column"], chart["y_axis_columns"]]
+    assert chart_metadata in response.json()["interactive_charts_existed"]
+
+    existing_chart = response.json()["interactive_charts_existed"]
+
+    response = await client.delete(f"/monitored-models/{monitored_model_id}/charts/{chart_id}")
+    assert response.status_code == 200
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    assert len(response.json()["interactive_charts"]) == len(existing_chart) - 1
+    assert chart_metadata not in response.json()["interactive_charts_existed"]
+
+
+@pytest.mark.asyncio
 async def test_delete_actual_value_for_prediction(client: AsyncClient):
     """
     Test delete actual value for prediction.

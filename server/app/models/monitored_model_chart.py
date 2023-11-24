@@ -13,9 +13,10 @@ class MonitoredModelInteractiveChart(BaseModel):
     - **monitored_model_id (PydanticObjectId)**: Monitored model id.
     - **chart_type (str)**: Chart type.
     - **x_axis_column (str)**: X axis column.
-    - **second_column (Optional[List[str]])**: List of columns for Y axis.
+    - **y_axis_columns (Optional[List[str]])**: List of columns for Y axis.
     - **bin_method (Optional[str])**: Bin method.
     - **bin_number (Optional[int])**: Bin number.
+    - **metrics (Optional[List[str]])**: List of metrics for regression and classification.
     """
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
     monitored_model_id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="monitored_model_id")
