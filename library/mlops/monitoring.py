@@ -1,5 +1,6 @@
 import requests
 from mlops.config.config import settings
+from mlops.src.mailgun import MailGun
 from mlops.exceptions.tracking import request_failed_exception
 from mlops.exceptions.monitoring import failed_to_set_active_model_exception
 import pandas as pd
@@ -76,12 +77,13 @@ def set_active_model(model_name: str) -> str:
     return f"Active model set to: {settings.active_model}"
 
 
-def send_prediction(model_name: str, data: pd.DataFrame) -> dict:
+def send_prediction(model_name: str, data: pd.DataFrame, send_email: bool = False) -> dict:
     """
     Function to invoke a prediction from monitored model. Function takes a pandas dataframe, where every record is
     taken as a separate prediction.
 
     Args:
+        send_email: Email alert flag
         model_name: Name of monitored model that will be used in prediction
         data: Pandas Dataframe containing data for prediction
 
@@ -90,6 +92,8 @@ def send_prediction(model_name: str, data: pd.DataFrame) -> dict:
     """
     model = get_model_by_name(model_name)
 
+    mailgun = MailGun()
+
     data_json = data.to_dict(orient="records")
 
     app_response = requests.post(f"{settings.url}/monitored-models/{model['_id']}/predict", json=data_json)
@@ -97,6 +101,9 @@ def send_prediction(model_name: str, data: pd.DataFrame) -> dict:
     prediction = app_response.json()
 
     if app_response.status_code == 200:
+        if send_email or settings.send_emails:
+            mailgun.send_prediction_success(prediction)
         return prediction
     else:
+        mailgun.send_prediction_failure(request_failed_exception(app_response))
         raise request_failed_exception(app_response)
