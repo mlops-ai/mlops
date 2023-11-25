@@ -146,7 +146,7 @@ export const confusionMatrixOptions = (
                     show: true,
                 },
                 itemStyle: {
-                    borderWidth: 3,
+                    borderWidth: 1,
                     borderType: "solid",
                     borderColor: theme === "dark" ? "#000" : "#1F2937",
                 },

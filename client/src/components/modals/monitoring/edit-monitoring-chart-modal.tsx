@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useData } from "@/hooks/use-data-hook";
 import { useModal } from "@/hooks/use-modal-hook";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { toast } from "react-toastify";
 import { createToast } from "@/lib/toast";
@@ -50,11 +50,6 @@ import {
 } from "@/config/maping";
 
 /**
- * Types
- */
-import { Model } from "@/types/model";
-
-/**
  * Form validation schema
  */
 import { createMonitoringChartFormSchema as formSchema } from "@/lib/validators";
@@ -64,7 +59,6 @@ import {
     MonitoringChartType,
 } from "@/types/monitoring-chart";
 import ColumnSelectMultiple from "./create-monitoring-chart-form/column-select-multiple";
-import { Keyable } from "@/types/types";
 
 const EditMonitoringChartModal = () => {
     const { type, isOpen, onClose, data } = useModal();
@@ -79,90 +73,55 @@ const EditMonitoringChartModal = () => {
         resolver: zodResolver(formSchema),
     });
 
-    // console.log(data.monitoringChart);
-
     useEffect(() => {
-        console.log("useEffect")
-        console.log(data.monitoringChart)
         form.reset(data.monitoringChart);
     }, [data.monitoringChart]);
 
-    // console.log(data.monitoringChart);
 
     const { watch } = form;
 
     const isLoading = form.formState.isSubmitting;
-
 
     const chartTypeValue = watch("chart_type");
     const binMethodValue = watch("bin_method");
     const xAxisColumnValue = watch("x_axis_column");
     const yAxisColumnsValue = watch("y_axis_columns");
     const metricsValue = watch("metrics");
-    
-    // console.log(metricsValue);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!data.model || !data.baseFeatures) return;
+        if (!data.model || !data.monitoringChart || !data.baseFeatures) return;
 
         if (data.monitoringChart?.chart_type !== values.chart_type) return;
 
         const chartData = prepareCreateMonitoringChartFormData(values);
 
-        chartData.id = data.monitoringChart?.id as string;
+        await axios
+            .put(
+                `${url}:${port}/monitored-models/${data.model._id}/charts/${data.monitoringChart.id}`,
+                chartData
+            )
+            .then((res) => {
+                handleClose();
 
-        handleClose();
-        dataStore.updateMonitoringChart(
-            data.model._id,
-            data.monitoringChart?.id as string,
-            chartData as MonitoringChart
-        );
+                dataStore.updateMonitoringChart(
+                    data.model!._id,
+                    data.monitoringChart?.id as string,
+                    res.data as MonitoringChart
+                );
 
-        // handleClose();
-        // form.reset();
-        // dataStore.updateModel(
-        //     data.model?._id as string,
-        //     {
-        //         ...data.model,
-        //         interactive_charts: [
-        //             ...data.model!.interactive_charts,
-        //             chartData,
-        //         ],
-        //     } as Model
-        // );
-
-        // await axios
-        //     .post(
-        //         `${url}:${port}/monitored-models/${data.model._id}/charts`,
-        //         chartData
-        //     )
-        //     .then((res) => {
-        //         handleClose();
-        //         form.reset();
-        //         dataStore.updateModel(
-        //             data.model?._id as string,
-        //             {
-        //                 ...data.model,
-        //                 interactive_charts: [
-        //                     ...data.model!.interactive_charts,
-        //                     res.data,
-        //                 ],
-        //             } as Model
-        //         );
-
-        //         createToast({
-        //             id: "create-monitoring-chart",
-        //             message: "Monitoring chart created successfully!",
-        //             type: "success",
-        //         });
-        //     })
-        //     .catch((error: any) => {
-        //         createToast({
-        //             id: "create-monitoring-chart",
-        //             message: error.response?.data.detail,
-        //             type: "error",
-        //         });
-        //     });
+                createToast({
+                    id: "edit-monitoring-chart",
+                    message: "Monitoring chart updated successfully!",
+                    type: "success",
+                });
+            })
+            .catch((error: any) => {
+                createToast({
+                    id: "edit-monitoring-chart",
+                    message: error.response?.data.detail,
+                    type: "error",
+                });
+            });
     };
 
     const [openChartTypeSelect, setOpenChartTypeSelect] = useState(false);
@@ -183,7 +142,7 @@ const EditMonitoringChartModal = () => {
     };
 
     const handleClose = () => {
-        // form.reset();
+        form.reset();
         onClose();
         document.body.style.overflow = "auto";
     };

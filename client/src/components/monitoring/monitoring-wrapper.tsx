@@ -19,7 +19,6 @@ import Tabs from "../tabs/tabs";
 import TabItem from "../tabs/tab-item";
 import { Chart, Cycle } from "../icons";
 import MonitoringCharts from "./monitoring-charts";
-import { useTheme } from "../providers/theme-provider";
 
 interface MonitoringWrapperProps {
     modelData: Model;
@@ -28,8 +27,6 @@ interface MonitoringWrapperProps {
 const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
     const treeselect = useTreeselect();
     const grid = useGrid();
-
-    console.log(modelData);
 
     const [searchParams] = useSearchParams({
         charts: "false",
@@ -123,12 +120,6 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
 
         grid.setAll(rowData, defaultColDef, gridColumnsAll, baseFeatures);
     }, []);
-
-    const { theme } = useTheme();
-
-    const monitoringCharts = () => {
-        return <MonitoringCharts modelData={modelData} />;
-    };
 
     const monitoringWrapperContent = () => {
         if (!charts) {

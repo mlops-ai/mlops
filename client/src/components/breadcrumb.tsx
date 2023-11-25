@@ -12,8 +12,11 @@ interface BreadcrumbProps {
     items: BreadcrumbItem[];
 }
 
+/**
+ * Breadcrumb component.
+ */
 const Breadcrumb = ({ items }: BreadcrumbProps) => {
-    const [searchParams, setSearchParams] = useSearchParams({
+    const [searchParams] = useSearchParams({
         ne: "default",
     });
 
@@ -63,51 +66,6 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
     return (
         <div className="flex items-center text-mlops-gray dark:text-zinc-400">
             {breadcrumb}
-            {/* <p className="flex items-center text-sm font-semibold">
-                <LayoutDashboard className="flex-shrink-0 w-4 h-4 mr-1" />
-                Projects
-            </p>
-            <BreadcrumbSeparator className="w-[1.25rem] h-[1.25rem] flex-shrink-0" />
-            <p className="flex items-center text-sm font-semibold text-[#51678f] dark:text-zinc-300">
-                <LayoutDashboard className="flex-shrink-0 w-4 h-4 mr-1" />
-                Projects
-            </p> */}
-            {/* <svg
-                className="w-[1.25rem] h-[1.25rem] flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                aria-hidden="true"
-            >
-                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z"></path>
-            </svg>
-            <p className="flex items-center text-sm font-semibold">
-                <VscProject className="flex-shrink-0 w-4 h-4 mr-1" />
-                Project
-            </p>
-            <svg
-                className="w-[1.25rem] h-[1.25rem] flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                aria-hidden="true"
-            >
-                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z"></path>
-            </svg>
-            <p className="flex items-center text-sm font-semibold">
-                <AiOutlineExperiment className="flex-shrink-0 w-4 h-4 mr-1" />
-                Experiment
-            </p>
-            <svg
-                className="w-[1.25rem] h-[1.25rem] flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                aria-hidden="true"
-            >
-                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z"></path>
-            </svg>
-            <p className="flex items-center text-sm font-semibold">
-                <GoIterations className="flex-shrink-0 w-4 h-4 mr-1" />
-                Iteration
-            </p> */}
         </div>
     );
 };

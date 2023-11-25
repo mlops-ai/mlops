@@ -29,6 +29,9 @@ interface SearchItemProps {
     handleClose: () => void;
 }
 
+/**
+ * Search item component.
+ */
 const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
     const navigate = useNavigate();
 

@@ -1,6 +1,9 @@
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+/**
+ * Toast component.
+ */
 const Toast = () => {
     return (
         <ToastContainer
