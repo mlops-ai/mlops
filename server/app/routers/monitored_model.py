@@ -32,6 +32,17 @@ from app.routers.exceptions.project import project_not_found_exception
 monitored_model_router = APIRouter()
 
 
+class CustomUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if name == 'MonitoredModelWrapper':
+            from app.models.monitored_model_wrapper import MonitoredModelWrapper
+            return MonitoredModelWrapper
+        if name == 'BaselineNN':
+            from app.models.monitored_model_wrapper import BaselineNN
+            return BaselineNN
+        return super().find_class(module, name)
+
+
 @monitored_model_router.get("/", response_model=List[MonitoredModel], status_code=status.HTTP_200_OK)
 async def get_all_monitored_models() -> List[MonitoredModel]:
     """
@@ -647,7 +658,7 @@ async def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
     """
     try:
         # Load the model from the file
-        ml_model = pickle.load(open(pkl_file_path, 'rb'))
+        ml_model = CustomUnpickler(open(pkl_file_path, 'rb')).load()
 
         # Serialize the model
         ml_model = pickle.dumps(ml_model)
