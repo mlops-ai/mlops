@@ -2,7 +2,7 @@ import getpass
 import pickle
 
 from pydantic import Field, validator
-from typing import Optional
+from typing import Optional, List, Set, Tuple
 from beanie import Document
 from fastapi import HTTPException, status
 from datetime import datetime
@@ -26,7 +26,7 @@ class MonitoredModel(Document):
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
     - **ml_model (str)**: ML model
     - **interactive_charts (list[MonitoredModelInteractiveChart])**: Interactive charts
-    - **interactive_charts_existed (set[tuple[str, Optional[str], Optional[str]]])**: Interactive charts existed pairs of columns
+    - **interactive_charts_existed (Set[Tuple[str, Optional[str], Optional[Tuple[str]]]])**: Interactive charts existed pairs of columns
     - **created_at (datetime)**: Monitored model creation date.
     - **updated_at (datetime)**: Monitored model last update date.
     """
@@ -39,7 +39,7 @@ class MonitoredModel(Document):
     ml_model: Optional[str] = Field(default=None, description="Loaded ml model")
     interactive_charts: Optional[list[MonitoredModelInteractiveChart]] = Field(default=[], description="Interactive "
                                                                                                        "charts")
-    interactive_charts_existed: Optional[set[tuple[str, Optional[str], Optional[str]]]] = Field(default=set(), description="Interactive charts existed pairs of columns")
+    interactive_charts_existed: Optional[Set[Tuple[str, Optional[str], Optional[Tuple[str]]]]] = Field(default=set(), description="Interactive charts existed pairs of columns")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
