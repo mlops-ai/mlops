@@ -1,5 +1,13 @@
 import moment from "moment";
 
+/**
+ * Function for generating the options (configuration) object for a predictions per day timeseries chart.
+ * @param data Data for series.
+ * @param firstPredictionDate First prediction date.
+ * @param lastPredictionDate Last prediction date.
+ * @param theme Page theme.
+ * @returns Object containing the options for a predictions per day timeseries chart.
+ */
 export const predictionsPerDayTimeseriesOptions = (
     data: any,
     firstPredictionDate: Date,

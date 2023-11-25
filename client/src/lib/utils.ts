@@ -2,7 +2,11 @@ import { Chart } from "@/types/chart";
 import { Dataset } from "@/types/dataset";
 import { Iteration } from "@/types/iteration";
 import { Model } from "@/types/model";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import {
+    BinMethod,
+    MonitoringChart,
+    MonitoringChartType,
+} from "@/types/monitoring-chart";
 import { Prediction } from "@/types/prediction";
 import { Project } from "@/types/project";
 import { Keyable } from "@/types/types";
@@ -10,15 +14,31 @@ import { type ClassValue, clsx } from "clsx";
 import { LoremIpsum } from "lorem-ipsum";
 import moment from "moment";
 import { twMerge } from "tailwind-merge";
+import * as z from "zod";
+import { createMonitoringChartFormSchema } from "./validators";
 
+/**
+ * Function for merging Tailwind classes.
+ * @param inputs Tailwind classes.
+ * @returns Merged Tailwind classes.
+ */
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+/**
+ * Function for generating random number between min and max.
+ * @param min Minimum number.
+ * @param max Maximum number.
+ * @returns Random number between min and max.
+ */
 export const numberBetween = (min: number, max: number) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
+/**
+ * Random string generator.
+ */
 export const lorem = new LoremIpsum({
     wordsPerSentence: {
         max: 6,
@@ -26,6 +46,13 @@ export const lorem = new LoremIpsum({
     },
 });
 
+/**
+ * Function for sorting projects by specified method.
+ * @param p1 Project 1.
+ * @param p2 Project 2.
+ * @param method Sorting method.
+ * @returns -1 if p1 should be before p2, 1 if p2 should be before p1, 0 otherwise.
+ */
 export const sortProjectComparator = (
     p1: Project,
     p2: Project,
@@ -61,67 +88,81 @@ export const sortProjectComparator = (
     }
 };
 
+/**
+ * Function for sorting datasets by specified method.
+ * @param d1 Dataset 1.
+ * @param d2 Dataset 2.
+ * @param method Sorting method.
+ * @returns -1 if d1 should be before d2, 1 if d2 should be before d1, 0 otherwise.
+ */
 export const sortDatasetComparator = (
-    p1: Dataset,
-    p2: Dataset,
+    d1: Dataset,
+    d2: Dataset,
     method: string
 ) => {
     switch (method) {
         case "AZ":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.dataset_name.localeCompare(p2.dataset_name);
+            if (d1.pinned && !d2.pinned) return -1;
+            if (!d1.pinned && d2.pinned) return 1;
+            return d1.dataset_name.localeCompare(d2.dataset_name);
         case "ZA":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return -1 * p1.dataset_name.localeCompare(p2.dataset_name);
+            if (d1.pinned && !d2.pinned) return -1;
+            if (!d1.pinned && d2.pinned) return 1;
+            return -1 * d1.dataset_name.localeCompare(d2.dataset_name);
         case "UDESC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.updated_at < p2.updated_at ? 1 : -1;
+            if (d1.pinned && !d2.pinned) return -1;
+            if (!d1.pinned && d2.pinned) return 1;
+            return d1.updated_at < d2.updated_at ? 1 : -1;
         case "UASC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.updated_at > p2.updated_at ? 1 : -1;
+            if (d1.pinned && !d2.pinned) return -1;
+            if (!d1.pinned && d2.pinned) return 1;
+            return d1.updated_at > d2.updated_at ? 1 : -1;
         case "CDESC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.created_at < p2.created_at ? 1 : -1;
+            if (d1.pinned && !d2.pinned) return -1;
+            if (!d1.pinned && d2.pinned) return 1;
+            return d1.created_at < d2.created_at ? 1 : -1;
         case "CASC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.created_at > p2.created_at ? 1 : -1;
+            if (d1.pinned && !d2.pinned) return -1;
+            if (!d1.pinned && d2.pinned) return 1;
+            return d1.created_at > d2.created_at ? 1 : -1;
         default:
             return 0;
     }
 };
 
-export const sortModelComparator = (p1: Model, p2: Model, method: string) => {
+/**
+ * Function for sorting datasets by specified method.
+ * @param m1 Model 1.
+ * @param m2 Model 2.
+ * @param method Sorting method.
+ * @returns -1 if m1 should be before m2, 1 if m2 should be before m1, 0 otherwise.
+ */
+export const sortModelComparator = (m1: Model, m2: Model, method: string) => {
     switch (method) {
         case "AZ":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.model_name.localeCompare(p2.model_name);
+            if (m1.pinned && !m2.pinned) return -1;
+            if (!m1.pinned && m2.pinned) return 1;
+            return m1.model_name.localeCompare(m2.model_name);
         case "ZA":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return -1 * p1.model_name.localeCompare(p2.model_name);
+            if (m1.pinned && !m2.pinned) return -1;
+            if (!m1.pinned && m2.pinned) return 1;
+            return -1 * m1.model_name.localeCompare(m2.model_name);
         case "UDESC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.updated_at < p2.updated_at ? 1 : -1;
+            if (m1.pinned && !m2.pinned) return -1;
+            if (!m1.pinned && m2.pinned) return 1;
+            return m1.updated_at < m2.updated_at ? 1 : -1;
         case "UASC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.updated_at > p2.updated_at ? 1 : -1;
+            if (m1.pinned && !m2.pinned) return -1;
+            if (!m1.pinned && m2.pinned) return 1;
+            return m1.updated_at > m2.updated_at ? 1 : -1;
         case "CDESC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.created_at < p2.created_at ? 1 : -1;
+            if (m1.pinned && !m2.pinned) return -1;
+            if (!m1.pinned && m2.pinned) return 1;
+            return m1.created_at < m2.created_at ? 1 : -1;
         case "CASC":
-            if (p1.pinned && !p2.pinned) return -1;
-            if (!p1.pinned && p2.pinned) return 1;
-            return p1.created_at > p2.created_at ? 1 : -1;
+            if (m1.pinned && !m2.pinned) return -1;
+            if (!m1.pinned && m2.pinned) return 1;
+            return m1.created_at > m2.created_at ? 1 : -1;
         default:
             return 0;
     }
@@ -129,6 +170,7 @@ export const sortModelComparator = (p1: Model, p2: Model, method: string) => {
 
 /**
  * Function for converting date to humanize form.
+ * @param date Date in string format.
  * */
 export const dateToHumanize = (date: string) => {
     const difference = moment.duration(Date.now() - Date.parse(date));
@@ -197,7 +239,6 @@ export const extractColumnsData = (
                     partialChecked: false,
                 },
             });
-            // columns_list.push(key)
         }
 
         TreeSelectBaseColumnsOptionsAll.push({
@@ -215,33 +256,50 @@ export const extractColumnsData = (
     ];
 };
 
+/**
+ * Function for adding duplicate number to array of strings.
+ * Used in Compare Iterations View to distinguish iterations with the same name.
+ * @param array Array of strings.
+ * @returns Array of strings with duplicate numbers.
+ * */
+
 export const addDuplicateNumber = (array: string[]) => {
     const duplicatesCounter: any = {};
     const arrayWithNumbers: string[] = [];
     for (let i = 0; i < array.length; i++) {
-        const ciag = array[i];
+        const str = array[i];
 
-        if (duplicatesCounter[ciag]) {
-            duplicatesCounter[ciag]++;
-            const nowyCiag = `${ciag} [${duplicatesCounter[ciag]}]`;
-            arrayWithNumbers.push(nowyCiag);
+        if (duplicatesCounter[str]) {
+            duplicatesCounter[str]++;
+            const new_str = `${str} [${duplicatesCounter[str]}]`;
+            arrayWithNumbers.push(new_str);
         } else {
-            duplicatesCounter[ciag] = 1;
-            arrayWithNumbers.push(ciag);
+            duplicatesCounter[str] = 1;
+            arrayWithNumbers.push(str);
         }
     }
 
     return arrayWithNumbers;
 };
 
+/**
+ * Function for transposing array.
+ * @param array Array to transpose.
+ * @returns Transposed array.
+ * */
 export const transposeArray = (array: any[]) => {
     return array.reduce(
         (prev, next) =>
-            next.map((item: any, i: number) => (prev[i] || []).concat(next[i])),
+            next.map((_: any, i: number) => (prev[i] || []).concat(next[i])),
         []
     );
 };
 
+/**
+ * Function for retrieving image type from encoded image.
+ * @param encoded_image Encoded image.
+ * @returns Image type data URI.
+ * */
 export const dataImageType = (encoded_image: string) => {
     const startsWith = encoded_image[0];
     switch (startsWith) {
@@ -271,54 +329,75 @@ export const extractIdFromPath = (path: string) => {
     return null;
 };
 
+/**
+ * Function for checking if array contains only numeric values.
+ * @param array Array to check.
+ * @returns True if array contains only numeric values, false otherwise.
+ */
 export const onlyNumbers = (array: any[]) => {
     return array.every((element) => {
         return !isNaN(element);
     });
 };
 
+/**
+ * Function for specifying x axis type based on x axis data.
+ * Used with interactive line and scatter plots.
+ * @param array Array of x axis data.
+ * @returns "value" if array contains only numeric values, "category" otherwise.
+ */
 export const xAxisType = (array: any[][]) => {
+    let type = "value";
     array.forEach((data) => {
         if (!onlyNumbers(data)) {
-            return "category";
+            type = "category";
         }
     });
-    return "value";
+    return type;
 };
 
+/**
+ * Function for specifying x axis type based on x axis data for multiple charts.
+ * Used with interactive line and scatter plots.
+ * @param array Array of charts with x axis data for every chart.
+ * @returns "value" if every chart in array contains only numeric values, "category" otherwise.
+ */
 export const xAxisTypeCompare = (charts: Chart[]) => {
+    let type = "value";
     charts.forEach((chart) => {
         chart.x_data.forEach((data) => {
             if (!onlyNumbers(data)) {
-                return "category";
+                type = "category";
             }
         });
     });
-    return "value";
+    return type;
 };
 
+/**
+ * Function used to specify min x/y axis range value for interactive charts based on x/y axis data.
+ * @param value Echarts object, containing the min and max value of the data.
+ * @returns Floor of min value from object.
+ */
 export const minValue = (value: any) => {
     return Math.floor(value.min);
 };
 
+/**
+ * Function used to specify max x/y axis range value for interactive charts based on x/y axis data.
+ * @param value Echarts object, containing the min and max value of the data.
+ * @returns Ceil of max value from object.
+ */
 export const maxValue = (value: any) => {
     return Math.ceil(value.max);
 };
 
-export const scatterPlotTooltipFormatter = (args: any) => {
-    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
-        args.data[0],
-        args.data[1],
-    ].join(", ")})`;
-};
-
-export const scatterPlotTooltipFormatter2 = (args: any) => {
-    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
-        args.data[0],
-        args.data[1],
-    ].join(", ")})<br />prediction: ${args.data[2]}`;
-};
-
+/**
+ * Function for grouping charts by chart type and chart logical name to perform comparasion of charts.
+ * Used in Compare Iterations View.
+ * @param charts Array of charts (with comparable param set to true).
+ * @returns Object with keys as chart types/chart logical names and values as arrays of charts with the same chart type/chart logical name.
+ * */
 export const groupCustomCharts = (charts: Chart[]) => {
     return charts.reduce((arr: any, chart: Chart) => {
         if (chart.chart_type !== "pie" && chart.chart_type !== "boxplot") {
@@ -332,24 +411,42 @@ export const groupCustomCharts = (charts: Chart[]) => {
     }, {});
 };
 
+/**
+ * Function for checking if every chart in array have the same type.
+ * Used in Compare Iterations View to check if charts can be compared.
+ * @param charts Array of charts.
+ * @param firstType Chart type of the first chart in array.
+ * @returns True if every chart in array have the same type, false otherwise.
+ */
 export const checkTypesInGroup = (charts: Chart[], firstType: string) => {
     return charts.every((chart) => {
         return chart.chart_type === firstType;
     });
 };
 
-const findMaxValue = (counts: Keyable) => {
-    let maxValue = 0;
-    let maxKey = "";
+/**
+ * Helper function for finding the most frequent key in object of pairs value:occurences.
+ * @param counts Object of pairs value:occurences.
+ * @returns Most frequent key.
+ */
+const getMostFrequentValue = (counts: Keyable) => {
+    let highestFrequency = 0;
+    let hfKey = "";
     for (const key in counts) {
-        if (counts[key] > maxValue) {
-            maxValue = counts[key];
-            maxKey = key;
+        if (counts[key] > highestFrequency) {
+            highestFrequency = counts[key];
+            hfKey = key;
         }
     }
-    return maxKey;
+    return hfKey;
 };
 
+/**
+ * Function for finding the most frequent value of chart title, subtitle, x_label and y_label in charts array.
+ * Used in Compare Iterations View to set chart title, subtitle, x_label and y_label based on all charts in group.
+ * @param charts Array of charts.
+ * @returns Array of most frequent value of chart title, subtitle, x_label and y_label.
+ */
 export const getMostFrequentValues = (charts: Chart[]) => {
     const titleCounts: Keyable = {};
     const subtitleCounts: Keyable = {};
@@ -391,35 +488,32 @@ export const getMostFrequentValues = (charts: Chart[]) => {
     });
 
     return [
-        findMaxValue(titleCounts),
-        findMaxValue(subtitleCounts),
-        findMaxValue(xLabelCounts),
-        findMaxValue(yLabelCounts),
+        getMostFrequentValue(titleCounts),
+        getMostFrequentValue(subtitleCounts),
+        getMostFrequentValue(xLabelCounts),
+        getMostFrequentValue(yLabelCounts),
     ];
 };
 
+/**
+ * Function for checking if every bar chart in array have the same x axis data.
+ * Used in Compare Iterations View to check if bar charts can be compared.
+ * @param charts Array of bar charts.
+ * @param firstX X axis data of the first chart in array.
+ * @returns True if every chart in array have the same x axis data, false otherwise.
+ */
 export const checkXDataInBarPlotGroup = (charts: Chart[], firstX: any[]) => {
     return charts.every((chart) => {
         return JSON.stringify(chart.x_data[0]) === JSON.stringify(firstX);
     });
 };
 
-export const getParameterTypes = (objects: Keyable[]) => {
-    const parameterTypes: Keyable = {};
-
-    for (const obj of objects) {
-        for (const key in obj) {
-            if (typeof obj[key] !== "number") {
-                parameterTypes[key] = "agTextColumnFilter";
-            } else if (!parameterTypes[key]) {
-                parameterTypes[key] = "agNumberColumnFilter";
-            }
-        }
-    }
-
-    return parameterTypes;
-};
-
+/**
+ * Function for generating histogram data.
+ * @param values Array of numbers sorted in ascending order.
+ * @param numBins Number of bins.
+ * @returns Array of bins data array [bin start, bin end, bin center, number of items] for every bin.
+ */
 export const generateHistogramData = (values: number[], numBins: number) => {
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
@@ -450,30 +544,56 @@ export const generateHistogramData = (values: number[], numBins: number) => {
     return histogramData;
 };
 
-export const histogramTooltipFormatter = (args: any) => {
-    return `${args.marker} ${args.seriesName}'s bin (${args.dataIndex + 1}): [${
-        Math.round(args.data[0] * 100) / 100
-    }-${Math.round(args.data[1] * 100) / 100}] <br />Items in bin: <b>${
-        args.data[3]
-    }</b>`;
-};
+/**
+ * Function for calculating q-quantile of data.
+ * @param data Array of numbers sorted in ascending order.
+ * @param q Quantile.
+ * @returns q-quantile of data.
+ */
+export const calculateQuantile = (data: number[], q: number) => {
+    const index = (data.length - 1) * q;
 
-export const quantile = (data: number[], q: number) => {
-    const pos = (data.length - 1) * q;
-    const base = Math.floor(pos);
-    const rest = pos - base;
-    if (data[base + 1] !== undefined) {
-        return data[base] + rest * (data[base + 1] - data[base]);
+    if (Number.isInteger(index)) {
+        return data[index];
     } else {
-        return data[base];
+        const lowerIndex = Math.floor(index);
+        const upperIndex = Math.ceil(index);
+
+        const lowerValue = data[lowerIndex];
+        const upperValue = data[upperIndex];
+
+        const fraction = index - lowerIndex;
+        return lowerValue + (upperValue - lowerValue) * fraction;
     }
 };
 
+/**
+ * Function for calculating dot product of two arrays.
+ * @param vec1 Array of numbers.
+ * @param vec2 Array of numbers.
+ * @returns Dot product of two arrays.
+ */
+export const dot = (vec1: number[], vec2: number[]) => {
+    return vec1
+        .map((_, i: number) => vec1[i] * vec2[i])
+        .reduce((m: number, n: number) => m + n);
+};
+
+/**
+ * Function for calculating histogram bins data based on Square Root rule.
+ * @param data Array of numbers sorted in ascending order.
+ * @returns Array of bins data array [bin start, bin end, bin center, number of items] for every bin.
+ * */
 export const squareRootBins = (data: number[]) => {
     const numberOfBins = Math.ceil(Math.sqrt(data.length));
     return generateHistogramData(data, numberOfBins);
 };
 
+/**
+ * Function for calculating histogram bins data based on Scoot rule.
+ * @param data Array of numbers sorted in ascending order.
+ * @returns Array of bins data array [bin start, bin end, bin center, number of items] for every bin.
+ * */
 export const scottBins = (data: number[]) => {
     const mean = data.reduce((a, b) => a + b) / data.length;
 
@@ -491,9 +611,14 @@ export const scottBins = (data: number[]) => {
     return generateHistogramData(data, numberOfBins);
 };
 
+/**
+ * Function for calculating histogram bins data based on Freedman-Diaconis rule.
+ * @param data Array of numbers sorted in ascending order.
+ * @returns Array of bins data array [bin start, bin end, bin center, number of items] for every bin.
+ * */
 export const freedmanDiaconisBins = (data: number[]) => {
     const binWidth =
-        (2 * (quantile(data, 0.75) - quantile(data, 0.25))) /
+        (2 * (calculateQuantile(data, 0.75) - calculateQuantile(data, 0.25))) /
         Math.pow(data.length, 1 / 3);
 
     const numberOfBins = Math.ceil(
@@ -503,12 +628,23 @@ export const freedmanDiaconisBins = (data: number[]) => {
     return generateHistogramData(data, numberOfBins);
 };
 
+/**
+ * Function for calculating histogram bins data based on Sturges rule.
+ * @param data Array of numbers sorted in ascending order.
+ * @returns Array of bins data array [bin start, bin end, bin center, number of items] for every bin.
+ * */
 export const sturgesBins = (data: number[]) => {
     const numOfBins = Math.ceil(Math.log2(data.length) + 1);
 
     return generateHistogramData(data, numOfBins);
 };
 
+/**
+ * Function for calculating frequency of values in array.
+ * Used in Countplot.
+ * @param data Array of values.
+ * @returns Array of unique values and array of their frequencies.
+ * */
 export const countUniqueValues = (data: any[]) => {
     const counts: Keyable = {};
 
@@ -526,6 +662,12 @@ export const countUniqueValues = (data: any[]) => {
     return [unique_values, unique_counts];
 };
 
+/**
+ * Function for calculating number of predictions per day.
+ * Used in Timeseries predictions per day chart.
+ * @param predictions Array of predictions.
+ * @returns Array of arrays [date, number of predictions].
+ * */
 export const countPredictionByDate = (predictions: Keyable[]) => {
     const dateCount: Keyable = {};
 
@@ -556,15 +698,29 @@ export const countPredictionByDate = (predictions: Keyable[]) => {
     return data;
 };
 
+/**
+ * Function for calculating regression metrics for given predictions data.
+ * @param data Array of predictions.
+ * @returns Array of regression metrics - [RMSE, MSE, MAE, R2, MSLE, RMSLE, MedianAE, SMAPE].
+ * */
 export const calculateRegressionMetrics = (data: Prediction[]) => {
     const filteredData = data.filter((prediction: Prediction) => {
-        return prediction.actual;
+        return prediction.actual !== undefined && prediction.actual !== null;
     });
 
     const n = filteredData.length;
 
     if (n === 0) {
-        return [0, 0, 0, 0];
+        return {
+            r2: 0,
+            mse: 0,
+            rmse: 0,
+            mae: 0,
+            msle: 0,
+            rmsle: 0,
+            medae: 0,
+            smape: 0,
+        };
     }
 
     let yTrue: number[] = [];
@@ -586,18 +742,75 @@ export const calculateRegressionMetrics = (data: Prediction[]) => {
         0
     );
 
+    const absoluteErrors = yTrue
+        .map((val, index) => Math.abs(val - yPred[index]))
+        .sort((a, b) => a - b);
+
+    const smapeErrors = [];
+    for (let i = 0; i < n; i++) {
+        const numerator = Math.abs(yTrue[i] - yPred[i]);
+        const denominator = (Math.abs(yTrue[i]) + Math.abs(yPred[i])) / 2;
+
+        const smapeError = denominator !== 0 ? numerator / denominator : 0;
+
+        smapeErrors.push(smapeError);
+    }
+
     const r2 = 1 - SSR / SST;
+
     const mse = SSR / n;
+
     const rmse = Math.sqrt(mse);
+
     const mae =
         yTrue.reduce(
             (sum, val, index) => sum + Math.abs(val - yPred[index]),
             0
         ) / n;
 
-    return [r2, mse, rmse, mae];
+    const msle =
+        yTrue.reduce(
+            (sum, _, index) =>
+                sum +
+                Math.pow(
+                    Math.log(1 + yTrue[index]) - Math.log(1 + yPred[index]),
+                    2
+                ),
+            0
+        ) / n;
+
+    const rmsle = Math.sqrt(msle);
+
+    let medae;
+    if (n % 2 === 0) {
+        const mid1 = n / 2 - 1;
+        const mid2 = n / 2;
+        medae = (absoluteErrors[mid1] + absoluteErrors[mid2]) / 2;
+    } else {
+        const mid = Math.floor(n / 2);
+        medae = absoluteErrors[mid];
+    }
+
+    const smape =
+        smapeErrors.reduce((sum, smapeError) => sum + smapeError, 0) / n;
+
+    return {
+        r2,
+        mse,
+        rmse,
+        mae,
+        msle,
+        rmsle,
+        medae,
+        smape,
+    };
 };
 
+/**
+ * Function for calculating classification metrics for given predictions data.
+ * @param data Array of predictions.
+ * @returns Array of classification metrics - [Accuracy, Precision, Recall, F1-Score, Matthews Correlation Coefficient].
+ * */
 export const calculateClassificationMetrics = (data: Prediction[]) => {
     const filteredData = data.filter((prediction: Prediction) => {
         return prediction.actual !== undefined && prediction.actual !== null;
@@ -606,7 +819,13 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
     const n = filteredData.length;
 
     if (n === 0) {
-        return [0, 0, 0, 0];
+        return {
+            accuracy: 0,
+            precision: 0,
+            recall: 0,
+            f1score: 0,
+            mcc: 0,
+        };
     }
 
     let yTrue: number[] = [];
@@ -616,6 +835,8 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
         yTrue.push(prediction.actual as number);
         yPred.push(prediction.prediction);
     });
+
+    const classes = [...new Set([...yTrue, ...yPred])];
 
     const confusionMatrix = calculateConfusionMatrix(yTrue, yPred);
 
@@ -673,22 +894,52 @@ export const calculateClassificationMetrics = (data: Prediction[]) => {
         metrics.f1Score.reduce((acc: number, val: number) => acc + val, 0) /
         metrics.f1Score.length;
 
-    return [
-        metrics.averageAccuracy,
-        metrics.averagePrecision,
-        metrics.averageRecall,
-        metrics.averageF1Score,
-    ];
+    const c = confusionMatrix.reduce((acc, row, i) => acc + row[i], 0);
+    const s = n;
+
+    const t = Array.from({ length: classes.length }, () => 0);
+    const p = Array.from({ length: classes.length }, () => 0);
+
+    for (let k = 0; k < classes.length; k++) {
+        for (let i = 0; i < classes.length; i++) {
+            t[k] += confusionMatrix[i][k];
+        }
+    }
+
+    for (let k = 0; k < classes.length; k++) {
+        for (let i = 0; i < classes.length; i++) {
+            p[k] += confusionMatrix[k][i];
+        }
+    }
+
+    const numerator = c * s - dot(t, p);
+    const denominator =
+        Math.sqrt(s * s - dot(p, p)) * Math.sqrt(s * s - dot(t, t));
+
+    const mcc = denominator !== 0 ? numerator / denominator : 0;
+
+    metrics.mcc = mcc;
+
+    return {
+        accuracy: metrics.averageAccuracy,
+        precision: metrics.averagePrecision,
+        recall: metrics.averageRecall,
+        f1score: metrics.averageF1Score,
+        mcc: metrics.mcc,
+    };
 };
 
+/**
+ * Function for calculating confusion matrix for given predictions data.
+ * Used for calculating classification metrics.
+ * @param yTrue Array of actual values.
+ * @param yPred Array of predicted values.
+ * @returns Confusion matrix.
+ * */
 export const calculateConfusionMatrix = (yTrue: any[], yPred: any[]) => {
-    const classes = [...new Set([...yTrue, ...yPred])];
+    const classes = [...new Set([...yTrue, ...yPred])].sort((a, b) => a - b);
 
-    const classesMap: Keyable = {};
-
-    for (let i = 0; i < classes.length; i++) {
-        classesMap[classes[i]] = i;
-    }
+    const classesMap = generateClassesMapping(classes);
 
     const confusionMatrix = Array.from({ length: classes.length }, () =>
         Array.from({ length: classes.length }, () => 0)
@@ -704,6 +955,71 @@ export const calculateConfusionMatrix = (yTrue: any[], yPred: any[]) => {
     return confusionMatrix;
 };
 
+/**
+ * Helper function for calculating confusion matrix for given predictions data.
+ * Used for confusion matrix map.
+ * @param data Array of predictions.
+ * @returns Confusion matrix and classes maping.
+ * */
+export const calculateConfusionMatrixForMapPlot = (data: Prediction[]) => {
+    const filteredData = data.filter((prediction: Prediction) => {
+        return prediction.actual !== undefined && prediction.actual !== null;
+    });
+
+    const n = filteredData.length;
+
+    if (n === 0) {
+        return {
+            classesMap: {},
+            confusionMatrix: [],
+        };
+    }
+
+    let yTrue: number[] = [];
+    let yPred: number[] = [];
+
+    filteredData.forEach((prediction: Prediction) => {
+        yTrue.push(prediction.actual as number);
+        yPred.push(prediction.prediction);
+    });
+
+    const classes = [...new Set([...yTrue, ...yPred])].sort((a, b) => a - b);
+
+    const classesMap = generateClassesMapping(classes);
+
+    const confusionMatrix = Array.from({ length: classes.length }, () =>
+        Array.from({ length: classes.length }, () => 0)
+    );
+
+    for (let i = 0; i < yTrue.length; i++) {
+        const trueClass = classesMap[yTrue[i]];
+        const predictedClass = classesMap[yPred[i]];
+
+        confusionMatrix[trueClass][predictedClass]++;
+    }
+
+    return {
+        classesMap,
+        confusionMatrix,
+    };
+};
+
+/**
+ * Helper function for generating classes mapping for confusion matrix calculation.
+ * @param classes Array of classes names.
+ */
+export const generateClassesMapping = (classes: any[]) => {
+    const classesMap: Keyable = {};
+    for (let i = 0; i < classes.length; i++) {
+        classesMap[classes[i]] = i;
+    }
+    return classesMap;
+};
+/**
+ * Helper function for generating chart title for monitoring chart based it's type.
+ * @param chart Monitoring chart.
+ * @returns Chart title.
+ */
 export const generateChartTitle = (chart: MonitoringChart) => {
     switch (chart.chart_type) {
         case "histogram":
@@ -721,4 +1037,131 @@ export const generateChartTitle = (chart: MonitoringChart) => {
         case "classification_metrics":
             return `Classification metrics`;
     }
-}
+};
+
+/**
+ * Helper function for generating scatter plot tooltip.
+ * @param args Echarts object.
+ * @returns Tooltip formatter.
+ */
+export const scatterPlotTooltipFormatter = (args: any) => {
+    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
+        args.data[0],
+        args.data[1],
+    ].join(", ")})`;
+};
+
+/**
+ * Helper function for generating scatter plot tooltip with prediction value.
+ * @param args Echarts object.
+ * @returns Tooltip formatter.
+ */
+export const scatterPlotTooltipFormatter2 = (args: any) => {
+    return `${args.marker}${args.seriesName} (${args.dataIndex})<br />(${[
+        args.data[0],
+        args.data[1],
+    ].join(", ")})<br />prediction: ${args.data[2]}`;
+};
+
+/**
+ * Helper function for generating histogram plot tooltip.
+ * @param args Echarts object.
+ * @returns Tooltip formatter.
+ */
+export const histogramTooltipFormatter = (args: any) => {
+    return `${args.marker} ${args.seriesName}'s bin (${args.dataIndex + 1}): [${
+        Math.round(args.data[0] * 100) / 100
+    }-${Math.round(args.data[1] * 100) / 100}] <br />Items in bin: <b>${
+        args.data[3]
+    }</b>`;
+};
+
+/**
+ * Helper function for prepare create monitoring chart form data for sending to backend.
+ */
+export const prepareCreateMonitoringChartFormData = (
+    values: z.infer<typeof createMonitoringChartFormSchema>
+) => {
+    let chartData: Keyable;
+
+    switch (values.chart_type) {
+        case MonitoringChartType.HISTOGRAM:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: values.x_axis_column as string,
+                y_axis_column: null,
+                bin_method: values.bin_method,
+                bin_number:
+                    values.bin_method === BinMethod.FIXED_NUMBER
+                        ? values.bin_number
+                        : null,
+                metrics: null,
+            };
+            break;
+        case MonitoringChartType.COUNTPLOT:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: values.x_axis_column as string,
+                second_column: null,
+                bin_method: null,
+                bin_number: null,
+                metrics: null,
+            };
+            break;
+        case MonitoringChartType.TIMESERIES:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: null,
+                y_axis_columns: values.y_axis_columns as string[],
+                bin_method: null,
+                bin_number: null,
+                metrics: null,
+            };
+            break;
+        case MonitoringChartType.SCATTER:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: values.x_axis_column as string,
+                y_axis_columns: values.y_axis_columns as string[],
+                bin_method: null,
+                bin_number: null,
+                metrics: null,
+            };
+            break;
+        case MonitoringChartType.SCATTER_WITH_HISTOGRAMS:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: values.x_axis_column as string,
+                y_axis_columns: values.y_axis_columns as string[],
+                bin_method: values.bin_method,
+                bin_number:
+                    values.bin_method === BinMethod.FIXED_NUMBER
+                        ? values.bin_number
+                        : null,
+                metrics: null,
+            };
+            break;
+        case MonitoringChartType.CLASSIFICATION_METRICS:
+        case MonitoringChartType.REGRESSION_METRICS:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: null,
+                y_axis_columns: null,
+                bin_method: null,
+                bin_number: null,
+                metrics: values.metrics,
+            };
+            break;
+        case MonitoringChartType.CONFUSION_MATRIX:
+            chartData = {
+                chart_type: values.chart_type,
+                x_axis_column: null,
+                y_axis_columns: null,
+                bin_method: null,
+                bin_number: null,
+                metrics: null,
+            };
+            break;
+    }
+    return chartData;
+};

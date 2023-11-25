@@ -1,5 +1,13 @@
 import { Keyable } from "@/types/types";
 
+/**
+ * Function for generating the options (configuration) object for a pie plot.
+ * @param theme Page theme.
+ * @param series Chart series data.
+ * @param title Chart title.
+ * @param subtitle Chart subtitle.
+ * @returns Object containing the options for a pie plot.
+ */
 export const piePlotOptions = (
     theme: "dark" | "light" | "system",
     series: Keyable[],

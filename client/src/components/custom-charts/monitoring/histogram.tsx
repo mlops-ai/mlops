@@ -9,26 +9,25 @@ import {
     squareRootBins,
     sturgesBins,
 } from "@/lib/utils";
-import { BinMethods, MonitoringChart } from "@/types/monitoring_chart";
+import { BinMethod, MonitoringChartProps } from "@/types/monitoring-chart";
 import { Prediction } from "@/types/prediction";
 
-interface MonitoringChartProps {
-    chart_schema: MonitoringChart;
-    predictionsData: Prediction[];
-    onOpen: () => void;
-    theme: "dark" | "light" | "system";
-}
-
+/**
+ * Histogram chart component.
+ */
 const Histogram = ({
     chart_schema,
     predictionsData,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
-
     let data: number[];
 
-    switch (chart_schema.first_column) {
+    /**
+     * Extract x column data.
+     */
+    switch (chart_schema.x_axis_column) {
         case "prediction":
             data = predictionsData
                 .map((row: Prediction) => row.prediction)
@@ -37,22 +36,31 @@ const Histogram = ({
 
         case "actual":
             data = predictionsData
-                .filter((row: Prediction) => row.actual !== null && row.actual !== undefined)
+                .filter(
+                    (row: Prediction) =>
+                        row.actual !== null && row.actual !== undefined
+                )
                 .map((row: Prediction) => row.actual as number)
                 .sort((a: number, b: number) => a - b);
             break;
         default:
             data = predictionsData
-                .map((row: Prediction) => row.input_data[chart_schema.first_column as string])
+                .map(
+                    (row: Prediction) =>
+                        row.input_data[chart_schema.x_axis_column as string]
+                )
                 .sort((a: number, b: number) => a - b);
             break;
     }
-
+    
     let minValue = data[0];
     let maxValue = data[data.length - 1];
-    
+
     let histogramData;
 
+    /**
+     * Prepare histogram data.
+     */
     switch (chart_schema.bin_method) {
         case "squareRoot":
             histogramData = squareRootBins(data);
@@ -83,13 +91,15 @@ const Histogram = ({
             <ReactEcharts
                 option={histogramOptions(
                     histogramData,
-                    chart_schema.first_column as string,
+                    chart_schema.x_axis_column as string,
                     minValue,
                     maxValue,
-                    chart_schema.bin_method as BinMethods,
+                    chart_schema.bin_method as BinMethod,
                     onOpen,
+                    onEdit,
                     theme
                 )}
+                notMerge={true}
                 style={{ height: "400px" }}
                 theme="customed"
             />

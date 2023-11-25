@@ -1,16 +1,22 @@
+/**
+ * Imports
+ */
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+/**
+ * Hooks
+ */
 import { Dispatch, SetStateAction, useState } from "react";
 import { useData } from "@/hooks/use-data-hook";
 import { useModal } from "@/hooks/use-modal-hook";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 
 import { toast } from "react-toastify";
 import { createToast } from "@/lib/toast";
 
-import { cn } from "@/lib/utils";
+import { cn, prepareCreateMonitoringChartFormData } from "@/lib/utils";
 
 import { backendConfig } from "@/config/backend";
 
@@ -29,172 +35,31 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import SectionSeparator from "@/components/navigation/section-separator";
 
-import { Model } from "@/types/model";
-import { Keyable } from "@/types/types";
 import ChartTypeSelect from "./create-monitoring-chart-form/chart-type-select";
-import ColumnSelect from "./create-monitoring-chart-form/column-select";
+import ColumnSelect from "./create-monitoring-chart-form/column-select-single";
 import BinMethodSelect from "./create-monitoring-chart-form/bin-method-select";
 import BinNumberInput from "./create-monitoring-chart-form/bin-number-input";
+import MultiSelect from "./create-monitoring-chart-form/multi-select";
 
-const formSchema = z
-    .object({
-        chart_type: z.enum(
-            [
-                "histogram",
-                "countplot",
-                "scatter",
-                "scatter_with_histograms",
-                "timeseries",
-                "classification_metrics",
-                "regression_metrics",
-            ],
-            { required_error: "Chart type is required." }
-        ),
-        first_column: z.string().optional(),
-        second_column: z.string().optional(),
-        bin_method: z
-            .enum([
-                "squareRoot",
-                "freedmanDiaconis",
-                "scott",
-                "sturges",
-                "fixedNumber",
-            ])
-            .optional(),
-        bin_number: z.coerce
-            .number()
-            .min(2, {
-                message: "Bin number must be greater than 1.",
-            })
-            .optional(),
-    })
-    .refine(
-        (data) => {
-            return !(
-                [
-                    "histogram",
-                    "countplot",
-                    "scatter_with_histograms",
-                    "timeseries",
-                    "scatter",
-                ].includes(data.chart_type) && !data.first_column
-            );
-        },
-        {
-            message: "This field is required.",
-            path: ["first_column"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                ["scatter_with_histograms", "scatter"].includes(
-                    data.chart_type
-                ) && !data.second_column
-            );
-        },
-        {
-            message: "This field is required.",
-            path: ["second_column"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                ["histogram", "scatter_with_histograms"].includes(
-                    data.chart_type
-                ) && !data.bin_method
-            );
-        },
-        {
-            message: "This field is required.",
-            path: ["bin_method"],
-        }
-    )
+/**
+ * Mapings
+ */
+import {
+    classificationMetricsMap,
+    regressionMetricsMap,
+} from "@/config/maping";
 
-    .refine(
-        (data) => {
-            return !(
-                data.chart_type === "histogram" &&
-                data.first_column !== "" &&
-                !data.bin_method
-            );
-        },
-        {
-            message: "Bin method is required.",
-            path: ["bin_method"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                data.chart_type === "histogram" &&
-                data.first_column !== "" &&
-                data.bin_method === "fixedNumber" &&
-                !data.bin_number
-            );
-        },
-        {
-            message: "Bin number is required for fixed number method.",
-            path: ["bin_number"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                data.chart_type === "scatter_with_histograms" &&
-                data.first_column !== "" &&
-                !data.second_column
-            );
-        },
-        {
-            message:
-                "Second column is required for scatter plot with histograms.",
-            path: ["second_column"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                data.chart_type === "scatter_with_histograms" &&
-                data.first_column !== "" &&
-                data.second_column !== "" &&
-                !data.bin_method
-            );
-        },
-        {
-            message: "Bin method is required.",
-            path: ["bin_method"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                data.chart_type === "scatter_with_histograms" &&
-                data.first_column !== "" &&
-                data.second_column !== "" &&
-                data.bin_method === "fixedNumber" &&
-                !data.bin_number
-            );
-        },
-        {
-            message: "Bin number is required for fixed number method.",
-            path: ["bin_number"],
-        }
-    )
-    .refine(
-        (data) => {
-            return !(
-                data.chart_type === "scatter" &&
-                data.first_column !== "" &&
-                !data.second_column
-            );
-        },
-        {
-            message: "Second column is required for scatter plot.",
-            path: ["second_column"],
-        }
-    );
+/**
+ * Types
+ */
+import { Model } from "@/types/model";
+
+/**
+ * Form validation schema
+ */
+import { createMonitoringChartFormSchema as formSchema } from "@/lib/validators";
+import { BinMethod, MonitoringChartType } from "@/types/monitoring-chart";
+import ColumnSelectMultiple from "./create-monitoring-chart-form/column-select-multiple";
 
 const CreateMonitoringChartModal = () => {
     const { type, isOpen, onClose, data } = useModal();
@@ -209,114 +74,78 @@ const CreateMonitoringChartModal = () => {
         resolver: zodResolver(formSchema),
     });
 
-    const isLoading = form.formState.isSubmitting;
-
     const { watch } = form;
+
+    const isLoading = form.formState.isSubmitting;
 
     const chartTypeValue = watch("chart_type");
     const binMethodValue = watch("bin_method");
-    const firstColumnValue = watch("first_column");
-    const secondColumnValue = watch("second_column");
+    const xAxisColumnValue = watch("x_axis_column");
+    const yAxisColumnsValue = watch("y_axis_columns");
+    const metricsValue = watch("metrics");
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!data.model || !data.baseFeatures) return;
 
-        let chartData: Keyable;
+        const chartData = prepareCreateMonitoringChartFormData(values);
 
-        switch (values.chart_type) {
-            case "histogram":
-                chartData = {
-                    chart_type: values.chart_type,
-                    first_column: values.first_column as string,
-                    second_column: null,
-                    bin_method: values.bin_method,
-                    bin_number:
-                        values.bin_method === "fixedNumber"
-                            ? values.bin_number
-                            : null,
-                };
-                break;
-            case "countplot":
-            case "timeseries":
-                chartData = {
-                    chart_type: values.chart_type,
-                    first_column: values.first_column as string,
-                    second_column: null,
-                    bin_method: null,
-                    bin_number: null,
-                };
-                break;
-            case "scatter":
-                chartData = {
-                    chart_type: values.chart_type,
-                    first_column: values.first_column as string,
-                    second_column: values.second_column as string,
-                    bin_method: null,
-                    bin_number: null,
-                };
-                break;
-            case "scatter_with_histograms":
-                chartData = {
-                    chart_type: values.chart_type,
-                    first_column: values.first_column as string,
-                    second_column: values.second_column as string,
-                    bin_method: values.bin_method,
-                    bin_number:
-                        values.bin_method === "fixedNumber"
-                            ? values.bin_number
-                            : null,
-                };
-                break;
-            case "classification_metrics":
-            case "regression_metrics":
-                chartData = {
-                    chart_type: values.chart_type,
-                    first_column: null,
-                    second_column: null,
-                    bin_method: null,
-                    bin_number: null,
-                };
-                break;
-        }
+        console.log(values);
 
-        await axios
-            .post(
-                `${url}:${port}/monitored-models/${data.model._id}/charts`,
-                chartData
-            )
-            .then((res) => {
-                handleClose();
-                form.reset();
-                dataStore.updateModel(
-                    data.model?._id as string,
-                    {
-                        ...data.model,
-                        interactive_charts: [
-                            ...data.model!.interactive_charts,
-                            res.data,
-                        ],
-                    } as Model
-                );
+        chartData["id"] = Math.random().toString(36);
+        console.log(chartData);
 
-                createToast({
-                    id: "create-monitoring-chart",
-                    message: "Monitoring chart created successfully!",
-                    type: "success",
-                });
-            })
-            .catch((error: any) => {
-                createToast({
-                    id: "create-monitoring-chart",
-                    message: error.response?.data.detail,
-                    type: "error",
-                });
-            });
+        handleClose();
+        form.reset();
+        dataStore.updateModel(
+            data.model?._id as string,
+            {
+                ...data.model,
+                interactive_charts: [
+                    ...data.model!.interactive_charts,
+                    chartData,
+                ],
+            } as Model
+        );
+
+        // await axios
+        //     .post(
+        //         `${url}:${port}/monitored-models/${data.model._id}/charts`,
+        //         chartData
+        //     )
+        //     .then((res) => {
+        //         handleClose();
+        //         form.reset();
+        //         dataStore.updateModel(
+        //             data.model?._id as string,
+        //             {
+        //                 ...data.model,
+        //                 interactive_charts: [
+        //                     ...data.model!.interactive_charts,
+        //                     res.data,
+        //                 ],
+        //             } as Model
+        //         );
+
+        //         createToast({
+        //             id: "create-monitoring-chart",
+        //             message: "Monitoring chart created successfully!",
+        //             type: "success",
+        //         });
+        //     })
+        //     .catch((error: any) => {
+        //         createToast({
+        //             id: "create-monitoring-chart",
+        //             message: error.response?.data.detail,
+        //             type: "error",
+        //         });
+        //     });
     };
 
     const [openChartTypeSelect, setOpenChartTypeSelect] = useState(false);
-    const [openFirstColumnSelect, setOpenFirstColumnSelect] = useState(false);
-    const [openSecondColumnSelect, setOpenSecondColumnSelect] = useState(false);
+    const [openXAxisColumnSelect, setOpenXAxisColumnSelect] = useState(false);
+    const [openYAxisColumnsSelect, setOpenYAxisColumnsSelect] = useState(false);
     const [openBinMethodSelect, setOpenBinMethodSelect] = useState(false);
+    const [openMetricsSelect, setOpenMetricsSelect] = useState(false);
 
     const handleCloseSelect = (
         open: boolean,
@@ -356,38 +185,51 @@ const CreateMonitoringChartModal = () => {
 
         if (
             [
-                "histogram",
-                "countplot",
-                "scatter_with_histograms",
-                "timeseries",
-                "scatter",
+                MonitoringChartType.HISTOGRAM,
+                MonitoringChartType.COUNTPLOT,
+                MonitoringChartType.SCATTER_WITH_HISTOGRAMS,
+                MonitoringChartType.SCATTER,
             ].includes(formValues.chart_type) &&
-            !formValues.first_column
+            !formValues.x_axis_column
         )
             return true;
 
         if (
-            ["scatter_with_histograms", "scatter"].includes(
-                formValues.chart_type
-            ) &&
-            !formValues.second_column
+            [
+                MonitoringChartType.SCATTER_WITH_HISTOGRAMS,
+                MonitoringChartType.SCATTER,
+                MonitoringChartType.TIMESERIES,
+            ].includes(formValues.chart_type) &&
+            (!formValues.y_axis_columns ||
+                formValues.y_axis_columns.length === 0)
         )
             return true;
 
         if (
-            ["histogram", "scatter_with_histograms"].includes(
-                formValues.chart_type
-            ) &&
+            [
+                MonitoringChartType.HISTOGRAM,
+                MonitoringChartType.SCATTER_WITH_HISTOGRAMS,
+            ].includes(formValues.chart_type) &&
             !formValues.bin_method
         )
             return true;
 
         if (
-            ["histogram", "scatter_with_histograms"].includes(
-                formValues.chart_type
-            ) &&
-            formValues.bin_method === "fixedNumber" &&
+            [
+                MonitoringChartType.HISTOGRAM,
+                MonitoringChartType.SCATTER_WITH_HISTOGRAMS,
+            ].includes(formValues.chart_type) &&
+            formValues.bin_method === BinMethod.FIXED_NUMBER &&
             (!formValues.bin_number || formValues.bin_number < 2)
+        )
+            return true;
+
+        if (
+            [
+                MonitoringChartType.CLASSIFICATION_METRICS,
+                MonitoringChartType.REGRESSION_METRICS,
+            ].includes(formValues.chart_type) &&
+            (!formValues.metrics || formValues.metrics.length === 0)
         )
             return true;
 
@@ -398,12 +240,12 @@ const CreateMonitoringChartModal = () => {
         ...(data.baseFeatures as string[]),
         "prediction",
         "actual",
-    ].filter((feature) => feature !== secondColumnValue);
+    ].filter((feature) => !(yAxisColumnsValue || []).includes(feature));
     const baseFeatures2 = [
         ...(data.baseFeatures as string[]),
         "prediction",
         "actual",
-    ].filter((feature) => feature !== firstColumnValue);
+    ].filter((feature) => feature !== xAxisColumnValue);
 
     return (
         <>
@@ -440,7 +282,8 @@ const CreateMonitoringChartModal = () => {
 
                             {/* HISTOGRAM - START */}
 
-                            {chartTypeValue === "histogram" && (
+                            {chartTypeValue ===
+                                MonitoringChartType.HISTOGRAM && (
                                 <>
                                     <h2 className="mx-4 my-2">
                                         <div className="flex items-center justify-center mb-1 text-xl">
@@ -451,12 +294,12 @@ const CreateMonitoringChartModal = () => {
 
                                     <ColumnSelect
                                         form={form}
-                                        column="first_column"
+                                        column="x_axis_column"
                                         baseFeatures={baseFeatures}
                                         description="Histogram will be based on this column."
-                                        openColumnSelect={openFirstColumnSelect}
+                                        openColumnSelect={openXAxisColumnSelect}
                                         setOpenColumnSelect={
-                                            setOpenFirstColumnSelect
+                                            setOpenXAxisColumnSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
@@ -474,8 +317,12 @@ const CreateMonitoringChartModal = () => {
                                         disabled={isLoading}
                                     />
 
-                                    {binMethodValue === "fixedNumber" && (
-                                        <BinNumberInput form={form} disabled={isLoading} />
+                                    {binMethodValue ===
+                                        BinMethod.FIXED_NUMBER && (
+                                        <BinNumberInput
+                                            form={form}
+                                            disabled={isLoading}
+                                        />
                                     )}
                                 </>
                             )}
@@ -484,7 +331,8 @@ const CreateMonitoringChartModal = () => {
 
                             {/* COUNT PLOT - START */}
 
-                            {chartTypeValue === "countplot" && (
+                            {chartTypeValue ===
+                                MonitoringChartType.COUNTPLOT && (
                                 <>
                                     <h2 className="mx-4 my-2">
                                         <div className="flex items-center justify-center mb-1 text-xl">
@@ -495,12 +343,12 @@ const CreateMonitoringChartModal = () => {
 
                                     <ColumnSelect
                                         form={form}
-                                        column="first_column"
+                                        column="x_axis_column"
                                         baseFeatures={baseFeatures}
                                         description="Countplot will be based on this column."
-                                        openColumnSelect={openFirstColumnSelect}
+                                        openColumnSelect={openXAxisColumnSelect}
                                         setOpenColumnSelect={
-                                            setOpenFirstColumnSelect
+                                            setOpenXAxisColumnSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
@@ -512,7 +360,7 @@ const CreateMonitoringChartModal = () => {
 
                             {/* SCATTER - START */}
 
-                            {chartTypeValue === "scatter" && (
+                            {chartTypeValue === MonitoringChartType.SCATTER && (
                                 <>
                                     <h2 className="mx-4 my-2">
                                         <div className="flex items-center justify-center mb-1 text-xl">
@@ -523,30 +371,26 @@ const CreateMonitoringChartModal = () => {
 
                                     <ColumnSelect
                                         form={form}
-                                        column="first_column"
+                                        column="x_axis_column"
                                         baseFeatures={baseFeatures}
                                         description="Scatter will be based on this column."
-                                        openColumnSelect={openFirstColumnSelect}
+                                        openColumnSelect={openXAxisColumnSelect}
                                         setOpenColumnSelect={
-                                            setOpenFirstColumnSelect
+                                            setOpenXAxisColumnSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
                                     />
 
-                                    <ColumnSelect
+                                    <ColumnSelectMultiple
                                         form={form}
-                                        column="second_column"
-                                        baseFeatures={baseFeatures2}
-                                        description="Scatter will be based on this column."
-                                        openColumnSelect={
-                                            openSecondColumnSelect
-                                        }
-                                        setOpenColumnSelect={
-                                            setOpenSecondColumnSelect
+                                        openSelect={openYAxisColumnsSelect}
+                                        setOpenSelect={
+                                            setOpenYAxisColumnsSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
+                                        baseFeatures={baseFeatures2}
                                     />
                                 </>
                             )}
@@ -555,7 +399,8 @@ const CreateMonitoringChartModal = () => {
 
                             {/* SCATTER WITH HISTOGRAMS - START */}
 
-                            {chartTypeValue === "scatter_with_histograms" && (
+                            {chartTypeValue ===
+                                MonitoringChartType.SCATTER_WITH_HISTOGRAMS && (
                                 <>
                                     <h2 className="mx-4 my-2">
                                         <div className="flex items-center justify-center mb-1 text-xl">
@@ -566,12 +411,12 @@ const CreateMonitoringChartModal = () => {
 
                                     <ColumnSelect
                                         form={form}
-                                        column="first_column"
+                                        column="x_axis_column"
                                         baseFeatures={baseFeatures}
                                         description="Scatter and histograms will be based on this column."
-                                        openColumnSelect={openFirstColumnSelect}
+                                        openColumnSelect={openXAxisColumnSelect}
                                         setOpenColumnSelect={
-                                            setOpenFirstColumnSelect
+                                            setOpenXAxisColumnSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
@@ -579,14 +424,14 @@ const CreateMonitoringChartModal = () => {
 
                                     <ColumnSelect
                                         form={form}
-                                        column="second_column"
+                                        column="y_axis_columns"
                                         baseFeatures={baseFeatures2}
                                         description="Scatter and histograms will be based on this column."
                                         openColumnSelect={
-                                            openSecondColumnSelect
+                                            openYAxisColumnsSelect
                                         }
                                         setOpenColumnSelect={
-                                            setOpenSecondColumnSelect
+                                            setOpenYAxisColumnsSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
@@ -604,8 +449,12 @@ const CreateMonitoringChartModal = () => {
                                         disabled={isLoading}
                                     />
 
-                                    {binMethodValue === "fixedNumber" && (
-                                        <BinNumberInput form={form} disabled={isLoading} />
+                                    {binMethodValue ===
+                                        BinMethod.FIXED_NUMBER && (
+                                        <BinNumberInput
+                                            form={form}
+                                            disabled={isLoading}
+                                        />
                                     )}
                                 </>
                             )}
@@ -614,7 +463,8 @@ const CreateMonitoringChartModal = () => {
 
                             {/* TIMESERIES - START */}
 
-                            {chartTypeValue === "timeseries" && (
+                            {chartTypeValue ===
+                                MonitoringChartType.TIMESERIES && (
                                 <>
                                     <h2 className="mx-4 my-2">
                                         <div className="flex items-center justify-center mb-1 text-xl">
@@ -622,22 +472,79 @@ const CreateMonitoringChartModal = () => {
                                         </div>
                                         <SectionSeparator />
                                     </h2>
-                                    <ColumnSelect
+
+                                    <ColumnSelectMultiple
                                         form={form}
-                                        column="first_column"
-                                        baseFeatures={baseFeatures}
-                                        description="Timeseries will be based on this column."
-                                        openColumnSelect={openFirstColumnSelect}
-                                        setOpenColumnSelect={
-                                            setOpenFirstColumnSelect
+                                        openSelect={openYAxisColumnsSelect}
+                                        setOpenSelect={
+                                            setOpenYAxisColumnsSelect
                                         }
                                         handleCloseSelect={handleCloseSelect}
                                         disabled={isLoading}
+                                        baseFeatures={baseFeatures2}
                                     />
                                 </>
                             )}
 
                             {/* TIMESERIES - END */}
+
+                            {/* REGRESSION METRICS - START */}
+
+                            {chartTypeValue ===
+                                MonitoringChartType.REGRESSION_METRICS && (
+                                <>
+                                    <h2 className="mx-4 my-2">
+                                        <div className="flex items-center justify-center mb-1 text-xl">
+                                            Regression metrics options
+                                        </div>
+                                        <SectionSeparator />
+                                    </h2>
+                                    <MultiSelect
+                                        form={form}
+                                        openMetricsSelect={openMetricsSelect}
+                                        setOpenMetricsSelect={
+                                            setOpenMetricsSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
+                                        options={Object.keys(
+                                            regressionMetricsMap
+                                        )}
+                                        mapping={regressionMetricsMap}
+                                    />
+                                </>
+                            )}
+
+                            {/* REGRESSION METRICS - END */}
+
+                            {/* CLASSIFICATION METRICS - START */}
+
+                            {chartTypeValue ===
+                                MonitoringChartType.CLASSIFICATION_METRICS && (
+                                <>
+                                    <h2 className="mx-4 my-2">
+                                        <div className="flex items-center justify-center mb-1 text-xl">
+                                            Classification metrics options
+                                        </div>
+                                        <SectionSeparator />
+                                    </h2>
+                                    <MultiSelect
+                                        form={form}
+                                        openMetricsSelect={openMetricsSelect}
+                                        setOpenMetricsSelect={
+                                            setOpenMetricsSelect
+                                        }
+                                        handleCloseSelect={handleCloseSelect}
+                                        disabled={isLoading}
+                                        options={Object.keys(
+                                            classificationMetricsMap
+                                        )}
+                                        mapping={classificationMetricsMap}
+                                    />
+                                </>
+                            )}
+
+                            {/* CLASSIFICATION METRICS - END */}
 
                             <SectionSeparator />
                             <DialogFooter className="px-4 pt-4 pb-2">

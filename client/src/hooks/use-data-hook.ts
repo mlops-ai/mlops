@@ -7,6 +7,7 @@ import { Keyable } from "@/types/types";
 import { Model } from "@/types/model";
 import { Dataset } from "@/types/dataset";
 import { Prediction } from "@/types/prediction";
+import { MonitoringChart } from "@/types/monitoring-chart";
 
 interface DataStore {
     projects: Project[] | null;
@@ -43,6 +44,11 @@ interface DataStore {
     deleteModel: (model_id: string) => void;
     updateModel: (model_id: string, model: Model) => void;
 
+    updateMonitoringChart: (
+        model_id: string,
+        chart_id: string,
+        chart: MonitoringChart
+    ) => void;
     deleteMonitoringChart: (model_id: string, chart_id: string) => void;
 
     updatePrediction: (
@@ -331,6 +337,33 @@ export const useData = create<DataStore>((set) => ({
         });
     },
 
+    updateMonitoringChart: (
+        model_id: string,
+        chart_id: string,
+        chart: MonitoringChart
+    ) => {
+        set((state) => {
+            if (state.models) {
+                const index = state.models.findIndex(
+                    (model) => model._id === model_id
+                );
+
+                if (index === -1) return state;
+
+                const chart_index = state.models[
+                    index
+                ].interactive_charts.findIndex(
+                    (chart) => chart.id === chart_id
+                );
+
+                if (chart_index === -1) return state;
+
+                state.models[index].interactive_charts[chart_index] = chart;
+                return { models: [...state.models] };
+            }
+            return { models: null };
+        });
+    },
     deleteMonitoringChart: (model_id: string, chart_id: string) => {
         set((state) => {
             if (state.models) {

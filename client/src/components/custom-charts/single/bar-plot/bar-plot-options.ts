@@ -1,5 +1,16 @@
 import { Keyable } from "@/types/types";
 
+/**
+ * Function for generating the options (configuration) object for a bar plot.
+ * @param theme Page theme.
+ * @param x_data Chart x-axis data.
+ * @param series Chart series data.
+ * @param x_label Chart x-axis label.
+ * @param y_label Chart y-axis label.
+ * @param title Chart title.
+ * @param subtitle Chart subtitle.
+ * @returns Object containing the options for a bar plot.
+ */
 export const barPlotOptions = (
     theme: "dark" | "light" | "system",
     x_data: any[][],
@@ -45,7 +56,7 @@ export const barPlotOptions = (
             },
         },
         tooltip: {
-            trigger: "item"
+            trigger: "item",
         },
         xAxis: {
             type: "category",

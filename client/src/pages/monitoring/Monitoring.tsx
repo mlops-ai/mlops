@@ -91,6 +91,8 @@ const Monitoring = () => {
         return <ModelIsEmpty />;
     };
 
+    console.log(modelData);
+
     return (
         <div className="relative">
             {isLoading && (

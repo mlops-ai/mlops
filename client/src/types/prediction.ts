@@ -6,6 +6,5 @@ export interface Prediction {
     predicted_by: string;
     input_data: Keyable;
     prediction: number;
-    real_value?: number;
     actual?: number;
 }

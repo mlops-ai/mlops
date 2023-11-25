@@ -41,7 +41,7 @@ export const PredictionInfo = () => {
         },
         {
             field: "actual",
-            headerName: "Real Value",
+            headerName: "Actual Value",
             pinned: true,
             filter: "agNumberColumnFilter",
             editable: true,
@@ -57,7 +57,7 @@ export const PredictionInfo = () => {
                     <span
                         title={moment(
                             new Date(val.data["prediction_date"])
-                        ).format("DD-MM-YYYY, HH:mm:ss")}
+                        ).format("DD-MM-YYYY, HH:mm:ss.SSS")}
                     >
                         {dateToHumanize(val.data["prediction_date"])}
                     </span>

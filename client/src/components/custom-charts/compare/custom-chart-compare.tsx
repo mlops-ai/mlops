@@ -15,6 +15,9 @@ const ChartMap = {
     scatter: ScatterPlotCompare,
 };
 
+/**
+ * Custom chart compare component wrapper.
+ */
 const CustomChartCompare = ({ type, theme, charts }: CustomChartProps) => {
     const ChartComponent = ChartMap[type];
     return (

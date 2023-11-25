@@ -1,5 +1,5 @@
 import { Iteration } from "./iteration";
-import { MonitoringChart } from "./monitoring_chart";
+import { MonitoringChart } from "./monitoring-chart";
 import { Prediction } from "./prediction";
 import { ModelStatus } from "./types";
 

@@ -1,3 +1,14 @@
+/**
+ * Function for generating the options (configuration) object for a box plot.
+ * @param theme Page theme.
+ * @param x_data Chart x-axis data.
+ * @param y_data Chart y-axis data.
+ * @param x_label Chart x-axis label.
+ * @param y_label Chart y-axis label.
+ * @param title Chart title.
+ * @param subtitle Chart subtitle.
+ * @returns Object containing the options for a box plot. 
+ */
 export const boxPlotOptions = (
     theme: "dark" | "light" | "system",
     x_data: any[][],
