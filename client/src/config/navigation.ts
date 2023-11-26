@@ -22,17 +22,17 @@ export const mainNavigationItems = [
 export const helpNavigationItems = [
     {
         title: "Github",
-        path: "https://github.com/kajetsz/mlops",
+        path: "https://github.com/mlops-ai/mlops",
         icon: Github
     },
     {
         title: "Documentation",
-        path: "https://github.com/kajetsz/mlops/wiki",
+        path: "https://github.com/mlops-ai/mlops/wiki",
         icon: FileText
     },
     {
         title: "Report issue",
-        path: "https://github.com/kajetsz/mlops/issues",
+        path: "https://github.com/mlops-ai/mlops/issues",
         icon: AlertCircle
     },
 ];

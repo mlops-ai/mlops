@@ -5,6 +5,7 @@ import { Model } from "@/types/model";
 import MonitoringChart from "@/components/custom-charts/monitoring/monitoring-chart";
 import { useModal } from "@/hooks/use-modal-hook";
 import { useGrid } from "@/hooks/use-grid-hook";
+import { useMemo } from "react";
 
 interface MonitoringChartsProps {
     modelData: Model;
@@ -17,7 +18,7 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
 
     const grid = useGrid();
 
-    const monitoringCharts = () => {
+    const monitoringCharts = useMemo(() => {
         if (!modelData.interactive_charts) return [];
 
         return modelData.interactive_charts.map((chart) => {
@@ -46,7 +47,13 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
                 </>
             );
         });
-    };
+    }, [
+        modelData.interactive_charts,
+        modelData.predictions_data,
+        theme,
+        grid.baseFeatures,
+        onOpen,
+    ]);
 
     return (
         <div className="grid grid-cols-1 gap-6">
@@ -54,7 +61,7 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
                 rowData={modelData.predictions_data}
                 theme={theme}
             />
-            {monitoringCharts()}
+            {monitoringCharts}
         </div>
     );
 };

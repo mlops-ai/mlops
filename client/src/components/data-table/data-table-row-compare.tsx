@@ -7,7 +7,6 @@ interface DataTableRowsCompareProps {
 
 const DataTableRowCompare = ({ header, cells }: DataTableRowsCompareProps) => {
     const renderCells = () => {
-        // console.log(cells);
         const cellsLength = cells.length;
         return cells.map((value, index) => {
             return (

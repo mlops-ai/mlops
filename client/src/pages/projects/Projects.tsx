@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { useData } from "@/hooks/use-data-hook";
 import { useDebounce } from "@/hooks/use-debounce-hook";
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Fuse from "fuse.js";
 import Masonry from "react-masonry-css";
@@ -50,7 +50,7 @@ interface ProjectsData {
  * Projects page component
  */
 const Projects = () => {
-    console.log("Projects");
+    console.count("Projects");
     /**
      * Custom data hook for data management
      */
@@ -70,11 +70,6 @@ const Projects = () => {
     const isArchived = searchParams.get("archived") === "true";
 
     /**
-     * State for storing projects data to display
-     */
-    const [projects, setProjects] = useState<ProjectsData | null>(null);
-
-    /**
      * State for storing search query
      */
     const [query, setQuery] = useState(searchParams.get("search") || "");
@@ -90,11 +85,94 @@ const Projects = () => {
     const [sortBy, setSortBy] = useState("UDESC");
 
     /**
+     * State for storing projects data to display
+     */
+    // const [projects, setProjects] = useState<ProjectsData | null>(null);
+
+    /**
      * useEffect hook for preparing projects data to display (with filtering, sorting)
      * @runs after component mount and every time when debounceSearch, data.projects, isArchived or sortBy changes
      */
-    useEffect(() => {
-        console.log("useEffect");
+    // useEffect(() => {
+    //     console.count("useEffect");
+    //     if (data.projects) {
+    //         const archivedProjects = data.projects.filter((project) => {
+    //             return project.archived;
+    //         });
+
+    //         const activeProjects = data.projects.filter((project) => {
+    //             return !project.archived;
+    //         });
+
+    //         const fuseSearchArchived = new Fuse(archivedProjects, {
+    //             includeScore: true,
+    //             minMatchCharLength: 1,
+    //             threshold: 0.25,
+    //             keys: ["title", "status", "description"],
+    //         });
+
+    //         const fuseSearchActive = new Fuse(activeProjects, {
+    //             includeScore: true,
+    //             minMatchCharLength: 1,
+    //             threshold: 0.25,
+    //             keys: ["title", "status", "description"],
+    //         });
+
+    //         debounceSearch === ""
+    //             ? setProjects({
+    //                   activeProjects: activeProjects
+    //                       .sort((p1, p2) =>
+    //                           sortProjectComparator(p1, p2, sortBy)
+    //                       )
+    //                       .map((project) => (
+    //                           <ProjectCard
+    //                               key={project._id}
+    //                               project={project}
+    //                           />
+    //                       )),
+    //                   archivedProjects: archivedProjects
+    //                       .sort((p1, p2) =>
+    //                           sortProjectComparator(p1, p2, sortBy)
+    //                       )
+    //                       .map((project) => (
+    //                           <ProjectCard
+    //                               key={project._id}
+    //                               project={project}
+    //                           />
+    //                       )),
+    //               })
+    //             : setProjects({
+    //                   activeProjects: fuseSearchActive
+    //                       .search(debounceSearch)
+    //                       .sort((p1, p2) =>
+    //                           sortProjectComparator(p1.item, p2.item, sortBy)
+    //                       )
+    //                       .map((result) => (
+    //                           <ProjectCard
+    //                               key={result.item._id}
+    //                               project={result.item}
+    //                           />
+    //                       )),
+    //                   archivedProjects: fuseSearchArchived
+    //                       .search(debounceSearch)
+    //                       .sort((p1, p2) =>
+    //                           sortProjectComparator(p1.item, p2.item, sortBy)
+    //                       )
+    //                       .map((result) => (
+    //                           <ProjectCard
+    //                               key={result.item._id}
+    //                               project={result.item}
+    //                           />
+    //                       )),
+    //               });
+    //     }
+    // }, [debounceSearch, data.projects, sortBy]);
+
+    /**
+     * Preparing projects data to display (with filtering, sorting).
+     */
+    const projects = useMemo(() => {
+        console.count("useMemo");
         if (data.projects) {
             const archivedProjects = data.projects.filter((project) => {
                 return project.archived;
@@ -118,54 +196,47 @@ const Projects = () => {
                 keys: ["title", "status", "description"],
             });
 
-            debounceSearch === ""
-                ? setProjects({
-                      activeProjects: activeProjects
-                          .sort((p1, p2) =>
-                              sortProjectComparator(p1, p2, sortBy)
-                          )
-                          .map((project) => (
-                              <ProjectCard
-                                  key={project._id}
-                                  project={project}
-                              />
-                          )),
-                      archivedProjects: archivedProjects
-                          .sort((p1, p2) =>
-                              sortProjectComparator(p1, p2, sortBy)
-                          )
-                          .map((project) => (
-                              <ProjectCard
-                                  key={project._id}
-                                  project={project}
-                              />
-                          )),
-                  })
-                : setProjects({
-                      activeProjects: fuseSearchActive
-                          .search(debounceSearch)
-                          .sort((p1, p2) =>
-                              sortProjectComparator(p1.item, p2.item, sortBy)
-                          )
-                          .map((result) => (
-                              <ProjectCard
-                                  key={result.item._id}
-                                  project={result.item}
-                              />
-                          )),
-                      archivedProjects: fuseSearchArchived
-                          .search(debounceSearch)
-                          .sort((p1, p2) =>
-                              sortProjectComparator(p1.item, p2.item, sortBy)
-                          )
-                          .map((result) => (
-                              <ProjectCard
-                                  key={result.item._id}
-                                  project={result.item}
-                              />
-                          )),
-                  });
+            if (debounceSearch === "") {
+                return {
+                    activeProjects: activeProjects
+                        .sort((p1, p2) => sortProjectComparator(p1, p2, sortBy))
+                        .map((project) => (
+                            <ProjectCard key={project._id} project={project} />
+                        )),
+                    archivedProjects: archivedProjects
+                        .sort((p1, p2) => sortProjectComparator(p1, p2, sortBy))
+                        .map((project) => (
+                            <ProjectCard key={project._id} project={project} />
+                        )),
+                };
+            }
+
+            return {
+                activeProjects: fuseSearchActive
+                    .search(debounceSearch)
+                    .sort((p1, p2) =>
+                        sortProjectComparator(p1.item, p2.item, sortBy)
+                    )
+                    .map((result) => (
+                        <ProjectCard
+                            key={result.item._id}
+                            project={result.item}
+                        />
+                    )),
+                archivedProjects: fuseSearchArchived
+                    .search(debounceSearch)
+                    .sort((p1, p2) =>
+                        sortProjectComparator(p1.item, p2.item, sortBy)
+                    )
+                    .map((result) => (
+                        <ProjectCard
+                            key={result.item._id}
+                            project={result.item}
+                        />
+                    )),
+            };
         }
+        return null;
     }, [debounceSearch, data.projects, sortBy]);
 
     /**

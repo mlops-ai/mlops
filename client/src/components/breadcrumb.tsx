@@ -1,5 +1,5 @@
 import BreadcrumbSeparator from "@/components/icons/breadcrumb-separator";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 interface BreadcrumbItem {
     name: string;
@@ -37,17 +37,19 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
         if (item.href) {
             return (
                 <div key={index} className="flex items-center">
-                    <a
+                    <Link
                         className="flex items-center text-sm font-semibold hover:text-[#51678f] hover:dark:dark:text-zinc-300 transition duration-300 mr-[2px]"
-                        href={`${item.href}${
+                        to={`${item.href}${
                             searchParams.get("ne") !== "default"
-                                ? `${item.hasParams ? '&' : '?'}ne=${searchParams.get("ne")}`
+                                ? `${
+                                      item.hasParams ? "&" : "?"
+                                  }ne=${searchParams.get("ne")}`
                                 : ""
                         }`}
                     >
                         <item.Icon className="flex-shrink-0 w-4 h-4 mr-1" />
                         {item.name}
-                    </a>
+                    </Link>
                     <BreadcrumbSeparator className="w-[1.25rem] h-[1.25rem] flex-shrink-0 mr-[2px]" />
                 </div>
             );

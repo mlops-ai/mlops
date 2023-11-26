@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { PinFilled } from "@/components/icons";
 
@@ -23,15 +23,15 @@ const ModelCardHeader = ({ model, setLoading }: ModelCardProps) => {
                         <PinFilled className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-primary" />
                     </div>
                 )}{" "}
-                <a
-                    href={`/models/${model._id}/monitoring${
+                <Link
+                    to={`/models/${model._id}/monitoring${
                         searchParams.get("ne") !== "default"
                             ? `?ne=${searchParams.get("ne")}`
                             : ""
                     }`}
                 >
                     {model.model_name}
-                </a>
+                </Link>
             </span>
             <ModelDropdownActions model={model} setLoading={setLoading} />
         </div>

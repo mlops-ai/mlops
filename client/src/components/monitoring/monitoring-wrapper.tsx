@@ -1,6 +1,6 @@
 import { useGrid } from "@/hooks/use-grid-hook";
 import { useTreeselect } from "@/hooks/use-tree-select-hook";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import {
     TreeSelectBaseColumnsChecked,

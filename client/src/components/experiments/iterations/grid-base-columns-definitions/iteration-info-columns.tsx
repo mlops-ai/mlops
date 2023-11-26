@@ -1,6 +1,7 @@
 import { dateToHumanize } from "@/lib/utils";
 import { IDateFilterParams } from "ag-grid-community";
 import moment from "moment";
+import { Link } from "react-router-dom";
 
 export const IterationInfo = (project_id: string) => {
     /**
@@ -42,11 +43,10 @@ export const IterationInfo = (project_id: string) => {
                 const url = new URL(window.location.href);
                 const searchParams = new URLSearchParams(url.search);
                 const ne = searchParams.get("ne");
-                // return `/datasets?ne=${ne}#${val.data["dataset"]["id"]}`;
                 return (
-                    <a
+                    <Link
                         className="hover:underline text-[#0d6efd]"
-                        href={
+                        to={
                             "/projects/" +
                             project_id +
                             "/experiments/" +
@@ -61,7 +61,7 @@ export const IterationInfo = (project_id: string) => {
                         }
                     >
                         {val.data["iteration_name"]}
-                    </a>
+                    </Link>
                 );
             },
         },
