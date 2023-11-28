@@ -212,7 +212,7 @@ class Iteration:
             "metrics": self.metrics,
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
-            "model_name": self.model_name,
+            # "model_name": self.model_name,
             "dataset": dataset,
             "image_charts": self.image_charts,
             "interactive_charts": interactive_charts
