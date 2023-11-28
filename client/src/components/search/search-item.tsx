@@ -29,6 +29,9 @@ interface SearchItemProps {
     handleClose: () => void;
 }
 
+/**
+ * Search item component.
+ */
 const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
     const navigate = useNavigate();
 
@@ -266,7 +269,12 @@ const SearchItem = ({ type, data, handleClose }: SearchItemProps) => {
                                             className="flex-shrink-0"
                                             style={{ width: "12px" }}
                                         />
-                                        <span>{data.model.predictions_data ? data.model.predictions_data.length : 0}</span>
+                                        <span>
+                                            {data.model.predictions_data
+                                                ? data.model.predictions_data
+                                                      .length
+                                                : 0}
+                                        </span>
                                     </Badge>
                                     <ul className="flex items-center">
                                         <li className="inline-flex items-center text-[13px]">

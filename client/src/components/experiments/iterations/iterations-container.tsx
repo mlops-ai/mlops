@@ -46,7 +46,7 @@ import moment from "moment";
 import { useModal } from "@/hooks/use-modal-hook";
 import { Iteration } from "@/types/iteration";
 import NoIterationsInfo from "./no-iterations-info";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface IterationsContainerProps {
     projectData: Project;
@@ -57,6 +57,8 @@ const IterationsContainer = ({
     projectData,
     activeExperiments,
 }: IterationsContainerProps) => {
+    console.count("IterationsContainer");
+    
     const treeselect = useTreeselect();
     const grid = useGrid();
 
@@ -65,12 +67,6 @@ const IterationsContainer = ({
     const gridRef = useRef<AgGridReact>(null);
     const textFilterRef = useRef<HTMLInputElement>(null);
     const filterDateRef = useRef<HTMLSpanElement>(null);
-
-    // console.log(projectData._id)
-    // console.log(location.href)
-
-    const { project_id } = useParams();
-    console.log(project_id);
 
     const { theme } = useTheme();
 

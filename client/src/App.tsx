@@ -8,29 +8,31 @@ import { fallbackRender } from "@/components/error-boundary/fallbackRenderer";
 
 import MainLayout from "@/layouts/main/layout";
 
-import Projects from "@/pages/projects/Projects";
-import Experiments from "@/pages/experiments/Experiments";
+// import Projects from "@/pages/projects/Projects";
+// import Experiments from "@/pages/experiments/Experiments";
+// import Models from "./pages/models/Models";
+// import Datasets from "./pages/datasets/Datasets";
+// import Monitoring from "./pages/monitoring/Monitoring";
+// import SingleIteration from "./pages/iterations/SingleIteration";
+// import CompareIterations from "./pages/iterations/CompareIterations";
 
 import Toast from "@/components/toast";
-import Models from "./pages/models/Models";
 import { Tailwind } from "./components/treeselect/treeselect-styles";
-import Monitoring from "./pages/monitoring/Monitoring";
-import Datasets from "./pages/datasets/Datasets";
-import SingleIteration from "./pages/iterations/SingleIteration";
-import CompareIterations from "./pages/iterations/CompareIterations";
-import { lazy } from "react";
 
-// const Projects = lazy(() => import("./pages/projects/Projects"));
-// // @ts-ignore
-// const Experiments = lazy(() => import("./pages/experiments/Experiments"));
-// const Datasets = lazy(() => import("./pages/datasets/Datasets"));
-// const Models = lazy(() => import("./pages/models/Models"));
-// const SingleIteration = lazy(
-//     () => import("./pages/iterations/SingleIteration")
-// );
-// const CompareIterations = lazy(
-//     () => import("./pages/iterations/CompareIterations")
-// );
+import loadable from "@loadable/component";
+
+const Projects = loadable(() => import("./pages/projects/Projects"));
+const Experiments = loadable(() => import("./pages/experiments/Experiments"));
+const SingleIteration = loadable(
+    () => import("./pages/iterations/SingleIteration"),
+    { fallback: <div>Loading...</div> }
+);
+const CompareIterations = loadable(
+    () => import("./pages/iterations/CompareIterations")
+);
+const Datasets = loadable(() => import("./pages/datasets/Datasets"));
+const Models = loadable(() => import("./pages/models/Models"));
+const Monitoring = loadable(() => import("./pages/monitoring/Monitoring"));
 
 function App() {
     return (
@@ -41,14 +43,16 @@ function App() {
                         <ErrorBoundary fallbackRender={fallbackRender}>
                             <MainLayout>
                                 <Routes>
-                                    <Route path="/" element={<Navigate to="/projects" />} />
+                                    <Route
+                                        path="/"
+                                        element={<Navigate to="/projects" />}
+                                    />
                                     <Route
                                         path="/projects"
                                         element={<Projects />}
                                     />
                                     <Route
                                         path="/projects/:project_id/experiments"
-                                        // @ts-ignore
                                         element={<Experiments />}
                                     />
                                     <Route

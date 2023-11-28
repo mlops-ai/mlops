@@ -9,6 +9,9 @@ interface TabItemProps {
     value: string;
 }
 
+/**
+ * Tab item component.
+ */
 const TabItem = ({ title, Icon, param, value }: TabItemProps) => {
     const [searchParams, setSearchParams] = useSearchParams({
         archived: "false",
