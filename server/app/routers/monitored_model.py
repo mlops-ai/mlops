@@ -9,7 +9,7 @@ from fastapi import APIRouter, status
 
 from app.models.iteration import Iteration
 from app.models.monitored_model import MonitoredModel, UpdateMonitoredModel
-from app.models.monitored_model_chart import MonitoredModelInteractiveChart
+from app.models.monitored_model_chart import MonitoredModelInteractiveChart, UpdateMonitoredModelInteractiveChart
 from app.models.prediction_data import PredictionData, UpdatePredictionData
 from app.models.project import Project
 from app.routers.exceptions.experiment import experiment_not_found_exception
@@ -190,14 +190,17 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
                 iteration_to_check.assigned_monitored_model_name is not None:
             raise iteration_is_assigned_to_monitored_model_exception()
 
-    monitored_model = await monitored_model.insert()
     if monitored_model.iteration is not None:
+        await get_iteration_from_monitored_model(monitored_model)
+        monitored_model = await monitored_model.insert()
         iteration_with_assigned_model = await update_assigned_model_in_iteration(monitored_model.iteration,
                                                                                  monitored_model.id,
                                                                                  monitored_model.model_name)
         monitored_model.iteration = iteration_with_assigned_model
         encoded_ml_model = await update_ml_model_to_encoded_in_monitored_model(monitored_model.iteration)
         monitored_model.ml_model = encoded_ml_model
+    else:
+        monitored_model = await monitored_model.insert()
 
     await monitored_model.save()
 
@@ -462,9 +465,10 @@ async def add_chart_to_monitored_model(id: PydanticObjectId, chart: MonitoredMod
 
     data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction, 'actual': prediction.actual} for
                          prediction in monitored_model.predictions_data])
+    data['actual'] = pd.to_numeric(data['actual'], errors='coerce')
 
-    y_axis_columns_tuple = tuple(chart.y_axis_columns) if chart.y_axis_columns is not None else None
-    if (chart.chart_type, chart.x_axis_column, y_axis_columns_tuple) in monitored_model.interactive_charts_existed:
+
+    if (chart.chart_type, chart.x_axis_column, chart.y_axis_columns) in monitored_model.interactive_charts_existed:
         raise monitored_model_chart_existing_pair_of_columns_of_chart_type_exception(chart.chart_type,
                                                                                      chart.x_axis_column,
                                                                                      chart.y_axis_columns)
@@ -473,7 +477,7 @@ async def add_chart_to_monitored_model(id: PydanticObjectId, chart: MonitoredMod
     if validated_chart:
         chart.monitored_model_id = monitored_model.id
         monitored_model.interactive_charts.append(chart)
-        monitored_model.interactive_charts_existed.add((chart.chart_type, chart.x_axis_column, y_axis_columns_tuple))
+        monitored_model.interactive_charts_existed.append((chart.chart_type, chart.x_axis_column, chart.y_axis_columns))
 
     await monitored_model.save()
 
@@ -506,7 +510,7 @@ async def get_chart_from_monitored_model(id: PydanticObjectId, chart_id: Pydanti
 
 
 @monitored_model_router.put('/{id}/charts/{chart_id}', response_model=MonitoredModelInteractiveChart, status_code=status.HTTP_200_OK)
-async def update_chart_from_monitored_model(id: PydanticObjectId, chart_id: PydanticObjectId, updated_chart: MonitoredModelInteractiveChart) -> MonitoredModelInteractiveChart:
+async def update_chart_from_monitored_model(id: PydanticObjectId, chart_id: PydanticObjectId, updated_chart: UpdateMonitoredModelInteractiveChart) -> MonitoredModelInteractiveChart:
     """
     Update chart from monitored model.
 
@@ -527,19 +531,21 @@ async def update_chart_from_monitored_model(id: PydanticObjectId, chart_id: Pyda
     if not chart:
         raise monitored_model_chart_not_found_exception()
 
-    data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction} for prediction in
-                         monitored_model.predictions_data])
+    data = pd.DataFrame([{**prediction.input_data, 'prediction': prediction.prediction, 'actual': prediction.actual} for
+                         prediction in monitored_model.predictions_data])
+    data['actual'] = pd.to_numeric(data['actual'], errors='coerce')
+
+    if updated_chart.chart_type is None:
+        updated_chart.chart_type = chart.chart_type
 
     if chart.chart_type == updated_chart.chart_type:
         validated_chart = validate_chart(updated_chart, data)
         updated_chart.monitored_model_id = monitored_model.id
         if validated_chart:
             monitored_model.interactive_charts.append(updated_chart)
-            y_axis_columns_tuple_new = tuple(updated_chart.y_axis_columns) if updated_chart.y_axis_columns is not None else None
-            y_axis_columns_tuple_old = tuple(chart.y_axis_columns) if chart.y_axis_columns is not None else None
-            monitored_model.interactive_charts_existed.remove((chart.chart_type, chart.x_axis_column, y_axis_columns_tuple_old))
+            monitored_model.interactive_charts_existed.remove((chart.chart_type, chart.x_axis_column, chart.y_axis_columns))
             monitored_model.interactive_charts.remove(chart)
-            monitored_model.interactive_charts_existed.add((updated_chart.chart_type, updated_chart.x_axis_column, y_axis_columns_tuple_new))
+            monitored_model.interactive_charts_existed.append((updated_chart.chart_type, updated_chart.x_axis_column, updated_chart.y_axis_columns))
     else:
         raise monitored_model_chart_changing_columns_exception()
 
@@ -569,8 +575,7 @@ async def delete_chart_from_monitored_model(id: PydanticObjectId, chart_id: Pyda
     if not chart:
         raise monitored_model_chart_not_found_exception()
 
-    y_axis_columns_tuple = tuple(chart.y_axis_columns) if chart.y_axis_columns is not None else None
-    monitored_model.interactive_charts_existed.remove((chart.chart_type, chart.x_axis_column, y_axis_columns_tuple))
+    monitored_model.interactive_charts_existed.remove((chart.chart_type, chart.x_axis_column, chart.y_axis_columns))
     monitored_model.interactive_charts.remove(chart)
     await monitored_model.save()
 

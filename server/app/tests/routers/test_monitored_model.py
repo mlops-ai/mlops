@@ -1344,3 +1344,180 @@ async def test_delete_actual_value_for_prediction(client: AsyncClient):
     response = await client.get(f"/monitored-models/name/{monitored_model_name}")
     assert response.status_code == 200
     assert response.json()["predictions_data"][0]["actual"] is None
+
+
+@pytest.mark.asyncio
+async def test_create_scatter_chart_with_more_than_one_value_on_y(client: AsyncClient):
+    """
+    Test create scatter chart with more than one value on y axis.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter",
+        "x_axis_column": "actual",
+        "y_axis_columns": ["X1", "prediction"]
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 6
+
+
+@pytest.mark.asyncio
+async def test_delete_scatter_chart_with_more_than_one_value_on_y(client: AsyncClient):
+    """
+    Test delete scatter chart with more than one value on y-axis.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "scatter",
+        "x_axis_column": "actual",
+        "y_axis_columns": ["X1", "X2", "prediction"]
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+    chart_id = response.json()["id"]
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 7
+
+    chart_metadata = [chart["chart_type"], chart["x_axis_column"], chart["y_axis_columns"]]
+    assert chart_metadata in response.json()["interactive_charts_existed"]
+
+    existing_chart = response.json()["interactive_charts_existed"]
+
+    response = await client.delete(f"/monitored-models/{monitored_model_id}/charts/{chart_id}")
+    assert response.status_code == 200
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+
+    assert len(response.json()["interactive_charts"]) == len(existing_chart) - 1
+    assert chart_metadata not in response.json()["interactive_charts_existed"]
+
+
+@pytest.mark.asyncio
+async def test_update_countplot_chart_with_new_x_axis_column(client: AsyncClient):
+    """
+    Test update countplot chart with new x-axis column.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    monitored_model_name = "Engine failure prediction model v8"
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+
+    monitored_model_id = response.json()["_id"]
+
+    chart = {
+        "chart_type": "countplot",
+        "x_axis_column": "X1"
+    }
+
+    response = await client.post(f"/monitored-models/{monitored_model_id}/charts", json=chart)
+    assert response.status_code == 201
+    chart_id = response.json()["id"]
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 7
+    assert len(response.json()["interactive_charts_existed"]) == 7
+
+    chart_metadata = [chart["chart_type"], chart["x_axis_column"], None]
+    assert chart_metadata in response.json()["interactive_charts_existed"]
+
+    chart_changed = {
+        "x_axis_column": "actual"
+    }
+
+    response = await client.put(f"/monitored-models/{monitored_model_id}/charts/{chart_id}", json=chart_changed)
+    assert response.status_code == 200
+    assert response.json()["x_axis_column"] == chart_changed["x_axis_column"]
+
+    response = await client.get(f"/monitored-models/name/{monitored_model_name}")
+    assert response.status_code == 200
+    assert len(response.json()["interactive_charts"]) == 7
+    assert response.json()["interactive_charts"][6]["x_axis_column"] == chart_changed["x_axis_column"]
+    assert len(response.json()["interactive_charts_existed"]) == 7
+
+
+@pytest.mark.asyncio
+async def test_create_monitored_model_failure_no_iteration(client: AsyncClient):
+    """
+    Test create monitored model.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+
+    project = {
+        "title": "Mercedes-Benz Poland failure",
+        "description": "Test project description for Mercedes-Benz Manufacturing Poland"
+    }
+    response = await client.post("/projects/", json=project)
+    project_id = response.json()["_id"]
+
+    experiment = {
+        "name": "Engine failure prediction",
+        "description": "Test experiment description for Mercedes-Benz Manufacturing Poland"
+    }
+
+    response = await client.post(f"/projects/{project_id}/experiments/", json=experiment)
+    experiment_id = response.json()["id"]
+
+    iteration = {
+        "iteration_name": "Iteration 1",
+        "metrics": {
+            "accuracy": 0.9},
+        "parameters": {
+            "learning_rate": 0.01},
+        "path_to_model": os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model_failure.pkl")
+    }
+    response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
+    iteration_id = response.json()["id"]
+
+    iteration_to_model = response.json()
+
+    monitored_model = {
+        "model_name": "Engine failure prediction model",
+        "model_description": "Test monitored model description for Mercedes-Benz Manufacturing Poland",
+        "model_status": "active",
+        "iteration": iteration_to_model
+    }
+    response = await client.post("/monitored-models/", json=monitored_model)
+    assert response.status_code == 400

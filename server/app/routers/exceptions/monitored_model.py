@@ -128,7 +128,7 @@ def monitored_model_chart_bad_bin_number_type_exception(chart_type: str):
         detail=f"Invalid value for 'bin_number'. Must be None for chart type '{chart_type}'.")
 
 
-def monitored_model_chart_columns_different_values_exception(chart_type: str, second_column: list[str]):
+def monitored_model_chart_columns_different_values_exception(chart_type: str, second_column: str):
     return HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=f"Invalid value for 'x_axis_column' and one of y_axis_columns. Must be different for chart type '{chart_type}'."
