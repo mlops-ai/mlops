@@ -204,7 +204,7 @@ class MailGun:
                     </head>
                     <body>
                         <div class="success-icon">&#10003;</div>
-                        <h1>Iteration Created Successfully!</h1>
+                        <h1>Prediction Sent Successfully!</h1>
                         <p>Your prediction has been sent successfully. Here are some details:</p>
                         <div>{json2html.convert(json=json.dumps(prediction_data))}</div>
                     </body>
@@ -275,8 +275,8 @@ class MailGun:
                     </head>
                     <body>
                         <div class="failure-icon">&#10008;</div>
-                        <h1>Iteration Failed!</h1>
-                        <p>An exception occurred during the iteration. Here are the details:</p>
+                        <h1>Prediction Failed!</h1>
+                        <p>An exception occurred during the prediction. Here are the details:</p>
                         <div class="exception-details">{prediction_exception_response}</div>
                     </body>
                     </html>
