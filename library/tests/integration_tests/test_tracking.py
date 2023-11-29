@@ -350,7 +350,7 @@ async def test_start_iteration_with_image_charts_failure_missing_argument(setup)
 
         result = iteration.end_iteration()
 
-    assert str(exc_info.value) == "log_image_chart() missing 1 required positional argument: 'image_path'"
+    assert str(exc_info.value) == "Iteration.log_image_chart() missing 1 required positional argument: 'image_path'"
 
 
 @pytest.mark.asyncio

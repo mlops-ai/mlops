@@ -24,7 +24,6 @@ class MonitoredModel(Document):
     - **iteration (Iteration)**: Related Iteration.
     - **pinned (bool)**: Monitored model pinned status.
     - **predictions_data (list[dict])**: Predictions data list of rows as dicts.
-    - **ml_model (str)**: ML model
     - **interactive_charts (list[MonitoredModelInteractiveChart])**: Interactive charts
     - **interactive_charts_existed (Set[Tuple[str, Optional[str], Optional[Tuple[str]]]])**: Interactive charts existed pairs of columns
     - **created_at (datetime)**: Monitored model creation date.
@@ -36,7 +35,6 @@ class MonitoredModel(Document):
     iteration: Optional[Iteration] = Field(default=None, description="Iteration")
     pinned: bool = Field(default=False, description="Model pinned status")
     predictions_data: Optional[list[PredictionData]] = Field(default=[], description="Predictions data")
-    ml_model: Optional[str] = Field(default=None, description="Loaded ml model")
     interactive_charts: Optional[list[MonitoredModelInteractiveChart]] = Field(default=[], description="Interactive "
                                                                                                        "charts")
     interactive_charts_existed: Optional[Set[Tuple[str, Optional[str], Optional[Tuple[str]]]]] = Field(default=set(), description="Interactive charts existed pairs of columns")
