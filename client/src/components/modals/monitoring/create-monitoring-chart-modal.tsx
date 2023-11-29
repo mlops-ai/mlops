@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, SetStateAction, useState } from "react";
 import { useData } from "@/hooks/use-data-hook";
 import { useModal } from "@/hooks/use-modal-hook";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { toast } from "react-toastify";
 import { createToast } from "@/lib/toast";
@@ -89,56 +89,57 @@ const CreateMonitoringChartModal = () => {
 
         const chartData = prepareCreateMonitoringChartFormData(values);
 
-        console.log(values);
+        // console.log(values);
 
-        chartData["id"] = Math.random().toString(36);
-        console.log(chartData);
+        // chartData["id"] = Math.random().toString(36);
+        // console.log(chartData);
 
-        handleClose();
-        form.reset();
-        dataStore.updateModel(
-            data.model?._id as string,
-            {
-                ...data.model,
-                interactive_charts: [
-                    ...data.model!.interactive_charts,
-                    chartData,
-                ],
-            } as Model
-        );
+        // handleClose();
+        // form.reset();
+        // dataStore.updateModel(
+        //     data.model?._id as string,
+        //     {
+        //         ...data.model,
+        //         interactive_charts: [
+        //             ...data.model!.interactive_charts,
+        //             chartData,
+        //         ],
+        //     } as Model
+        // );
 
-        // await axios
-        //     .post(
-        //         `${url}:${port}/monitored-models/${data.model._id}/charts`,
-        //         chartData
-        //     )
-        //     .then((res) => {
-        //         handleClose();
-        //         form.reset();
-        //         dataStore.updateModel(
-        //             data.model?._id as string,
-        //             {
-        //                 ...data.model,
-        //                 interactive_charts: [
-        //                     ...data.model!.interactive_charts,
-        //                     res.data,
-        //                 ],
-        //             } as Model
-        //         );
+        await axios
+            .post(
+                `${url}:${port}/monitored-models/${data.model._id}/charts`,
+                chartData
+            )
+            .then((res) => {
+                console.log(res.data);
+                handleClose();
+                form.reset();
+                dataStore.updateModel(
+                    data.model?._id as string,
+                    {
+                        ...data.model,
+                        interactive_charts: [
+                            ...data.model!.interactive_charts,
+                            res.data,
+                        ],
+                    } as Model
+                );
 
-        //         createToast({
-        //             id: "create-monitoring-chart",
-        //             message: "Monitoring chart created successfully!",
-        //             type: "success",
-        //         });
-        //     })
-        //     .catch((error: any) => {
-        //         createToast({
-        //             id: "create-monitoring-chart",
-        //             message: error.response?.data.detail,
-        //             type: "error",
-        //         });
-        //     });
+                createToast({
+                    id: "create-monitoring-chart",
+                    message: "Monitoring chart created successfully!",
+                    type: "success",
+                });
+            })
+            .catch((error: any) => {
+                createToast({
+                    id: "create-monitoring-chart",
+                    message: error.response?.data.detail,
+                    type: "error",
+                });
+            });
     };
 
     const [openChartTypeSelect, setOpenChartTypeSelect] = useState(false);

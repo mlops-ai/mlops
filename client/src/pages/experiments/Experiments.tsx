@@ -16,7 +16,7 @@ import IterationsContainer from "@/components/experiments/iterations/iterations-
 import { AiOutlineExperiment } from "react-icons/ai";
 
 const Experiments = () => {
-    // console.log("Experiments");
+    console.count("Experiments");
 
     const navigate = useNavigate();
 
@@ -33,7 +33,6 @@ const Experiments = () => {
     const [projectData, setProjectData] = useState<null | Project>(null);
 
     useEffect(() => {
-        // console.log("dp", data.projects);
         if (data.projects) {
             let foundProject = data.projects.find(
                 (project) => project._id === project_id
@@ -122,8 +121,6 @@ const Experiments = () => {
     }, [data.projects, project_id, searchParams]);
 
     const activeExperiments = useMemo(() => {
-        // console.log(data.projects);
-        // console.log(projectData);
         if (projectData) {
             return projectData.experiments.filter(
                 (experiment) => experiment.checked
@@ -131,8 +128,6 @@ const Experiments = () => {
         }
         return [];
     }, [data.projects, projectData]);
-
-    // console.log(activeExperiments);
 
     const handleCheckboxChange = (experiment_id: string) => {
         let experiments = searchParams.get("experiments");

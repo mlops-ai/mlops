@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const handleModelLinkChange = (val: any) => {
     const url = new URL(window.location.href);
     const searchParams = new URLSearchParams(url.search);
@@ -19,13 +21,12 @@ export const ModelInfo = [
                 val.data["assigned_monitored_model_name"]
             ) {
                 return (
-                    <a
-                        href={handleModelLinkChange(val)}
-                        target={"_blank"}
+                    <Link
+                        to={handleModelLinkChange(val)}
                         className="hover:underline text-[#0d6efd]"
                     >
                         {val.data["assigned_monitored_model_name"]}
-                    </a>
+                    </Link>
                 );
             }
             if (val.data["path_to_model"]) {

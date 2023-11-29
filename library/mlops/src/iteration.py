@@ -241,6 +241,7 @@ class Iteration:
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
             "encoded_ml_model": self.encoded_ml_model,
+            # "model_name": self.model_name,
             "dataset": dataset,
             "image_charts": self.image_charts,
             "interactive_charts": interactive_charts

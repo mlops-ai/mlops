@@ -13,6 +13,9 @@ interface PageHeaderProps {
     className?: string;
 }
 
+/**
+ * Page header component.
+ */
 const PageHeader = ({
     title,
     statusBadge,
@@ -23,8 +26,12 @@ const PageHeader = ({
     className,
 }: PageHeaderProps) => {
     return (
-        <h1 className={cn("flex items-center justify-between mb-1 text-2xl font-semibold text-mlops-primary-tx dark:text-mlops-primary-tx-dark",
-        className && className)}>
+        <h1
+            className={cn(
+                "flex items-center justify-between mb-1 text-2xl font-semibold text-mlops-primary-tx dark:text-mlops-primary-tx-dark",
+                className && className
+            )}
+        >
             <div className="flex items-center">
                 {pin && (
                     <div title="Project is pinned">
@@ -44,12 +51,12 @@ const PageHeader = ({
                 )}
                 {modelBadge && (
                     <Badge
-                    variant={modelBadge}
-                    title="Project status"
-                    className="ml-2"
-                >
-                    {modelStatusesMap[modelBadge]}
-                </Badge>
+                        variant={modelBadge}
+                        title="Project status"
+                        className="ml-2"
+                    >
+                        {modelStatusesMap[modelBadge]}
+                    </Badge>
                 )}
                 {archivedBadge && (
                     <Badge

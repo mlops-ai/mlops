@@ -11,7 +11,12 @@ import { breakpointsMasonryImageCharts } from "@/config/breakpoints";
 import ImageChart from "@/components/image-charts/image-chart";
 import { useData } from "@/hooks/use-data-hook";
 import { Iteration } from "@/types/iteration";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+    Link,
+    useNavigate,
+    useParams,
+    useSearchParams,
+} from "react-router-dom";
 import { Keyable } from "@/types/types";
 import { GoIterations } from "react-icons/go";
 import Loading from "@/components/icons/loading";
@@ -196,8 +201,8 @@ const CompareIterations = () => {
                     }`
                 );
                 experiments_names.push(
-                    <a
-                        href={`/projects/${project_id}/experiments?experiments=${
+                    <Link
+                        to={`/projects/${project_id}/experiments?experiments=${
                             iteration.experiment_id
                         }${
                             searchParams.get("ne") !== "default"
@@ -207,7 +212,7 @@ const CompareIterations = () => {
                         className="hover:underline text-[#0d6efd]"
                     >
                         {iteration.experiment_name}
-                    </a>
+                    </Link>
                 );
                 created_dates.push(
                     moment(iteration.created_at).format("DD.MM.YYYY, HH:mm:ss")
@@ -219,8 +224,8 @@ const CompareIterations = () => {
                     iteration.assigned_monitored_model_name
                 ) {
                     models_paths.push(
-                        <a
-                            href={`/models/${
+                        <Link
+                            to={`/models/${
                                 iteration.assigned_monitored_model_id
                             }/monitoring${
                                 searchParams.get("ne") !== "default"
@@ -230,7 +235,7 @@ const CompareIterations = () => {
                             className="hover:underline text-[#0d6efd]"
                         >
                             {iteration.assigned_monitored_model_name}
-                        </a>
+                        </Link>
                     );
                 } else if (
                     iteration.path_to_model &&
@@ -243,8 +248,8 @@ const CompareIterations = () => {
 
                 datasets_names.push(
                     iteration.dataset ? (
-                        <a
-                            href={`/datasets${
+                        <Link
+                            to={`/datasets${
                                 searchParams.get("ne") !== "default"
                                     ? `?ne=${searchParams.get("ne")}`
                                     : ""
@@ -252,7 +257,7 @@ const CompareIterations = () => {
                             className="hover:underline text-[#0d6efd]"
                         >
                             {iteration.dataset.name}
-                        </a>
+                        </Link>
                     ) : (
                         "-"
                     )
@@ -283,17 +288,15 @@ const CompareIterations = () => {
             iterations_names.anchors = iterations_names.names.map(
                 (iteration_name: string, index: number) => {
                     return (
-                        <a
-                            href={iterations_names.links[index]}
+                        <Link
+                            to={iterations_names.links[index]}
                             className="hover:underline text-[#0d6efd]"
                         >
                             {iteration_name}
-                        </a>
+                        </Link>
                     );
                 }
             );
-
-            console.log(iterations_names);
 
             /**
              * Prepare parameters data

@@ -37,7 +37,7 @@ class MonitoredModel(Document):
     predictions_data: Optional[list[PredictionData]] = Field(default=[], description="Predictions data")
     interactive_charts: Optional[list[MonitoredModelInteractiveChart]] = Field(default=[], description="Interactive "
                                                                                                        "charts")
-    interactive_charts_existed: Optional[Set[Tuple[str, Optional[str], Optional[Tuple[str]]]]] = Field(default=set(), description="Interactive charts existed pairs of columns")
+    interactive_charts_existed: Optional[List[Tuple[str, Optional[str], Optional[List[str]]]]] = Field(default=[], description="Interactive charts existed pairs of columns")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 

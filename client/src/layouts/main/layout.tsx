@@ -12,8 +12,11 @@ import { backendConfig } from "@/config/backend";
 import NavigationSidebar from "@/components/navigation/sidebar/navigation-sidebar";
 import NavigationTopbar from "@/components/navigation/topbar/navigation-topbar";
 
+/**
+ * Main layout component with navigation sidebar and topbar.
+ */
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-    console.log("MainLayout");
+    // console.count("MainLayout");
 
     const { showBoundary } = useErrorBoundary();
 
@@ -25,7 +28,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     const data = useData();
 
     /**
-     * Fetch projects/datasets/models data from backend
+     * Fetch data from backend
      */
     useEffect(() => {
         let abortController = new AbortController();
@@ -39,9 +42,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 const datasets = await axios.get(`${url}:${port}/datasets/`, {
                     signal: signal,
                 });
-                const models = await axios.get(`${url}:${port}/monitored-models/`, {
-                    signal: signal,
-                });
+                const models = await axios.get(
+                    `${url}:${port}/monitored-models/`,
+                    {
+                        signal: signal,
+                    }
+                );
                 data.setAll(projects.data, models.data, datasets.data);
             } catch (error: any) {
                 if (!abortController.signal.aborted) {
@@ -49,6 +55,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 }
             }
         })();
+
+        // console.log(data);
+        // console.log("MainLayout: Fetching data from backend");
 
         return () => abortController.abort();
     }, []);

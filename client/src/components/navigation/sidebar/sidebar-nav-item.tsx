@@ -6,7 +6,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 interface SidebarNavItemProps {
     path: string;
@@ -33,7 +33,7 @@ const SidebarNavItem = ({
         <TooltipProvider>
             <Tooltip delayDuration={100}>
                 <TooltipTrigger className="w-full" key={path}>
-                    <a
+                    <Link
                         className={cn(
                             "group flex items-center lg:justify-normal justify-center lg:w-full w-[48px] h-[48px] py-[10px] px-3 rounded dark:hover:bg-mlops-action-hover-bg-dark hover:text-mlops-violet hover:bg-mlops-action-hover-bg transition duration-300",
                             location.pathname.startsWith(path) &&
@@ -41,7 +41,7 @@ const SidebarNavItem = ({
                             collapsedLg && "lg:justify-center lg:w-[48px]",
                             expandedMd && "sm:justify-normal sm:w-full"
                         )}
-                        href={`${path}${
+                        to={`${path}${
                             type === "internal" &&
                             searchParams.get("ne") !== "default"
                                 ? `?ne=${searchParams.get("ne")}`
@@ -66,7 +66,7 @@ const SidebarNavItem = ({
                         >
                             {title}
                         </span>
-                    </a>
+                    </Link>
                 </TooltipTrigger>
                 <TooltipContent
                     side="right"
