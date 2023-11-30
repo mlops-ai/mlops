@@ -1,5 +1,9 @@
 import pytest
 import os
+import sys
+
+sys.path.append('../../server')
+sys.path.append('..')
 
 from server.app.config.config import settings as app_settings
 from server.app.database.init_mongo_db import drop_database
