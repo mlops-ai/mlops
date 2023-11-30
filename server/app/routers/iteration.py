@@ -12,7 +12,7 @@ from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception, \
-    iteration_assigned_to_monitored_model_exception
+    iteration_assigned_to_monitored_model_exception, iteration_no_path_to_model_exception
 
 iteration_router = APIRouter()
 

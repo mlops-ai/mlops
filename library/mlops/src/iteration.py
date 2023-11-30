@@ -1,5 +1,7 @@
 import os
 import base64
+import pickle
+
 import requests
 
 from mlops.config.config import settings
@@ -8,7 +10,7 @@ from mlops.src.mailgun import MailGun
 from mlops.exceptions.tracking import request_failed_exception
 from mlops.exceptions.iteration import (
     iteration_request_failed_exception,
-    model_path_not_exist_exception
+    model_path_not_exist_exception, monitored_model_encoding_pkl_file_exception
 )
 
 
@@ -28,8 +30,9 @@ class Iteration:
         self.experiment_id: str = experiment_id
         self.user_name: str = settings.user_name
         self.send_email: bool = send_email
-        self.model_name: str = "model"
-        self.path_to_model: str = ""
+        self.model_name: str = 'model'
+        self.path_to_model: str = ''
+        self.encoded_ml_model: str = None
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
@@ -49,7 +52,7 @@ class Iteration:
         Returns:
             True if path to model exists, Exception otherwise.
         """
-        if os.path.exists(self.path_to_model) or self.path_to_model == "":
+        if os.path.exists(self.path_to_model):
             return True
         else:
             raise model_path_not_exist_exception()
@@ -73,6 +76,21 @@ class Iteration:
         self.path_to_model = path_to_model
         self.format_path()
         self.path_to_model_exists()
+
+        try:
+            # Load the model from the file
+            _, file_extension = os.path.splitext(self.path_to_model)
+
+            if file_extension in ['.pkl', '.pickle']:
+                self.encoded_ml_model = self.__encode_ml_model(self.path_to_model)
+            else:
+                raise monitored_model_encoding_pkl_file_exception("It is not a pickle file.")
+
+        except Exception as e:
+            # Handle any exceptions or errors that may occur
+            raise monitored_model_encoding_pkl_file_exception(str(e))
+
+
 
     def log_metric(self, metric_name: str, value):
         """
@@ -195,7 +213,6 @@ class Iteration:
         Returns:
             iteration: json data of created iteration
         """
-        self.format_path()
         if self.dataset_id:
             dataset = {"id": self.dataset_id}
         else:
@@ -212,6 +229,7 @@ class Iteration:
             "metrics": self.metrics,
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
+            "encoded_ml_model": self.encoded_ml_model,
             # "model_name": self.model_name,
             "dataset": dataset,
             "image_charts": self.image_charts,
@@ -237,3 +255,34 @@ class Iteration:
                 )
 
             raise iteration_request_failed_exception(app_response)
+
+    @staticmethod
+    def __encode_ml_model(path_to_model: str):
+        """
+        Encode ml model.
+
+        Args:
+            path_to_model: Path to model.
+        """
+
+        try:
+            # Load the model from the file
+            _, file_extension = os.path.splitext(path_to_model)
+
+            if file_extension in ['.pkl', '.pickle']:
+
+                ml_model = pickle.load(open(path_to_model, 'rb'))
+
+                # Serialize the model
+                ml_model = pickle.dumps(ml_model)
+
+                # Encode the serialized model as base64
+                ml_model = base64.b64encode(ml_model).decode("utf-8")
+
+                return ml_model
+            else:
+                raise monitored_model_encoding_pkl_file_exception("It is not a pickle file.")
+
+        except Exception as e:
+            # Handle any exceptions or errors that may occur
+            raise monitored_model_encoding_pkl_file_exception(str(e))

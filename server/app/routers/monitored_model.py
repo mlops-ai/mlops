@@ -1,5 +1,5 @@
 import base64
-
+import io
 import pandas as pd
 from typing import List, Union, Optional
 import pickle
@@ -189,23 +189,22 @@ async def create_monitored_model(monitored_model: MonitoredModel) -> MonitoredMo
         if iteration_to_check.assigned_monitored_model_id is not None and \
                 iteration_to_check.assigned_monitored_model_name is not None:
             raise iteration_is_assigned_to_monitored_model_exception()
+        if iteration_to_check.path_to_model is None or iteration_to_check.path_to_model == '':
+            raise iteration_has_no_path_to_model_exception()
+
+    monitored_model = await monitored_model.insert()
 
     if monitored_model.iteration is not None:
         await get_iteration_from_monitored_model(monitored_model)
-        monitored_model = await monitored_model.insert()
         iteration_with_assigned_model = await update_assigned_model_in_iteration(monitored_model.iteration,
                                                                                  monitored_model.id,
                                                                                  monitored_model.model_name)
         monitored_model.iteration = iteration_with_assigned_model
-        encoded_ml_model = await update_ml_model_to_encoded_in_monitored_model(monitored_model.iteration)
-        monitored_model.ml_model = encoded_ml_model
-    else:
-        monitored_model = await monitored_model.insert()
 
     await monitored_model.save()
 
     return monitored_model
-
+  
 
 @monitored_model_router.put("/{id}", response_model=MonitoredModel, status_code=status.HTTP_200_OK)
 async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: UpdateMonitoredModel) -> MonitoredModel:
@@ -231,7 +230,7 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
 
     if updated_monitored_model.iteration is not None:
         # check if iteration has model path
-        if not updated_monitored_model.iteration.path_to_model:
+        if not updated_monitored_model.iteration.path_to_model or updated_monitored_model.iteration.path_to_model == '':
             raise iteration_has_no_path_to_model_exception()
         if updated_monitored_model.model_status == 'idle':
             raise monitored_model_has_iteration_exception()
@@ -279,9 +278,6 @@ async def update_monitored_model(id: PydanticObjectId, updated_monitored_model: 
                     monitored_model.model_name)
             # Update monitored_model's iteration with the updated iteration
             updated_monitored_model.iteration = iteration_with_assigned_model
-
-        encoded_ml_model = await update_ml_model_to_encoded_in_monitored_model(updated_monitored_model.iteration)
-        updated_monitored_model.ml_model = encoded_ml_model
 
     updated_monitored_model.updated_at = datetime.now()
     await monitored_model.update({"$set": updated_monitored_model.dict(exclude_unset=True)})
@@ -333,13 +329,13 @@ async def get_monitored_model_ml_model_metadata(id: PydanticObjectId) -> dict:
         raise monitored_model_has_no_iteration_exception()
 
     try:
-        ml_model = await load_ml_model(monitored_model)
+        monitored_model.iteration.encoded_ml_model = await load_ml_model(monitored_model)
     except Exception as e:
         raise monitored_model_load_ml_model_exception(str(e))
 
     return {
         'response_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'ml_model': str(ml_model)
+        'ml_model': str(monitored_model.iteration.encoded_ml_model)
     }
 
 
@@ -633,35 +629,6 @@ async def update_assigned_model_in_iteration(iteration_to_found: Iteration, moni
     return iteration
 
 
-async def update_ml_model_to_encoded_in_monitored_model(iteration_to_found: Iteration):
-    """
-    Util function for getting iteration and assigning to ml_model MonitoredModel parameter encoded pkl file.
-
-    Args:
-        iteration_to_found: Iteration to get.
-        monitored_model_id: Monitored model id.
-
-    Returns:
-        None
-    """
-    project = await Project.get(iteration_to_found.project_id)
-    if not project:
-        raise project_not_found_exception()
-
-    experiment = next((exp for exp in project.experiments if exp.id == iteration_to_found.experiment_id),
-                      None)
-    if not experiment:
-        raise experiment_not_found_exception()
-
-    iteration = next((iter for iter in experiment.iterations if iter.id == iteration_to_found.id), None)
-    if not iteration:
-        raise iteration_not_found_exception()
-
-    encoded_ml_model = await load_ml_model_from_file_and_encode(iteration.path_to_model)
-
-    return encoded_ml_model
-
-
 async def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
     """
     Load ml model from file and encode it to base64.
@@ -700,10 +667,12 @@ async def load_and_decode_pkl(monitored_model: MonitoredModel) -> object:
         decoded_model: Decoded model.
     """
     try:
-        if monitored_model.ml_model:
+        if monitored_model.iteration.encoded_ml_model:
             # Load and deserialize the pickled model from ml_model
-            model_data = base64.b64decode(monitored_model.ml_model.encode("utf-8"))
-            decoded_model = pickle.loads(model_data)
+            model_data = base64.b64decode(monitored_model.iteration.encoded_ml_model.encode("utf-8"))
+
+            # instead pickle loads use custom unpickler
+            decoded_model = CustomUnpickler(io.BytesIO(model_data)).load()
 
             # Now, loaded_model contains your decoded model
             return decoded_model

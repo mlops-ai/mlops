@@ -42,6 +42,7 @@ class Iteration(BaseModel):
     - **image_charts (Optional[List[ImageChart]])**: Image charts list.
     - **assigned_monitored_model_id (Optional[PydanticObjectId])**: Assigned monitored model id.
     - **assigned_monitored_model_name (Optional[str])**: Assigned monitored model name.
+    - **encoded_ml_model (Optional[str])**: Encoded ml model.
     """
 
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
@@ -60,6 +61,7 @@ class Iteration(BaseModel):
     image_charts: Optional[List[ImageChart]] = Field(default=[], description="Image charts list")
     assigned_monitored_model_id: Optional[PydanticObjectId] = Field(default=None, alias="assigned_monitored_model_id")
     assigned_monitored_model_name: Optional[str] = Field(default=None, alias="assigned_monitored_model_name")
+    encoded_ml_model: Optional[str] = Field(default=None, description="Encoded ml model")
 
     def __repr__(self) -> str:
         return f"<Iteration {self.iteration_name}>"

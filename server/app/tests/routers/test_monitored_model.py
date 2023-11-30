@@ -1,9 +1,42 @@
+import base64
+import pickle
+
 import pytest
 import os
 from httpx import AsyncClient
 
 from app.database.init_mongo_db import drop_database
 from app.models.monitored_model_chart import MonitoredModelInteractiveChart
+from app.routers.exceptions.monitored_model import monitored_model_encoding_pkl_file_exception
+from app.routers.monitored_model import CustomUnpickler
+
+
+def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
+
+    """
+    Load ml model from file and encode it to base64.
+
+    Args:
+        pkl_file_path: Path to pkl file.
+
+    Returns:
+        ml_model: Encoded ml model.
+    """
+    try:
+        # Load the model from the file
+        ml_model = CustomUnpickler(open(pkl_file_path, 'rb')).load()
+
+        # Serialize the model
+        ml_model = pickle.dumps(ml_model)
+
+        # Encode the serialized model as base64
+        ml_model = base64.b64encode(ml_model).decode("utf-8")
+
+        return ml_model
+
+    except Exception as e:
+        # Handle any exceptions or errors that may occur
+        raise monitored_model_encoding_pkl_file_exception(str(e))
 
 
 @pytest.mark.asyncio
@@ -57,7 +90,9 @@ async def test_create_monitored_model(client: AsyncClient):
         "parameters": {
             "learning_rate": 0.01},
         "path_to_model": os.path.join(
-            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl")
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"),
+        "encoded_ml_model": load_ml_model_from_file_and_encode(os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"))
     }
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
     iteration_id = response.json()["id"]
@@ -114,7 +149,9 @@ async def test_model_name_unique(client: AsyncClient):
         "metrics": {"accuracy": 0.8, "precision": 0.7, "recall": 0.9, "f1": 0.75},
         "parameters": {"batch_size": 32, "epochs": 10, "learning_rate": 0.0001},
         "path_to_model": os.path.join(
-            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl")
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"),
+        "encoded_ml_model": load_ml_model_from_file_and_encode(os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"))
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -337,7 +374,9 @@ async def test_update_monitored_model_with_iteration(client: AsyncClient):
         "user_name": "Test user",
         "path_to_model": os.path.join(
             os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
-        )
+        ),
+        "encoded_ml_model": load_ml_model_from_file_and_encode(os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"))
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
@@ -719,7 +758,9 @@ async def test_update_monitored_model_with_changing_iteration(client: AsyncClien
         "parameters": {"batch_size": 64, "epochs": 1000, "learning_rate": 0.19},
         "path_to_model": os.path.join(
             os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
-        )
+        ),
+        "encoded_ml_model": load_ml_model_from_file_and_encode(os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"))
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=old_iteration)
@@ -750,7 +791,9 @@ async def test_update_monitored_model_with_changing_iteration(client: AsyncClien
         "parameters": {"batch_size": 64, "epochs": 1000, "learning_rate": 0.19},
         "path_to_model": os.path.join(
             os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
-        )
+        ),
+        "encoded_ml_model": load_ml_model_from_file_and_encode(os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"))
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=new_iteration)
@@ -834,7 +877,9 @@ async def test_create_two_monitored_model_to_one_iteration(client: AsyncClient):
         "parameters": {"batch_size": 64, "epochs": 1000, "learning_rate": 0.19},
         "path_to_model": os.path.join(
             os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"
-        )
+        ),
+        "encoded_ml_model": load_ml_model_from_file_and_encode(os.path.join(
+            os.path.dirname(__file__), "test_files", "linear_regression_model.pkl"))
     }
 
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)

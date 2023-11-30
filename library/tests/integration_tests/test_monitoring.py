@@ -118,8 +118,7 @@ async def test_create_model_with_iteration_no_path_to_model(setup):
     with pytest.raises(Exception) as exc_info:
         failed_response = mlops.monitoring.create_model(model_name=model_name, iteration_dict=iteration_dict)
 
-    assert str(exc_info.value) == "Request failed with status code 400: Cannot encode pkl file: [Errno 2] No such " \
-                                  "file or directory: ''"
+    assert str(exc_info.value) == "Request failed with status code 400: Iteration has no path to model."
 
 
 @pytest.mark.asyncio
@@ -316,21 +315,22 @@ async def test_create_monitored_model_no_ml_model_to_encode(setup):
     params = {'param1': 10, 'param2': 20, 'param3': 30}
     metrics = {'metric1': 0.90, 'metric2': 1.3, 'metric3': 1000}
 
-    with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
-                                        experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_not_a_model')
-        iteration.log_path_to_model(os.path.join(
-            os.path.dirname(__file__), "../test_files/test_file.txt"
-        ))
-        iteration.log_parameters(params)
-        iteration.log_metrics(metrics)
+    with pytest.raises(Exception) as exc_info_iteration:
+        with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
+                                            experiment_id=experiment['id']) as iteration:
+            iteration.log_model_name('test_not_a_model')
+            iteration.log_path_to_model(os.path.join(
+                os.path.dirname(__file__), "../test_files/test_file.txt"
+            ))
+            iteration.log_parameters(params)
+            iteration.log_metrics(metrics)
 
-    iteration_dict = iteration.end_iteration()
+        iteration_dict = iteration.end_iteration()
 
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(Exception) as exc_info_monitored_model:
         failed_response = mlops.monitoring.create_model(model_name='test_model', iteration_dict=iteration_dict)
 
-    assert 'Request failed with status code 400: Cannot encode pkl file: could not find MARK' in str(exc_info.value)
+    assert 'Cannot encode pkl file: It is not a pickle file.'
 
 
 @pytest.mark.asyncio

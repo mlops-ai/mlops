@@ -27,3 +27,10 @@ def iteration_in_experiment_in_project_assigned_to_monitored_model_exception():
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Iteration in experiment in project is assigned to monitored model. Cannot delete it. Please delete monitored model first."
     )
+
+
+def iteration_no_path_to_model_exception():
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Iteration does not have path to model."
+    )
