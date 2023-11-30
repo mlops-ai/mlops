@@ -1,6 +1,6 @@
 <img src="https://github.com/kajetsz/mlops/blob/develop/client/public/mlops.svg" alt="MLOps logo" height="100">
 
-# MLOps
+# mlops
 Open-source tool for **tracking** & **monitoring** machine learning models. 
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=for-the-badge&logo=FastAPI&logoColor=white)
