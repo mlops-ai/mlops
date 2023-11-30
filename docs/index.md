@@ -1,20 +1,30 @@
-<img src="https://github.com/kajetsz/mlops/blob/develop/client/public/mlops.svg" alt="MLOps logo" height="100">
+<div style="display: flex; align-items: center;">
+  <img src="https://github.com/kajetsz/mlops/blob/develop/client/public/mlops.svg" alt="MLOps logo" height="100">
+  <h1 style="margin-left: 20px;">MLOps</h1>
+</div>
 
-# MLOps
-Open-source tool for **tracking** & **monitoring** machine learning models. 
+<div style="text-align: center;">
+  <p><strong>Open-source tool for <em>tracking</em> & <em>monitoring</em> machine learning models.</strong></p>
+</div>  
 
-![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=for-the-badge&logo=FastAPI&logoColor=white)
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![PyPI](https://img.shields.io/badge/PyPI-3775A9.svg?style=for-the-badge&logo=PyPI&logoColor=white)
+<div class="navbar">
+  <a href="#introduction">Introduction</a>
+  <a href="#technologies">Technologies</a>
+  <a href="#installation--usage">Installation & Usage</a>
+  <a href="#server-documentation">Server Documentation</a>
+  <a href="#library-documentation">Library Documentation</a>
+  <a href="#license">License</a>
+  <a href="#contact">Contact</a>
+  <a href="#references">References</a>
+  <a href="#to-do">To-Do</a>
+</div>
 
-[![PyPI version](https://badge.fury.io/py/mlops-ai.svg)](https://badge.fury.io/py/mlops-ai)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Table of Contents
 - [Introduction](#introduction)
 - [Technologies](#technologies)
+- [Server Documentation](server.md)
+- [Library Documentation](library.md)
 - [Installation & usage](#installation--usage)
 - [License](#license)
 - [Contact](#contact)
@@ -41,6 +51,16 @@ which you can run using [Docker](https://www.docker.com/).
 - [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
 
 Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
+
+
+![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=for-the-badge&logo=FastAPI&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+
+![PyPI](https://img.shields.io/badge/PyPI-3775A9.svg?style=for-the-badge&logo=PyPI&logoColor=white)
+[![PyPI version](https://badge.fury.io/py/mlops-ai.svg)](https://badge.fury.io/py/mlops-ai)
+
 
 ## Installation & usage
 
@@ -70,6 +90,7 @@ Some example notebooks are also provided inside the `library/tests/notebooks` di
 
 Distributed under the open-source Apache 2.0 License. See `LICENSE` for more information.
 
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Contact
 
@@ -90,8 +111,26 @@ of [Adam Mickiewicz University](https://amu.edu.pl/en).
 ## To-Do
 
 Application is still under development.
-Here is a list of features we plan to implement in the future:
-- [ ] Add support for the whole monitoring module
-- [ ] Add support for mail alerts
-- [ ] AWS ECR integration
-- [ ] Add support for multiple users (optionally)
+
+
+
+<style>
+  .navbar {
+    overflow: hidden;
+    background-color: #333;
+  }
+
+  .navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+
+  .navbar a:hover {
+    background-color: #ddd;
+    color: black;
+  }
+</style>
