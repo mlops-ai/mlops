@@ -14,17 +14,6 @@ from mlops.exceptions.iteration import (
 )
 
 
-class CustomUnpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        if name == 'MonitoredModelWrapper':
-            from mlops.src.monitored_model_wrapper import MonitoredModelWrapper
-            return MonitoredModelWrapper
-        if name == 'BaselineNN':
-            from mlops.src.monitored_model_wrapper import BaselineNN
-            return BaselineNN
-        return super().find_class(module, name)
-
-
 class Iteration:
     """
     Class for logging iteration data.
@@ -282,7 +271,7 @@ class Iteration:
 
             if file_extension in ['.pkl', '.pickle']:
 
-                ml_model = CustomUnpickler(open(path_to_model, 'rb')).load()
+                ml_model = pickle.load(open(path_to_model, 'rb'))
 
                 # Serialize the model
                 ml_model = pickle.dumps(ml_model)
