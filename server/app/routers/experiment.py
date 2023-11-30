@@ -10,7 +10,8 @@ from app.models.iteration import Iteration
 from app.models.project import Project
 from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_name_not_unique_exception, experiment_not_found_exception
-from app.routers.exceptions.iteration import iteration_not_found_exception
+from app.routers.exceptions.iteration import iteration_not_found_exception, \
+    iteration_in_experiment_assigned_to_monitored_model_exception, iteration_assigned_to_monitored_model_exception
 from app.routers.exceptions.project import project_not_found_exception
 
 experiment_router = APIRouter()
@@ -168,6 +169,11 @@ async def delete_experiment(project_id: PydanticObjectId, id: PydanticObjectId) 
         raise experiment_not_found_exception()
 
     iterations = experiment.iterations
+    if iterations:
+        for iteration in iterations:
+            if iteration.assigned_monitored_model_name:
+                raise iteration_in_experiment_assigned_to_monitored_model_exception()
+
     await delete_iteration_from_dataset_deleting_experiment(iterations)
 
     project.experiments.remove(experiment)
@@ -204,6 +210,9 @@ List[PydanticObjectId]]) -> None:
             iteration = next((iter for iter in experiment.iterations if iter.id == iteration_id), None)
             if not iteration:
                 raise iteration_not_found_exception()
+
+            if iteration.assigned_monitored_model_id:
+                raise iteration_assigned_to_monitored_model_exception()
 
             if iteration.dataset:
                 await delete_iteration_from_dataset_deleting_iterations(iteration)

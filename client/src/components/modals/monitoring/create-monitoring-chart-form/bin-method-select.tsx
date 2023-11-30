@@ -19,16 +19,16 @@ import {
 } from "@/components/ui/popover";
 import { binMethodsMap } from "@/config/maping";
 import { cn } from "@/lib/utils";
-import { BinMethods } from "@/types/monitoring_chart";
+import { BinMethod } from "@/types/monitoring-chart";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 
 const binMethods = [
-    BinMethods.SQUARE_ROOT,
-    BinMethods.FREEDMAN_DIACONIS,
-    BinMethods.SCOTT,
-    BinMethods.STURGES,
-    BinMethods.FIXED_NUMBER,
+    BinMethod.SQUARE_ROOT,
+    BinMethod.FREEDMAN_DIACONIS,
+    BinMethod.SCOTT,
+    BinMethod.STURGES,
+    BinMethod.FIXED_NUMBER,
 ];
 
 interface BinMethodSelectProps {
@@ -79,7 +79,7 @@ const BinMethodSelect = ({
                                               binMethods?.find(
                                                   (binMethod: string) =>
                                                       binMethod === field.value
-                                              ) as BinMethods
+                                              ) as BinMethod
                                           ]
                                         : "Select bin method ..."}
                                     <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
@@ -117,7 +117,7 @@ const BinMethodSelect = ({
                                                     />
                                                     {
                                                         binMethodsMap[
-                                                            binMethod as BinMethods
+                                                            binMethod as BinMethod
                                                         ]
                                                     }
                                                 </CommandItem>

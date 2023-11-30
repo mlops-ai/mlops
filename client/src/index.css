@@ -231,11 +231,20 @@ ul[data-pc-section="subgroup"] li button {
     font-size: 16px;
 }
 
-.ag-row {
-    background: none;
+.ag-theme-alpine-dark .ag-row {
+    background-color: theme("colors.gray.800");
 }
 
-.ag-cell {
+.ag-theme-alpine .ag-row {
+    background-color: theme("colors.white");
+}
+
+.ag-theme-alpine-dark .ag-cell {
     font-size: 13px;
-    background: none;
+    background-color: theme("colors.gray.800");
+}
+
+.ag-theme-alpine.ag-cell {
+    font-size: 13px;
+    background-color: theme("colors.white");
 }

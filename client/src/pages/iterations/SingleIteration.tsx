@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AiOutlineExperiment } from "react-icons/ai";
 import { GoIterations } from "react-icons/go";
 import { VscProject } from "react-icons/vsc";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import ReactEcharts from "echarts-for-react";
 import { useTheme } from "@/components/providers/theme-provider";
@@ -333,8 +333,8 @@ const SingleIteration = () => {
                                 <td scope="row" className="px-6 py-4">
                                     {iterationData.assigned_monitored_model_id &&
                                     iterationData.assigned_monitored_model_name ? (
-                                        <a
-                                            href={`/models/${
+                                        <Link
+                                            to={`/models/${
                                                 iterationData.assigned_monitored_model_id
                                             }/monitoring${
                                                 searchParams.get("ne") !==
@@ -349,7 +349,7 @@ const SingleIteration = () => {
                                             {
                                                 iterationData.assigned_monitored_model_name
                                             }
-                                        </a>
+                                        </Link>
                                     ) : iterationData.path_to_model ? (
                                         <span>
                                             {iterationData.path_to_model}
@@ -374,8 +374,8 @@ const SingleIteration = () => {
                                 {iterationData.dataset ? (
                                     <>
                                         <td scope="row" className="px-6 py-4">
-                                            <a
-                                                href={`/datasets${
+                                            <Link
+                                                to={`/datasets${
                                                     searchParams.get("ne") !==
                                                     "default"
                                                         ? `?ne=${searchParams.get(
@@ -386,7 +386,7 @@ const SingleIteration = () => {
                                                 className="hover:underline text-[#0d6efd]"
                                             >
                                                 {iterationData.dataset.name}
-                                            </a>
+                                            </Link>
                                         </td>
                                         <td scope="row" className="px-6 py-4">
                                             {iterationData.dataset.version !==

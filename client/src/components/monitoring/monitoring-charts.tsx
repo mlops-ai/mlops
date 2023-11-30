@@ -2,9 +2,10 @@ import { useTheme } from "@/components/providers/theme-provider";
 
 import PredictionsPerDayTimeseries from "@/components/custom-charts/monitoring/predictions-per-day-timeseries";
 import { Model } from "@/types/model";
-import { useMemo } from "react";
 import MonitoringChart from "@/components/custom-charts/monitoring/monitoring-chart";
 import { useModal } from "@/hooks/use-modal-hook";
+import { useGrid } from "@/hooks/use-grid-hook";
+import { useMemo } from "react";
 
 interface MonitoringChartsProps {
     modelData: Model;
@@ -15,27 +16,44 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
 
     const { onOpen } = useModal();
 
+    const grid = useGrid();
+
     const monitoringCharts = useMemo(() => {
         if (!modelData.interactive_charts) return [];
 
         return modelData.interactive_charts.map((chart) => {
             return (
-                <MonitoringChart
-                    key={chart.id}
-                    type={chart.chart_type}
-                    chart_schema={chart}
-                    predictionsData={modelData.predictions_data}
-                    theme={theme}
-                    onOpen={() =>
-                        onOpen("deleteMonitoringChart", {
-                            monitoringChart: chart,
-                            model: modelData,
-                        })
-                    }
-                />
+                <>
+                    <MonitoringChart
+                        key={chart.id}
+                        type={chart.chart_type}
+                        chart_schema={chart}
+                        predictionsData={modelData.predictions_data}
+                        theme={theme}
+                        onOpen={() =>
+                            onOpen("deleteMonitoringChart", {
+                                monitoringChart: chart,
+                                model: modelData,
+                            })
+                        }
+                        onEdit={() =>
+                            onOpen("editMonitoringChart", {
+                                monitoringChart: chart,
+                                model: modelData,
+                                baseFeatures: grid.baseFeatures,
+                            })
+                        }
+                    />
+                </>
             );
         });
-    }, [modelData, modelData.interactive_charts, theme]);
+    }, [
+        modelData.interactive_charts,
+        modelData.predictions_data,
+        theme,
+        grid.baseFeatures,
+        onOpen,
+    ]);
 
     return (
         <div className="grid grid-cols-1 gap-6">

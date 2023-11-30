@@ -9,7 +9,7 @@ import SectionSeparator from "@/components/navigation/section-separator";
 
 const NavigationSidebar = () => {
 
-    const [searchParams, setSearchParams] = useSearchParams({
+    const [searchParams] = useSearchParams({
         ne: "default",
     });
 

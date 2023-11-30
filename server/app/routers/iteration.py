@@ -12,7 +12,7 @@ from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception, \
-    iteration_assigned_to_monitored_model_exception
+    iteration_assigned_to_monitored_model_exception, iteration_no_path_to_model_exception
 
 iteration_router = APIRouter()
 
@@ -211,11 +211,11 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
     if not iteration:
         raise iteration_not_found_exception()
 
-    if iteration.dataset:
-        await delete_iteration_from_dataset_deleting_iteration(iteration)
-
     if iteration.assigned_monitored_model_id:
         raise iteration_assigned_to_monitored_model_exception()
+
+    if iteration.dataset:
+        await delete_iteration_from_dataset_deleting_iteration(iteration)
 
     experiment.iterations.remove(iteration)
     await project.save()

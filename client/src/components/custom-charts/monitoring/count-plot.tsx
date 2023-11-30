@@ -3,38 +3,44 @@ import ReactEcharts from "echarts-for-react";
 import { countUniqueValues } from "@/lib/utils";
 import { countPlotOptions } from "./count-plot/count-plot-options";
 import { Prediction } from "@/types/prediction";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { MonitoringChartProps } from "@/types/monitoring-chart";
 
-interface MonitoringChartProps {
-    chart_schema: MonitoringChart;
-    predictionsData: Prediction[];
-    onOpen: () => void;
-    theme: "dark" | "light" | "system";
-}
-
+/**
+ * Count plot chart component.
+ */
 const CountPlot = ({
     chart_schema,
     predictionsData,
     onOpen,
+    onEdit,
     theme,
 }: MonitoringChartProps) => {
     let data: number[] = [];
 
-    switch (chart_schema.first_column) {
+    /**
+     * Prepare data for count plot.
+     */
+    switch (chart_schema.x_axis_column) {
         case "prediction":
             data = predictionsData.map((row: Prediction) => row.prediction);
             break;
 
         case "actual":
-            data = predictionsData.map((row: Prediction) => row.actual as number);
+            data = predictionsData.map(
+                (row: Prediction) => row.actual as number
+            );
             break;
         default:
             data = predictionsData.map(
-                (row: Prediction) => row.input_data[chart_schema.first_column as string]
+                (row: Prediction) =>
+                    row.input_data[chart_schema.x_axis_column as string]
             );
             break;
     }
 
+    /**
+     * Calculate unique values and counts.
+     */
     const [uniqueValues, counts] = countUniqueValues(data);
 
     return (
@@ -43,10 +49,12 @@ const CountPlot = ({
                 option={countPlotOptions(
                     uniqueValues,
                     counts,
-                    chart_schema.first_column as string,
+                    chart_schema.x_axis_column as string,
                     onOpen,
+                    onEdit,
                     theme
                 )}
+                notMerge={true}
                 style={{ height: "400px" }}
                 theme="customed"
             />

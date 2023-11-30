@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from mlops.config.config import settings
 from mlops.src.iteration import Iteration
 from mlops.src.dataset import Dataset
+from mlops.src.mailgun import MailGun
 from mlops.exceptions.tracking import project_id_is_none_exception, experiment_id_is_none_exception, \
     failed_to_set_active_project_exception, failed_to_set_active_experiment_exception, request_failed_exception
 from typing import ContextManager
@@ -230,7 +231,7 @@ def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description:
 
 @contextmanager
 def start_iteration(iteration_name: str, project_id: str = None,
-                    experiment_id: str = None) -> ContextManager[Iteration]:
+                    experiment_id: str = None, send_email: bool = False) -> ContextManager[Iteration]:
     """
     Function for creating mlops iteration
 
@@ -238,6 +239,7 @@ def start_iteration(iteration_name: str, project_id: str = None,
         iteration_name: name of the created iteration
         project_id: if passed id of the project, else active project_id from settings
         experiment_id: if passed id of the experiment, else active experiment_id from settings
+        send_email: if True, email will be sent after iteration ends
 
     Returns:
         Iteration.end_iteration() method output
@@ -253,15 +255,21 @@ def start_iteration(iteration_name: str, project_id: str = None,
     iteration = Iteration(
         iteration_name=iteration_name,
         project_id=project_id,
-        experiment_id=experiment_id
+        experiment_id=experiment_id,
+        send_email=send_email
     )
+    mailgun = MailGun()
     exception_occurred = False
 
     try:
         yield iteration
     except Exception as e:
         exception_occurred = True
+        if send_email or settings.send_emails:
+            mailgun.send_tracking_failure(str(e))
         raise e
     finally:
         if not exception_occurred:
-            iteration.end_iteration()
+            output = iteration.end_iteration()
+            if send_email or settings.send_emails:
+                mailgun.send_tracking_success(output)

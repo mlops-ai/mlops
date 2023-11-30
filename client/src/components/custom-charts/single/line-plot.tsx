@@ -4,6 +4,9 @@ import { Chart } from "@/types/chart";
 import ReactEcharts from "echarts-for-react";
 import { linePlotOptions } from "./line-plot/line-plot-options";
 
+/**
+ * Line plot component.
+ */
 const LinePlot = ({
     chart_data,
     iteration_name,
@@ -13,10 +16,16 @@ const LinePlot = ({
     iteration_name: string;
     theme: "dark" | "light" | "system";
 }) => {
+    /**
+     * Specify x axis type.
+     */
     const x_axis_type: string = xAxisType(chart_data.x_data);
 
     let data: any[] = [];
 
+    /**
+     * Prepare data for series.
+     */
     if (chart_data.x_data.length === 1) {
         chart_data.y_data.forEach((y_data) => {
             let data_for_series: any[] = [];
@@ -37,6 +46,9 @@ const LinePlot = ({
 
     let series_data: any[] = [];
 
+    /**
+     * Prepare series data.
+     */
     if (data.length >= 2) {
         data.forEach((xy_data, index) => {
             series_data.push({
@@ -84,6 +96,7 @@ const LinePlot = ({
                 chart_data.chart_title,
                 chart_data.chart_subtitle
             )}
+            notMerge={true}
             theme="customed"
         />
     );

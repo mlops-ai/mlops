@@ -3,6 +3,9 @@ import { Chart } from "@/types/chart";
 import { linePlotCompareOptions } from "./line-plot/line-plot-compare-options";
 import ReactEcharts from "echarts-for-react";
 
+/**
+ * Line plot compare component.
+ */
 const LinePlotCompare = ({
     charts,
     theme,
@@ -10,10 +13,16 @@ const LinePlotCompare = ({
     charts: Chart[];
     theme: "dark" | "light" | "system";
 }) => {
+    /**
+     * Specify x axis type.
+     */
     const x_axis_type = xAxisTypeCompare(charts);
 
     let series_data: any[] = [];
 
+    /**
+     * Prepare series data.
+     */
     charts.forEach((chart_data) => {
         let data: any[] = [];
 
@@ -68,6 +77,9 @@ const LinePlotCompare = ({
         }
     });
 
+    /**
+     * Get most frequent values of title, subtitle, x_label, y_label for all charts in group.
+     */
     const [title, subtitle, x_label, y_label] = getMostFrequentValues(charts);
 
     return (
@@ -82,6 +94,7 @@ const LinePlotCompare = ({
                 title,
                 subtitle
             )}
+            notMerge={true}
             theme="customed"
         />
     );

@@ -19,19 +19,11 @@ import {
 } from "@/components/ui/popover";
 import { monitoringChartTypesMap } from "@/config/maping";
 import { cn } from "@/lib/utils";
-import { MonitoringChartType } from "@/types/monitoring_chart";
+import { MonitoringChartType } from "@/types/monitoring-chart";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 
-const chartTypes = [
-    MonitoringChartType.HISTOGRAM,
-    MonitoringChartType.COUNTPLOT,
-    MonitoringChartType.SCATTER,
-    MonitoringChartType.SCATTER_WITH_HISTOGRAMS,
-    MonitoringChartType.TIMESERIES,
-    MonitoringChartType.CLASSIFICATION_METRICS,
-    MonitoringChartType.REGRESSION_METRICS,
-];
+const chartTypes = Object.keys(monitoringChartTypesMap);
 
 interface ChartTypeSelectProps {
     form: any;
@@ -51,7 +43,6 @@ const ChartTypeSelect = ({
     handleCloseSelect,
     disabled,
 }: ChartTypeSelectProps) => {
-    
     return (
         <FormField
             control={form.control}
@@ -99,6 +90,7 @@ const ChartTypeSelect = ({
                                                     value={chartType}
                                                     key={chartType}
                                                     onSelect={() => {
+                                                        form.reset();
                                                         form.setValue(
                                                             "chart_type",
                                                             chartType

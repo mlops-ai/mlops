@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { useData } from "@/hooks/use-data-hook";
 import { useDebounce } from "@/hooks/use-debounce-hook";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 
 import Fuse from "fuse.js";
 import Masonry from "react-masonry-css";
@@ -39,18 +39,10 @@ import DatasetPanelSkeleton from "./datasets-panel/datasets-panel-skeleton";
 import DatasetCardSkeleton from "@/components/datasets/dataset-card-skeleton";
 
 /**
- * Define models data state interface
- */
-interface DatasetsData {
-    activeDatasets: React.ReactNode[];
-    archivedDatasets: React.ReactNode[];
-}
-
-/**
  * Datasets page component
  */
 const Datasets = () => {
-    console.log("Datasets");
+    console.count("Datasets");
     /**
      * Custom data hook for data management
      */
@@ -70,11 +62,6 @@ const Datasets = () => {
     const isArchived = searchParams.get("archived") === "true";
 
     /**
-     * State for storing models data to display
-     */
-    const [datasets, setDatasets] = useState<DatasetsData | null>(null);
-
-    /**
      * State for storing search query
      */
     const [query, setQuery] = useState(searchParams.get("search") || "");
@@ -90,15 +77,16 @@ const Datasets = () => {
     const [sortBy, setSortBy] = useState("UDESC");
 
     /**
-     * useEffect hook for preparing datasets data to display (with filtering, sorting)
-     * @runs after component mount and every time when debounceSearch, data.datasets, isArchived or sortBy changes
+     * Get dataset id from url to scroll to it (if exists)
      */
-
     const index = location.href.indexOf("#");
     const dataset_id = index === -1 ? null : location.href.substring(index + 1);
 
-    useEffect(() => {
-        console.log("useEffect");
+    /**
+     * Prepare datasets data to display (with filtering, sorting).
+     */
+    const datasets = useMemo(() => {
+        console.count("useMemo");
         if (data.datasets) {
             const archivedDatasets = data.datasets.filter((dataset) => {
                 return dataset.archived;
@@ -134,58 +122,57 @@ const Datasets = () => {
                 ],
             });
 
-            debounceSearch === ""
-                ? setDatasets({
-                      activeDatasets: activeDatasets
-                          .sort((p1, p2) =>
-                              sortDatasetComparator(p1, p2, sortBy)
-                          )
-                          .map((dataset) => (
-                              <DatasetCard
-                                  key={dataset._id}
-                                  dataset={dataset}
-                                  scrollTo={dataset_id === dataset._id}
-                              />
-                          )),
-                      archivedDatasets: archivedDatasets
-                          .sort((p1, p2) =>
-                              sortDatasetComparator(p1, p2, sortBy)
-                          )
-                          .map((dataset) => (
-                              <DatasetCard
-                                  key={dataset._id}
-                                  dataset={dataset}
-                                  scrollTo={dataset_id === dataset._id}
-                              />
-                          )),
-                  })
-                : setDatasets({
-                      activeDatasets: fuseSearchActive
-                          .search(debounceSearch)
-                          .sort((p1, p2) =>
-                              sortDatasetComparator(p1.item, p2.item, sortBy)
-                          )
-                          .map((result) => (
-                              <DatasetCard
-                                  key={result.item._id}
-                                  dataset={result.item}
-                                  scrollTo={dataset_id === result.item._id}
-                              />
-                          )),
-                      archivedDatasets: fuseSearchArchived
-                          .search(debounceSearch)
-                          .sort((p1, p2) =>
-                              sortDatasetComparator(p1.item, p2.item, sortBy)
-                          )
-                          .map((result) => (
-                              <DatasetCard
-                                  key={result.item._id}
-                                  dataset={result.item}
-                                  scrollTo={dataset_id === result.item._id}
-                              />
-                          )),
-                  });
+            if (debounceSearch === "") {
+                return {
+                    activeDatasets: activeDatasets
+                        .sort((p1, p2) => sortDatasetComparator(p1, p2, sortBy))
+                        .map((dataset) => (
+                            <DatasetCard
+                                key={dataset._id}
+                                dataset={dataset}
+                                scrollTo={dataset_id === dataset._id}
+                            />
+                        )),
+                    archivedDatasets: archivedDatasets
+                        .sort((p1, p2) => sortDatasetComparator(p1, p2, sortBy))
+                        .map((dataset) => (
+                            <DatasetCard
+                                key={dataset._id}
+                                dataset={dataset}
+                                scrollTo={dataset_id === dataset._id}
+                            />
+                        )),
+                };
+            }
+
+            return {
+                activeDatasets: fuseSearchActive
+                    .search(debounceSearch)
+                    .sort((p1, p2) =>
+                        sortDatasetComparator(p1.item, p2.item, sortBy)
+                    )
+                    .map((result) => (
+                        <DatasetCard
+                            key={result.item._id}
+                            dataset={result.item}
+                            scrollTo={dataset_id === result.item._id}
+                        />
+                    )),
+                archivedDatasets: fuseSearchArchived
+                    .search(debounceSearch)
+                    .sort((p1, p2) =>
+                        sortDatasetComparator(p1.item, p2.item, sortBy)
+                    )
+                    .map((result) => (
+                        <DatasetCard
+                            key={result.item._id}
+                            dataset={result.item}
+                            scrollTo={dataset_id === result.item._id}
+                        />
+                    )),
+            };
         }
+        return null;
     }, [debounceSearch, data.datasets, sortBy]);
 
     /**
@@ -290,15 +277,11 @@ const Datasets = () => {
         );
     };
 
-    console.log("Models", data.models);
-    console.log("Projects", data.projects);
-    console.log("Datasets", data.datasets);
-
     useLayoutEffect(() => {
         document.getElementById(dataset_id as string)?.scrollIntoView({
             block: "center",
             behavior: "smooth",
-        } );
+        });
     });
 
     /**
@@ -336,8 +319,6 @@ const Datasets = () => {
             </div>
 
             {datasetDashboardContent()}
-
-            {/* {modelDashboardContent()} */}
         </>
     );
 };

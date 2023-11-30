@@ -1,6 +1,21 @@
 import { maxValue, minValue, scatterPlotTooltipFormatter } from "@/lib/utils";
 import { Keyable } from "@/types/types";
 
+/**
+ * Function for generating the options (configuration) object for a scatter plot.
+ * @param theme Page theme.
+ * @param series Chart series data.
+ * @param x_axis_type Chart x-axis type.
+ * @param x_label Chart x-axis label.
+ * @param y_label Chart y-axis label.
+ * @param min_x Chart x-axis minimum value.
+ * @param max_x Chart x-axis maximum value.
+ * @param min_y Chart y-axis minimum value.
+ * @param max_y Chart y-axis maximum value.
+ * @param title Chart title.
+ * @param subtitle Chart subtitle.
+ * @returns Object containing the options for a scatter plot.
+ */
 export const scatterPlotOptions = (
     theme: "dark" | "light" | "system",
     series: Keyable[],

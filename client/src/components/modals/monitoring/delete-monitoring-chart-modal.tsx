@@ -24,7 +24,7 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import SectionSeparator from "@/components/navigation/section-separator";
-import { MonitoringChart } from "@/types/monitoring_chart";
+import { MonitoringChart } from "@/types/monitoring-chart";
 
 const DeleteMonitoringChartModal = () => {
     const { type, isOpen, onClose, data } = useModal();
@@ -38,8 +38,8 @@ const DeleteMonitoringChartModal = () => {
     const isModalOpen = isOpen && type === "deleteMonitoringChart";
 
     const handleDeleteChart = async () => {
-        if (!data.monitoringChart) return;
-
+        if (!data.model || !data.monitoringChart) return;
+        
         setIsLoading(true);
         await axios
             .delete(

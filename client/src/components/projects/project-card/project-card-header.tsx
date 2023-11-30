@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { PinFilled } from "@/components/icons";
 
@@ -12,11 +12,9 @@ interface ProjectCardProps {
 }
 
 const ProjectCardHeader = ({ project, setLoading }: ProjectCardProps) => {
-    const [searchParams, setSearchParams] = useSearchParams({
+    const [searchParams] = useSearchParams({
         ne: "default",
     });
-
-    const navigate = useNavigate();
 
     return (
         <div className="flex items-center justify-between mb-2 font-semibold">
@@ -26,15 +24,15 @@ const ProjectCardHeader = ({ project, setLoading }: ProjectCardProps) => {
                         <PinFilled className="flex-shrink-0 w-5 h-5 mr-1 text-mlops-primary" />
                     </div>
                 )}{" "}
-                <a
-                    href={`/projects/${project._id}/experiments${
+                <Link
+                    to={`/projects/${project._id}/experiments${
                         searchParams.get("ne") !== "default"
                             ? `?ne=${searchParams.get("ne")}`
                             : ""
                     }`}
                 >
                     {project.title}
-                </a>
+                </Link>
             </span>
             <ProjectDropdownActions project={project} setLoading={setLoading} />
         </div>

@@ -9,6 +9,7 @@ from app.models.experiment import Experiment
 from app.models.iteration import Iteration
 from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.dataset import dataset_not_found_exception
+from app.routers.exceptions.iteration import iteration_in_experiment_in_project_assigned_to_monitored_model_exception
 from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
@@ -219,6 +220,12 @@ async def delete_project(id: PydanticObjectId):
         raise project_not_found_exception()
 
     experiments = project.experiments
+
+    for experiment in experiments:
+        iterations = experiment.iterations
+        for iteration in iterations:
+            if iteration.assigned_monitored_model_id:
+                raise iteration_in_experiment_in_project_assigned_to_monitored_model_exception()
 
     await delete_iterations_from_dataset_deleting_project(experiments)
 

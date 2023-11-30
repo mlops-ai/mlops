@@ -1,6 +1,6 @@
 import { useGrid } from "@/hooks/use-grid-hook";
 import { useTreeselect } from "@/hooks/use-tree-select-hook";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import {
     TreeSelectBaseColumnsChecked,
@@ -27,8 +27,6 @@ interface MonitoringWrapperProps {
 const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
     const treeselect = useTreeselect();
     const grid = useGrid();
-
-    console.log(modelData);
 
     const [searchParams] = useSearchParams({
         charts: "false",
@@ -123,10 +121,6 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
         grid.setAll(rowData, defaultColDef, gridColumnsAll, baseFeatures);
     }, []);
 
-    const monitoringCharts = useMemo(() => {
-        return <MonitoringCharts modelData={modelData} />;
-    }, [modelData]);
-
     const monitoringWrapperContent = () => {
         if (!charts) {
             return (
@@ -139,7 +133,7 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
                 </>
             );
         }
-        return monitoringCharts;
+        return <MonitoringCharts modelData={modelData} />;
     };
 
     return (

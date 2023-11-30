@@ -128,10 +128,11 @@ def monitored_model_chart_bad_bin_number_type_exception(chart_type: str):
         detail=f"Invalid value for 'bin_number'. Must be None for chart type '{chart_type}'.")
 
 
-def monitored_model_chart_columns_different_values_exception(chart_type: str):
+def monitored_model_chart_columns_different_values_exception(chart_type: str, second_column: str):
     return HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail=f"First column and second column must be different for chart type '{chart_type}'.")
+        detail=f"Invalid value for 'x_axis_column' and one of y_axis_columns. Must be different for chart type '{chart_type}'."
+               f" Now y_column in y_axis_columns is '{second_column}' and it is the same column like for x_axis_column.")
 
 
 def monitored_model_bad_values_exception(chart_type: str):
@@ -148,17 +149,17 @@ def monitored_model_chart_not_found_exception():
     )
 
 
-def monitored_model_chart_existing_pair_of_columns_of_chart_type_exception(chart_type: str, first_column: str, second_column: str):
+def monitored_model_chart_existing_pair_of_columns_of_chart_type_exception(chart_type: str, x_axis_column: str, y_axis_columns: list):
     return HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail=f"Chart type '{chart_type}' already exists for columns '{first_column}' and '{second_column}'."
+        detail=f"Chart type '{chart_type}' already exists for columns '{x_axis_column}' and '{y_axis_columns}'."
     )
 
 
 def monitored_model_chart_changing_columns_exception():
     return HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Cannot change columns for existing chart."
+        detail="Cannot change chart type. Must delete chart and create new one."
     )
 
 
@@ -166,4 +167,40 @@ def monitored_model_prediction_not_found_exception():
     return HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Monitored model prediction with such id not found."
+    )
+
+
+def monitored_model_chart_metrics_None_exception(chart_type: str):
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Invalid value for 'metrics'. Must be None for chart type '{chart_type}'."
+    )
+
+
+def monitored_model_chart_metrics_not_None_exception(chart_type: str):
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Invalid value for 'metrics'. Cannot be None for chart type '{chart_type}'."
+    )
+
+
+def monitored_model_chart_metric_not_in_metrics_exception(chart_type: str, metric: str):
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Invalid value for 'metrics'. Must be one of {MonitoredModelInteractiveChart.Settings.metrics[chart_type]}."
+               f"Now metric is '{metric}'."
+    )
+
+
+def monitored_model_scatter_chart_y_axis_columns_not_None_exception():
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid value for 'y_axis_columns'. Cannot be None for chart type 'scatter'."
+    )
+
+
+def monitored_model_timeseries_chart_y_axis_columns_not_None_exception():
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid value for 'y_axis_columns'. Cannot be None for chart type 'timeseries'."
     )

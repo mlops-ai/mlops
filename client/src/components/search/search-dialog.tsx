@@ -29,6 +29,9 @@ interface SearchData {
     models_group: React.ReactNode[];
 }
 
+/**
+ * Search dialog component.
+ */
 const SearchDialog = () => {
     const [open, setOpen] = useState(false);
     const data = useData();
