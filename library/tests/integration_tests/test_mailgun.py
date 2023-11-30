@@ -6,7 +6,6 @@ sys.path.append('../../server')
 sys.path.append('..')
 
 from server.app.config.config import settings as app_settings
-from server.app.database.init_mongo_db import drop_database
 from mlops.src.mailgun import MailGun
 from mlops.config.config import settings as lib_settings
 from unittest.mock import patch
