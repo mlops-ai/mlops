@@ -92,7 +92,8 @@ def send_prediction(model_name: str, data: pd.DataFrame, send_email: bool = Fals
     """
     model = get_model_by_name(model_name)
 
-    mailgun = MailGun()
+    if send_email or settings.send_emails:
+        mailgun = MailGun()
 
     data_json = data.to_dict(orient="records")
 
@@ -105,5 +106,6 @@ def send_prediction(model_name: str, data: pd.DataFrame, send_email: bool = Fals
             mailgun.send_prediction_success(prediction)
         return prediction
     else:
-        mailgun.send_prediction_failure(request_failed_exception(app_response))
+        if send_email or settings.send_emails:
+            mailgun.send_prediction_failure(request_failed_exception(app_response))
         raise request_failed_exception(app_response)

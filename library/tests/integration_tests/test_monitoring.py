@@ -194,7 +194,7 @@ async def test_predict_failure(setup):
     data_dict = data.to_dict(orient="records")
 
     with pytest.raises(Exception) as exc_info:
-        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
+        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data, send_email=False)
 
     assert str(exc_info.value) == "Request failed with status code 400: Cannot make prediction: could not " \
                                   "convert string to float: 'hello'"
@@ -360,7 +360,8 @@ async def test_create_monitored_model_no_ml_model_to_decode(setup):
     }, orient="columns")
 
     with pytest.raises(Exception) as exc_info:
-        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data)
+        failed_response = mlops.monitoring.send_prediction(model_name=model_name, data=data, send_email=False)
 
     assert "Request failed with status code 400: Monitored model has no iteration. Model status must be 'idle' or " \
            "'archived'." in str(exc_info.value)
+
