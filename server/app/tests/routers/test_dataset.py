@@ -289,3 +289,166 @@ async def test_get_archived_datasets(client: AsyncClient):
     response = await client.get("/datasets/archived")
     assert response.status_code == 200
     assert len(response.json()) == 0
+
+
+@pytest.mark.asyncio
+async def test_create_duplicated_dataset(client: AsyncClient):
+    """
+    Test create duplicated dataset.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset = {
+        "dataset_name": "Test dataset 5",
+        "dataset_description": "Test dataset description 5",
+        "tags": "Test, dataset",
+        "archived": False,
+        "version": "0.0.0",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    assert response.status_code == 201
+    assert response.json()["dataset_name"] == dataset["dataset_name"]
+    assert response.json()["dataset_description"] == dataset["dataset_description"]
+
+    response = await client.post("/datasets/", json=dataset)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Dataset name and version must be unique."
+
+
+@pytest.mark.asyncio
+async def test_get_dataset_by_name_and_version(client: AsyncClient):
+    """
+    Test get dataset by name and version.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset = {
+        "dataset_name": "Test dataset 6",
+        "dataset_description": "Test dataset description 6",
+        "tags": "Test, dataset",
+        "archived": False,
+        "version": "0.0.1",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    assert response.status_code == 201
+    assert response.json()["dataset_name"] == dataset["dataset_name"]
+    assert response.json()["dataset_description"] == dataset["dataset_description"]
+
+    dataset_name = dataset["dataset_name"]
+    dataset_version = dataset["version"]
+    response = await client.get(f"/datasets/name/{dataset_name}/version/{dataset_version}")
+    assert response.status_code == 200
+    assert response.json()["dataset_name"] == dataset["dataset_name"]
+    assert response.json()["dataset_description"] == dataset["dataset_description"]
+
+
+@pytest.mark.asyncio
+async def test_get_dataset_by_name_and_version_not_found(client: AsyncClient):
+    """
+    Test get dataset by name and version when dataset not found.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset_name = "Test dataset 7"
+    dataset_version = "0.0.2"
+    response = await client.get(f"/datasets/name/{dataset_name}/version/{dataset_version}")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Dataset not found."
+
+
+@pytest.mark.asyncio
+async def test_get_list_of_datasets_by_name(client: AsyncClient):
+    """
+    Test get datasets by name.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset = {
+        "dataset_name": "Test dataset 8",
+        "dataset_description": "Test dataset description 8",
+        "tags": "Test, dataset",
+        "archived": False,
+        "version": "0.0.0",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    assert response.status_code == 201
+    assert response.json()["dataset_name"] == dataset["dataset_name"]
+    assert response.json()["dataset_description"] == dataset["dataset_description"]
+
+    dataset = {
+        "dataset_name": "Test dataset 8",
+        "dataset_description": "Test dataset description 8",
+        "tags": "Test, dataset",
+        "archived": False,
+        "version": "0.0.1",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    assert response.status_code == 201
+    assert response.json()["dataset_name"] == dataset["dataset_name"]
+    assert response.json()["dataset_description"] == dataset["dataset_description"]
+
+    dataset_name = dataset["dataset_name"]
+    response = await client.get(f"/datasets/names/{dataset_name}")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+@pytest.mark.asyncio
+async def test_update_dataset_to_existing_pair_of_name_and_version_failure(client: AsyncClient):
+    """
+    Test update dataset to existing pair of name and version.
+
+    Args:
+        client (AsyncClient): Async client fixture
+
+    Returns:
+        None
+    """
+    dataset = {
+        "dataset_name": "Test dataset 9",
+        "dataset_description": "Test dataset description 9",
+        "tags": "Test, dataset",
+        "archived": False,
+        "version": "0.0.0",
+        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+    }
+
+    response = await client.post("/datasets/", json=dataset)
+    assert response.status_code == 201
+    assert response.json()["dataset_name"] == dataset["dataset_name"]
+    assert response.json()["dataset_description"] == dataset["dataset_description"]
+
+    dataset_id = response.json()["_id"]
+
+    updated_dataset = {
+        "dataset_name": "Test dataset 8",
+        "version": "0.0.1"
+    }
+
+    response = await client.put(f"/datasets/{dataset_id}", json=updated_dataset)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Dataset name and version must be unique."
