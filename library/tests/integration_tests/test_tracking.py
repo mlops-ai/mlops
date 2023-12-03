@@ -142,7 +142,24 @@ async def test_create_dataset_success(setup):
     assert dataset['dataset_name'] == 'test_dataset'
 
 
-# Test for start_iteration function
+@pytest.mark.asyncio
+async def test_get_dataset_by_name_and_version(setup):
+    await drop_database()
+
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            version='1')
+    dataset2 = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            version='2')
+    dataset3 = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            version='3')
+
+    response = mlops.tracking.get_dataset(dataset_name='test_dataset', dataset_version='2')
+
+    assert response['dataset_name'] == 'test_dataset' and response['version'] == '2'
+
 @pytest.mark.asyncio
 async def test_start_iteration(setup):
     await drop_database()
