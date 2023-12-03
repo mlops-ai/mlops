@@ -30,7 +30,6 @@ class Iteration:
         self.experiment_id: str = experiment_id
         self.user_name: str = settings.user_name
         self.send_email: bool = send_email
-        self.model_name: str = 'model'
         self.path_to_model: str = ''
         self.encoded_ml_model: str = None
         self.parameters: dict = {}
@@ -56,15 +55,6 @@ class Iteration:
             return True
         else:
             raise model_path_not_exist_exception()
-
-    def log_model_name(self, model_name: str):
-        """
-        Logging model name.
-
-        Args:
-            model_name: input model name
-        """
-        self.model_name = model_name
 
     def log_path_to_model(self, path_to_model: str):
         """
@@ -230,7 +220,6 @@ class Iteration:
             "parameters": self.parameters,
             "path_to_model": self.path_to_model,
             "encoded_ml_model": self.encoded_ml_model,
-            # "model_name": self.model_name,
             "dataset": dataset,
             "image_charts": self.image_charts,
             "interactive_charts": interactive_charts
