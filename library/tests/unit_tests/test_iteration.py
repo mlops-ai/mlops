@@ -73,7 +73,8 @@ def test_single_backslash_path_formatting(setup):
 @pytest.mark.asyncio
 async def test_log_dataset(setup):
     dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
-                                            path_to_dataset="https://www.kaggle.com/c/titanic/data")
+                                            path_to_dataset="https://www.kaggle.com/c/titanic/data",
+                                            version='1.0')
 
     iteration = Iteration(
         iteration_name='test_iteration',

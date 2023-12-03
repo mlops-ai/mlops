@@ -229,6 +229,26 @@ def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description:
     return app_response
 
 
+def get_dataset(dataset_name: str, dataset_version: str):
+    """
+    Function for getting mlops datasets based on name and version
+
+    Args:
+        dataset_name: name of the dataset
+        dataset_version: version of the dataset
+
+    Returns:
+        dataset: json data of the dataset
+    """
+    app_response = requests.get(f"{settings.url}/datasets/name/{dataset_name}/version/{dataset_version}")
+
+    if app_response.status_code == 200:
+        dataset = app_response.json()
+        return dataset
+    else:
+        raise request_failed_exception(app_response)
+
+
 @contextmanager
 def start_iteration(iteration_name: str, project_id: str = None,
                     experiment_id: str = None, send_email: bool = False) -> ContextManager[Iteration]:
