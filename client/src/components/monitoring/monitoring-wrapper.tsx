@@ -19,6 +19,7 @@ import Tabs from "../tabs/tabs";
 import TabItem from "../tabs/tab-item";
 import { Chart, Cycle } from "../icons";
 import MonitoringCharts from "./monitoring-charts";
+import { useCookies } from "react-cookie";
 
 interface MonitoringWrapperProps {
     modelData: Model;
@@ -31,6 +32,8 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
     const [searchParams] = useSearchParams({
         charts: "false",
     });
+
+    const [cookies] = useCookies(["dateFormat"]);
 
     /**
      * Constant used for switching between model grid and model charts.
@@ -95,7 +98,9 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
                 gridColumnsAll = [
                     {
                         headerName: "Prediction Info",
-                        children: PredictionInfo(),
+                        children: PredictionInfo(
+                            cookies.dateFormat || "humanize"
+                        ),
                     },
                     {
                         headerName: "Model Features",
@@ -107,7 +112,7 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
             gridColumnsAll = [
                 {
                     headerName: "Prediction Info",
-                    children: PredictionInfo(),
+                    children: PredictionInfo(cookies.dateFormat || "humanize"),
                 },
             ];
         }
@@ -119,7 +124,7 @@ const MonitoringWrapper = ({ modelData }: MonitoringWrapperProps) => {
         );
 
         grid.setAll(rowData, defaultColDef, gridColumnsAll, baseFeatures);
-    }, []);
+    }, [modelData, cookies.dateFormat]);
 
     const monitoringWrapperContent = () => {
         if (!charts) {

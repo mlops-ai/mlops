@@ -17,26 +17,15 @@ import { sortDatasetComparator } from "@/lib/utils";
 import { breakpointsMasonryDatasets } from "@/config/breakpoints";
 
 /**
- * Import icons components
- */
-import { VscFolderActive } from "react-icons/vsc";
-import { Database } from "lucide-react";
-import { DataArchive } from "@/components/icons";
-
-/**
  * Import components
  */
-import Breadcrumb from "@/components/breadcrumb";
-import PageHeader from "@/components/page-header";
-import Tabs from "@/components/tabs/tabs";
-import TabItem from "@/components/tabs/tab-item";
 import DatasetCard from "@/components/datasets/dataset-card";
 import DatasetsPanel from "./datasets-panel/datasets-panel";
 import DatasetNoActive from "@/components/datasets/dataset-messages/dataset-no-active";
 import DatasetNoArchive from "@/components/datasets/dataset-messages/dataset-no-archive";
 import DatasetNoResults from "@/components/datasets/dataset-messages/dataset-no-results";
-import DatasetPanelSkeleton from "./datasets-panel/datasets-panel-skeleton";
-import DatasetCardSkeleton from "@/components/datasets/dataset-card-skeleton";
+import DatasetsLoading from "@/components/datasets/datasets-loading";
+import DatasetsHeader from "@/components/datasets/datasets-header";
 
 /**
  * Datasets page component
@@ -181,21 +170,7 @@ const Datasets = () => {
      */
     const datasetDashboardContent = () => {
         if (!data.datasets) {
-            return (
-                <>
-                    <DatasetPanelSkeleton />
-
-                    <Masonry
-                        breakpointCols={breakpointsMasonryDatasets}
-                        className="my-masonry-grid"
-                        columnClassName="my-masonry-grid-column"
-                    >
-                        {[...Array(10).keys()].map((_, id) => (
-                            <DatasetCardSkeleton key={id} />
-                        ))}
-                    </Masonry>
-                </>
-            );
+            return <DatasetsLoading />;
         }
 
         const datasetsInDatabase = data.datasets.length;
@@ -224,6 +199,7 @@ const Datasets = () => {
         ) {
             return (
                 <>
+                    <DatasetsHeader />
                     <DatasetsPanel
                         query={query}
                         setQuery={setQuery}
@@ -247,6 +223,7 @@ const Datasets = () => {
         ) {
             return (
                 <>
+                    <DatasetsHeader />
                     <DatasetsPanel
                         query={query}
                         setQuery={setQuery}
@@ -259,6 +236,7 @@ const Datasets = () => {
 
         return (
             <>
+                <DatasetsHeader />
                 <DatasetsPanel
                     query={query}
                     setQuery={setQuery}
@@ -287,40 +265,7 @@ const Datasets = () => {
     /**
      * Datasets page render
      */
-    return (
-        <>
-            <div className="mb-4">
-                <PageHeader title="Datasets" />
-                <Breadcrumb
-                    items={[
-                        {
-                            name: "Datasets",
-                            Icon: Database,
-                            href: "/datasets",
-                        },
-                    ]}
-                />
-            </div>
-            <div className="text-base border-b-2 border-gray-200 dark:border-gray-700">
-                <Tabs>
-                    <TabItem
-                        title="Active datasets"
-                        Icon={VscFolderActive}
-                        param="archived"
-                        value="false"
-                    />
-                    <TabItem
-                        title="Archive"
-                        Icon={DataArchive}
-                        param="archived"
-                        value="true"
-                    />
-                </Tabs>
-            </div>
-
-            {datasetDashboardContent()}
-        </>
-    );
+    return <>{datasetDashboardContent()}</>;
 };
 
 export default Datasets;

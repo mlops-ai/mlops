@@ -21,18 +21,39 @@ import { Tailwind } from "./components/treeselect/treeselect-styles";
 
 import loadable from "@loadable/component";
 
-const Projects = loadable(() => import("./pages/projects/Projects"));
-const Experiments = loadable(() => import("./pages/experiments/Experiments"));
+import ProjectsLoading from "./components/projects/projects-loading";
+import ModelsLoading from "./components/models/models-loading";
+import DatasetsLoading from "./components/datasets/datasets-loading";
+import SingleIterationLoading from "./components/experiments/iterations/single/single-iteration-loading";
+import CompareIterationLoading from "./components/experiments/iterations/compare/compare-iteration-loading";
+import MonitoringLoading from "./components/monitoring/monitoring-loading";
+import ExperimentsLoading from "./components/experiments/experiments-messages/experiments-loading";
+
+const Projects = loadable(() => import("./pages/projects/Projects"), {
+    fallback: <ProjectsLoading />,
+});
+const Experiments = loadable(() => import("./pages/experiments/Experiments"), {
+    fallback: <ExperimentsLoading />,
+});
 const SingleIteration = loadable(
     () => import("./pages/iterations/SingleIteration"),
-    { fallback: <div>Loading...</div> }
+    { fallback: <SingleIterationLoading /> }
 );
 const CompareIterations = loadable(
-    () => import("./pages/iterations/CompareIterations")
+    () => import("./pages/iterations/CompareIterations"),
+    {
+        fallback: <CompareIterationLoading />,
+    }
 );
-const Datasets = loadable(() => import("./pages/datasets/Datasets"));
-const Models = loadable(() => import("./pages/models/Models"));
-const Monitoring = loadable(() => import("./pages/monitoring/Monitoring"));
+const Datasets = loadable(() => import("./pages/datasets/Datasets"), {
+    fallback: <DatasetsLoading />,
+});
+const Models = loadable(() => import("./pages/models/Models"), {
+    fallback: <ModelsLoading />,
+});
+const Monitoring = loadable(() => import("./pages/monitoring/Monitoring"), {
+    fallback: <MonitoringLoading />,
+});
 
 function App() {
     return (

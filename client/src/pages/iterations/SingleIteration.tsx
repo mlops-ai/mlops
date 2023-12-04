@@ -3,7 +3,6 @@ import DataTableContainer from "@/components/data-table/data-table-container";
 import DataTableContent from "@/components/data-table/data-table-content";
 import DataTableHeader from "@/components/data-table/data-table-header";
 import DataTableRow from "@/components/data-table/data-table-row-single";
-import { Loading } from "@/components/icons";
 import PageHeader from "@/components/page-header";
 import { useData } from "@/hooks/use-data-hook";
 import { Iteration } from "@/types/iteration";
@@ -13,7 +12,12 @@ import { useEffect, useMemo, useState } from "react";
 import { AiOutlineExperiment } from "react-icons/ai";
 import { GoIterations } from "react-icons/go";
 import { VscProject } from "react-icons/vsc";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+    Link,
+    useNavigate,
+    useParams,
+    useSearchParams,
+} from "react-router-dom";
 
 import ReactEcharts from "echarts-for-react";
 import { useTheme } from "@/components/providers/theme-provider";
@@ -29,6 +33,7 @@ import IterationDropdownActions from "./single-iteration/iteration-dropdown-acti
 import { dataImageType } from "@/lib/utils";
 import CustomChart from "@/components/custom-charts/single/custom-chart";
 import { Chart } from "@/types/chart";
+import SingleIterationLoading from "@/components/experiments/iterations/single/single-iteration-loading";
 
 const SingleIteration = () => {
     /**
@@ -50,13 +55,9 @@ const SingleIteration = () => {
         key: 0,
     });
 
-    console.log(status);
-
     const navigate = useNavigate();
 
     const { theme } = useTheme();
-
-    console.log(theme);
 
     /**
      * State used for storing information iteration data.
@@ -227,45 +228,8 @@ const SingleIteration = () => {
     }, [iterationData, theme, project_id, experiment_id, iteration_id]);
 
     if (iterationData === null) {
-        return (
-            <>
-                <div className="mb-4">
-                    <PageHeader title="..." />
-                    <Breadcrumb
-                        items={[
-                            {
-                                name: "Projects",
-                                Icon: LayoutDashboard,
-                                href: "/projects",
-                            },
-                            {
-                                name: "...",
-                                Icon: VscProject,
-                            },
-                            {
-                                name: "...",
-                                Icon: AiOutlineExperiment,
-                            },
-                            {
-                                name: "...",
-                                Icon: GoIterations,
-                            },
-                        ]}
-                    />
-                </div>
-                <div className="flex flex-col items-center justify-center m-32">
-                    <GoIterations className="flex-grow-0 flex-shrink-0 w-16 h-16 text-mlops-primary-tx dark:text-mlops-primary-tx-dark" />
-                    <p className="mt-3 mb-1 text-xl font-semibold text-center text-mlops-gray dark:text-zinc-400">
-                        Loading iteration data ...
-                    </p>
-                    <p className="text-sm text-center">Please, be patient.</p>
-                    <Loading className="w-10 h-10 mt-8 animate-spin text-mlops-primary dark:text-mlops-primary-tx-dark" />
-                </div>
-            </>
-        );
+        return <SingleIterationLoading />;
     }
-
-    console.log(iterationData);
 
     return (
         <div className="relative">

@@ -2,7 +2,7 @@ import { dateToHumanize } from "@/lib/utils";
 import { IDateFilterParams } from "ag-grid-community";
 import moment from "moment";
 
-export const PredictionInfo = () => {
+export const PredictionInfo = (date_format: "humanize" | "default") => {
     /**
      * Filter comparator for date (prediction_date) column
      * */
@@ -45,6 +45,12 @@ export const PredictionInfo = () => {
             pinned: true,
             filter: "agNumberColumnFilter",
             editable: true,
+            cellRenderer: (val: any) => {
+                if (val.data["actual"] === null) {
+                    return "-";
+                }
+                return val.data["actual"];
+            },
         },
         {
             field: "prediction_date",
@@ -59,14 +65,18 @@ export const PredictionInfo = () => {
                             new Date(val.data["prediction_date"])
                         ).format("DD-MM-YYYY, HH:mm:ss.SSS")}
                     >
-                        {dateToHumanize(val.data["prediction_date"])}
+                        {date_format === "default"
+                            ? moment(
+                                  new Date(val.data["prediction_date"])
+                              ).format("DD-MM-YYYY, HH:mm:ss.SSS")
+                            : dateToHumanize(val.data["prediction_date"])}
                     </span>
                 );
             },
         },
-        {
-            field: "predicted_by",
-            headerName: "Predicted By",
-        },
+        // {
+        //     field: "predicted_by",
+        //     headerName: "Predicted By",
+        // },
     ];
 };

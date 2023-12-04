@@ -28,7 +28,7 @@ import Download from "@/components/icons/download";
 import ClearSorting from "@/components/icons/clear-sorting";
 import ClearFilter from "@/components/icons/clear-filter";
 import Compare from "@/components/icons/compare";
-import { ChevronDown, Search } from "lucide-react";
+import { CalendarRange, ChevronDown, Search } from "lucide-react";
 import { TreeSelect } from "primereact/treeselect";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,6 +47,7 @@ import { useModal } from "@/hooks/use-modal-hook";
 import { Iteration } from "@/types/iteration";
 import NoIterationsInfo from "./no-iterations-info";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 interface IterationsContainerProps {
     projectData: Project;
@@ -58,7 +59,7 @@ const IterationsContainer = ({
     activeExperiments,
 }: IterationsContainerProps) => {
     console.count("IterationsContainer");
-    
+
     const treeselect = useTreeselect();
     const grid = useGrid();
 
@@ -67,6 +68,8 @@ const IterationsContainer = ({
     const gridRef = useRef<AgGridReact>(null);
     const textFilterRef = useRef<HTMLInputElement>(null);
     const filterDateRef = useRef<HTMLSpanElement>(null);
+
+    const [cookies, setCookie] = useCookies(["dateFormat"]);
 
     const { theme } = useTheme();
 
@@ -134,7 +137,10 @@ const IterationsContainer = ({
             CheckboxSection,
             {
                 headerName: "Iteration Info",
-                children: IterationInfo(projectData._id),
+                children: IterationInfo(
+                    projectData._id,
+                    cookies.dateFormat || "humanize"
+                ),
             },
             {
                 headerName: "Model Info",
@@ -155,7 +161,7 @@ const IterationsContainer = ({
         ];
 
         grid.setAll(rowData, defaultColDef, gridColumnsAll);
-    }, [projectData, activeExperiments, location.search]);
+    }, [projectData, activeExperiments, location.search, cookies.dateFormat]);
 
     const deleteButton = useRef() as MutableRefObject<HTMLButtonElement>;
     const editButton = useRef() as MutableRefObject<HTMLButtonElement>;
@@ -550,6 +556,34 @@ const IterationsContainer = ({
                         <ChevronDown className="w-4 h-4 mr-2 opacity-50" />
                     }
                 ></TreeSelect>
+
+                <Select
+                    defaultValue="humanize"
+                    onValueChange={(value) => {
+                        setCookie("dateFormat", value, {
+                            path: "/",
+                            maxAge: 60 * 60 * 24 * 365,
+                        });
+                    }}
+                    value={cookies.dateFormat || "humanize"}
+                >
+                    <SelectTrigger
+                        className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx h-9 w-[220px] pl-2"
+                        Icon={
+                            <CalendarRange className="flex-shrink-0 w-5 h-5 mr-2 top-2 left-2 dark:text-mlops-primary-tx-dark text-mlops-primary-tx" />
+                        }
+                    >
+                        <SelectValue placeholder="Date form ..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem key="humanize" value="humanize">
+                            Humanize date form
+                        </SelectItem>
+                        <SelectItem key="default" value="default">
+                            Default date form
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="my-4 text-base border-b-2 border-gray-200 dark:border-gray-700"></div>

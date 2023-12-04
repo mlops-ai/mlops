@@ -1,4 +1,4 @@
-import { Keyable } from "@/types/types";
+ import { Keyable } from "@/types/types";
 
 /**
  * Function for generating the options (configuration) object for a metrics chart.
