@@ -30,7 +30,7 @@ jobs:
       run: |
         cd library/
         python -m pip install --upgrade pip
-        pip install build
+        pip install build setuptools
     - name: Build package
       run: |
         cd library/
