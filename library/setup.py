@@ -27,5 +27,5 @@ setup(
    ],
    packages=find_packages(exclude=["tests*"]),
    include_package_data=True,
-   install_requires=["requests"],
+   install_requires=["requests==2.29.0", "scikit-learn==1.3.0", "torch==2.1.1"],
  )
