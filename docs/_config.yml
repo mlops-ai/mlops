@@ -1,10 +1,9 @@
 title: mlops
+logo: "/assets/images/mlops.svg"
+favicon_ico: "/assets/images/mlops.svg"
 description: >- 
   Open-source tool for tracking & monitoring machine learning models.
 url: "https://mlops-ai.github.io/mlops/"
 github_username:  "https://mlops-ai.github.io/mlops/"
 
 theme: just-the-docs
-
-aux_links:
-  Template Repository: https://github.com/just-the-docs/just-the-docs-template
