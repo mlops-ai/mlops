@@ -7,7 +7,7 @@ layout: home
 
 # Welcome
 
-**mlops**, an open-source tool for **tracking** & **monitoring** machine learning models
+**mlops** is an open-source tool for **tracking** & **monitoring** machine learning models
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg?style=for-the-badge&logo=FastAPI&logoColor=white)
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
