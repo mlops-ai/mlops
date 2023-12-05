@@ -1,0 +1,2 @@
+issue_template:
+  bug: .github/ISSUE_TEMPLATE/FORM_NAME.yml
