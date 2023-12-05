@@ -1,10 +1,10 @@
 title: mlops
-email: your-email@example.com
 description: >- 
   Open-source tool for tracking & monitoring machine learning models.
-url: "https://mlops-ai.github.io/mlops/" 
-twitter_username: jekyllrb
+url: "https://mlops-ai.github.io/mlops/"
 github_username:  "https://mlops-ai.github.io/mlops/"
 
 theme: just-the-docs
 
+aux_links:
+  Template Repository: https://github.com/just-the-docs/just-the-docs-template
