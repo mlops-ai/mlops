@@ -207,7 +207,7 @@ def set_active_experiment(experiment_id: str) -> str:
 
 
 def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
-                   tags: str = None, version: str = None) -> dict:
+                   tags: str = '', version: str = None) -> dict:
     """
     Function for creating mlops datasets
 
