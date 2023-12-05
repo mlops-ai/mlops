@@ -17,26 +17,15 @@ import { sortProjectComparator } from "@/lib/utils";
 import { breakpointsMasonry } from "@/config/breakpoints";
 
 /**
- * Import icons components
- */
-import { LayoutDashboard } from "lucide-react";
-import { VscFolderActive } from "react-icons/vsc";
-import { DataArchive } from "@/components/icons";
-
-/**
  * Import components
  */
 import ProjectCard from "@/components/projects/project-card";
 import ProjectNoActive from "@/components/projects/project-messages/project-no-active";
 import ProjectNoResults from "@/components/projects/project-messages/project-no-results";
-import ProjectCardSkeleton from "@/components/projects/project-card-skeleton";
-import Breadcrumb from "@/components/breadcrumb";
-import PageHeader from "@/components/page-header";
-import Tabs from "@/components/tabs/tabs";
-import TabItem from "@/components/tabs/tab-item";
 import ProjectNoArchive from "@/components/projects/project-messages/project-no-archive";
 import ProjectPanel from "./projects-panel/projects-panel";
-import ProjectPanelSkeleton from "./projects-panel/projects-panel-skeleton";
+import ProjectsLoading from "@/components/projects/projects-loading";
+import ProjectsHeader from "@/components/projects/projects-header";
 
 /**
  * Define projects data state interface
@@ -245,21 +234,7 @@ const Projects = () => {
      */
     const projectDashboardContent = () => {
         if (!data.projects) {
-            return (
-                <>
-                    <ProjectPanelSkeleton />
-
-                    <Masonry
-                        breakpointCols={breakpointsMasonry}
-                        className="my-masonry-grid"
-                        columnClassName="my-masonry-grid-column"
-                    >
-                        {[...Array(10).keys()].map((_, id) => (
-                            <ProjectCardSkeleton key={id} />
-                        ))}
-                    </Masonry>
-                </>
-            );
+            return <ProjectsLoading />;
         }
 
         const projectsInDatabase = data.projects.length;
@@ -272,6 +247,7 @@ const Projects = () => {
         if (!isArchived && (projectsInDatabase === 0 || activeProjects === 0)) {
             return (
                 <>
+                    <ProjectsHeader />
                     <ProjectPanel
                         query={query}
                         setQuery={setQuery}
@@ -288,6 +264,7 @@ const Projects = () => {
         ) {
             return (
                 <>
+                    <ProjectsHeader />
                     <ProjectPanel
                         query={query}
                         setQuery={setQuery}
@@ -311,6 +288,7 @@ const Projects = () => {
         ) {
             return (
                 <>
+                    <ProjectsHeader />
                     <ProjectPanel
                         query={query}
                         setQuery={setQuery}
@@ -323,6 +301,7 @@ const Projects = () => {
 
         return (
             <>
+                <ProjectsHeader />
                 <ProjectPanel
                     query={query}
                     setQuery={setQuery}
@@ -344,40 +323,7 @@ const Projects = () => {
     /**
      * Projects page render
      */
-    return (
-        <>
-            <div className="mb-4">
-                <PageHeader title="Projects dashboard" />
-                <Breadcrumb
-                    items={[
-                        {
-                            name: "Projects",
-                            Icon: LayoutDashboard,
-                            href: "/projects",
-                        },
-                    ]}
-                />
-            </div>
-            <div className="text-base border-b-2 border-gray-200 dark:border-gray-700">
-                <Tabs>
-                    <TabItem
-                        title="Active projects"
-                        Icon={VscFolderActive}
-                        param="archived"
-                        value="false"
-                    />
-                    <TabItem
-                        title="Archive"
-                        Icon={DataArchive}
-                        param="archived"
-                        value="true"
-                    />
-                </Tabs>
-            </div>
-
-            {projectDashboardContent()}
-        </>
-    );
+    return <>{projectDashboardContent()}</>;
 };
 
 export default Projects;

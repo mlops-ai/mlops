@@ -17,26 +17,16 @@ import { sortModelComparator } from "@/lib/utils";
 import { breakpointsMasonry } from "@/config/breakpoints";
 
 /**
- * Import icons components
- */
-import { VscFolderActive } from "react-icons/vsc";
-import { DataArchive, Monitoring } from "@/components/icons";
-
-/**
  * Import components
  */
-import Breadcrumb from "@/components/breadcrumb";
-import PageHeader from "@/components/page-header";
-import Tabs from "@/components/tabs/tabs";
-import TabItem from "@/components/tabs/tab-item";
 import { ModelStatus } from "@/types/types";
 import ModelCard from "@/components/models/model-card";
 import ModelPanel from "./models-panel/models-panel";
-import ModelPanelSkeleton from "./models-panel/models-panel-skeleton";
-import ModelCardSkeleton from "@/components/models/model-card-skeleton";
 import ModelNoActiveOrIdle from "@/components/models/model-messages/model-no-active-or-idle";
 import ModelNoArchive from "@/components/models/model-messages/model-no-archive";
 import ModelNoResults from "@/components/models/model-messages/model-no-results";
+import ModelsLoading from "@/components/models/models-loading";
+import ModelsHeader from "@/components/models/models-header";
 
 /**
  * Models page component
@@ -159,17 +149,7 @@ const Models = () => {
         if (!data.models) {
             return (
                 <>
-                    <ModelPanelSkeleton />
-
-                    <Masonry
-                        breakpointCols={breakpointsMasonry}
-                        className="my-masonry-grid"
-                        columnClassName="my-masonry-grid-column"
-                    >
-                        {[...Array(10).keys()].map((_, id) => (
-                            <ModelCardSkeleton key={id} />
-                        ))}
-                    </Masonry>
+                    <ModelsLoading />
                 </>
             );
         }
@@ -192,6 +172,7 @@ const Models = () => {
         ) {
             return (
                 <>
+                    <ModelsHeader />
                     <ModelPanel
                         query={query}
                         setQuery={setQuery}
@@ -205,6 +186,7 @@ const Models = () => {
         if (isArchived && (modelsInDatabase === 0 || archivedModels === 0)) {
             return (
                 <>
+                    <ModelsHeader />
                     <ModelPanel
                         query={query}
                         setQuery={setQuery}
@@ -228,6 +210,7 @@ const Models = () => {
         ) {
             return (
                 <>
+                    <ModelsHeader />
                     <ModelPanel
                         query={query}
                         setQuery={setQuery}
@@ -240,6 +223,7 @@ const Models = () => {
 
         return (
             <>
+                <ModelsHeader />
                 <ModelPanel
                     query={query}
                     setQuery={setQuery}
@@ -261,40 +245,7 @@ const Models = () => {
     /**
      * Monitored models page content.
      */
-    return (
-        <>
-            <div className="mb-4">
-                <PageHeader title="Monitored models" />
-                <Breadcrumb
-                    items={[
-                        {
-                            name: "Monitored models",
-                            Icon: Monitoring,
-                            href: "/models",
-                        },
-                    ]}
-                />
-            </div>
-            <div className="text-base border-b-2 border-gray-200 dark:border-gray-700">
-                <Tabs>
-                    <TabItem
-                        title="Active/Idle models"
-                        Icon={VscFolderActive}
-                        param="archived"
-                        value="false"
-                    />
-                    <TabItem
-                        title="Archive"
-                        Icon={DataArchive}
-                        param="archived"
-                        value="true"
-                    />
-                </Tabs>
-            </div>
-
-            {modelDashboardContent()}
-        </>
-    );
+    return <>{modelDashboardContent()}</>;
 };
 
 export default Models;

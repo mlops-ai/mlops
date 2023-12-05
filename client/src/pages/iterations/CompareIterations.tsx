@@ -19,7 +19,6 @@ import {
 } from "react-router-dom";
 import { Keyable } from "@/types/types";
 import { GoIterations } from "react-icons/go";
-import Loading from "@/components/icons/loading";
 import { Experiment } from "@/types/experiment";
 import DataTableContainer from "@/components/data-table/data-table-container";
 import DataTableContent from "@/components/data-table/data-table-content";
@@ -41,6 +40,7 @@ import { metricsComparationChartOptionsGenerator } from "@/pages/iterations/comp
 import { Chart } from "@/types/chart";
 import CustomChartCompare from "@/components/custom-charts/compare/custom-chart-compare";
 import CustomChart from "@/components/custom-charts/single/custom-chart";
+import CompareIterationLoading from "@/components/experiments/iterations/compare/compare-iteration-loading";
 
 const CompareIterations = () => {
     /**
@@ -600,38 +600,7 @@ const CompareIterations = () => {
     }, [iterationsData, theme, searchParams]);
 
     if (!data.projects || !iterationsData) {
-        return (
-            <>
-                <div className="mb-4">
-                    <PageHeader title="..." />
-                    <Breadcrumb
-                        items={[
-                            {
-                                name: "Projects",
-                                Icon: LayoutDashboard,
-                                href: "/projects",
-                            },
-                            {
-                                name: "...",
-                                Icon: VscProject,
-                            },
-                            {
-                                name: "Compare iterations",
-                                Icon: GoIterations,
-                            },
-                        ]}
-                    />
-                </div>
-                <div className="flex flex-col items-center justify-center m-32">
-                    <GoIterations className="flex-grow-0 flex-shrink-0 w-16 h-16 text-mlops-primary-tx dark:text-mlops-primary-tx-dark" />
-                    <p className="mt-3 mb-1 text-xl font-semibold text-center text-mlops-gray dark:text-zinc-400">
-                        Loading iterations data ...
-                    </p>
-                    <p className="text-sm text-center">Please, be patient.</p>
-                    <Loading className="w-10 h-10 mt-8 animate-spin text-mlops-primary dark:text-mlops-primary-tx-dark" />
-                </div>
-            </>
-        );
+        return <CompareIterationLoading />;
     }
 
     return (

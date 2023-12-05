@@ -5,10 +5,10 @@ import { useTreeselect } from "@/hooks/use-tree-select-hook";
 import { Model } from "@/types/model";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useRef, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+// import { useParams, useSearchParams } from "react-router-dom";
 import { useTheme } from "../providers/theme-provider";
 import { TreeSelect } from "primereact/treeselect";
-import { ChevronDown, Search } from "lucide-react";
+import { CalendarRange, ChevronDown, Search } from "lucide-react";
 import { Input } from "../ui/input";
 import {
     Select,
@@ -35,6 +35,7 @@ import { useData } from "@/hooks/use-data-hook";
 import axios from "axios";
 import { backendConfig } from "@/config/backend";
 import { createToast } from "@/lib/toast";
+import { useCookies } from "react-cookie";
 
 interface MonitoringContainerProps {
     modelData: Model;
@@ -53,11 +54,13 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
 
     const data = useData();
 
-    const { model_id } = useParams();
+    // const { model_id } = useParams();
 
-    const [searchParams] = useSearchParams({
-        ne: "default",
-    });
+    // const [searchParams] = useSearchParams({
+    //     ne: "default",
+    // });
+
+    const [cookies, setCookie] = useCookies(["dateFormat"]);
 
     const { url, port } = backendConfig;
 
@@ -200,11 +203,10 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
             .put(
                 `${url}:${port}/monitored-models/${modelData._id}/predictions/${row.id}`,
                 {
-                    actual: row.actual !== '' ? row.actual : null,
+                    actual: row.actual !== "" ? row.actual : null,
                 }
             )
             .then((res) => {
-
                 data.updatePrediction(modelData._id, row.id, res.data);
 
                 createToast({
@@ -321,6 +323,34 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
                         <ChevronDown className="w-4 h-4 mr-2 opacity-50" />
                     }
                 ></TreeSelect>
+
+                <Select
+                    defaultValue="humanize"
+                    onValueChange={(value) => {
+                        setCookie("dateFormat", value, {
+                            path: "/",
+                            maxAge: 60 * 60 * 24 * 365,
+                        });
+                    }}
+                    value={cookies.dateFormat || "humanize"}
+                >
+                    <SelectTrigger
+                        className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx h-9 w-[220px] pl-2"
+                        Icon={
+                            <CalendarRange className="flex-shrink-0 w-5 h-5 mr-2 top-2 left-2 dark:text-mlops-primary-tx-dark text-mlops-primary-tx" />
+                        }
+                    >
+                        <SelectValue placeholder="Date form ..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem key="humanize" value="humanize">
+                            Humanize date form
+                        </SelectItem>
+                        <SelectItem key="default" value="default">
+                            Default date form
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="my-4 text-base border-b-2 border-gray-200 dark:border-gray-700"></div>
