@@ -127,7 +127,7 @@ const Experiments = () => {
             );
         }
         return [];
-    }, [data.projects, projectData]);
+    }, [data.projects, projectData, searchParams]);
 
     const handleCheckboxChange = (experiment_id: string) => {
         let experiments = searchParams.get("experiments");
