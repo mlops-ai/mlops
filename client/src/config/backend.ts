@@ -4,6 +4,6 @@ interface BackendConfig {
 }
 
 export const backendConfig: BackendConfig = {
-    url: 'http://localhost',
+    url: 'http://54.209.226.194',
     port: 8000
 }
