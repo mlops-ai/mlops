@@ -10,20 +10,23 @@ from app.routers.dataset import dataset_router as dataset_router
 from app.routers.monitored_model import monitored_model_router as monitored_model_router
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+# front-end communication purpose
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(project_router, tags=["Project"], prefix="/projects")
 app.include_router(experiment_router, tags=["Experiment"], prefix="/projects/{project_id}/experiments")
 app.include_router(iteration_router, tags=['Iteration'], prefix="/projects/{project_id}/experiments/{experiment_id}/iterations")
 app.include_router(dataset_router, tags=["Dataset"], prefix="/datasets")
 app.include_router(monitored_model_router, tags=["Monitored model"], prefix="/monitored-models")
 
-# front-end communication purpose
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 
 @app.on_event("startup")
