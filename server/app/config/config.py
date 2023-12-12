@@ -9,7 +9,9 @@ class Settings(BaseSettings):
     """
     # General
     PROJECT_NAME: str = "mlops"
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["*"]
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
+        "http://localhost:3000",
+    ]
 
     # Database (mongoDB)
     MONGODB_URL: str = config("MONGODB_URL", cast=str)
