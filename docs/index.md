@@ -27,7 +27,7 @@ nav_order: 1
 - [License](#license)
 - [Contact](#contact)
 - [References](#references)
-- 
+  
 ## Introduction
 
 End-to-end machine learning projects require long-term lifecycles during which different models are evaluated,
