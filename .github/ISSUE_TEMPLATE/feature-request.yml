@@ -1,0 +1,43 @@
+name: Feature Request
+description: File a feature request
+title: "[Feature Request]: "
+labels: ["feature request"]
+projects: ["mlops"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit this feature request!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: e.g., email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: what-feature
+    attributes:
+      label: What feature would you like to request?
+      description: Please provide a detailed description of the new feature.
+      placeholder: Describe the feature you have in mind.
+      value: "I would like to request a new feature."
+    validations:
+      required: true
+  - type: textarea
+    id: why-needed
+    attributes:
+      label: Why do you think this feature is needed?
+      description: Explain the benefits or problems it would address.
+      placeholder: Share your thoughts on why this feature is important.
+    validations:
+      required: true
+  - type: checkboxes
+    id: agree-terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this request, you agree to follow our Code of Conduct.
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
