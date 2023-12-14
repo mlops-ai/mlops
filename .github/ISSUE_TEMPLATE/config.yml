@@ -1,0 +1,4 @@
+issue_template:
+  bug: .github/ISSUE_TEMPLATE/bug-report.yml
+  feature_request: .github/ISSUE_TEMPLATE/feature-request.yml
+  blank_issues_enabled: false
