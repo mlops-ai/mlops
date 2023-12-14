@@ -2,10 +2,12 @@
 # Feel free to add content and custom Front Matter to this file.
 # To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
 
-layout: home
+layout: about
+title: About
+nav_order: 1
 ---
 
-# Welcome
+# **Welcome**
 
 **mlops** is an open-source tool for **tracking** & **monitoring** machine learning models
 
@@ -92,12 +94,3 @@ Feel free to contact us in case of any questions or suggestions.
 This project was created as a final BE project of Computer Science course at
 [Faculty of Mathematics and Computer Science](https://wmi.amu.edu.pl/en) 
 of [Adam Mickiewicz University](https://amu.edu.pl/en). 
-
-## To-Do
-
-Application is still under development.
-Here is a list of features we plan to implement in the future:
-- [ ] Add support for the whole monitoring module
-- [ ] Add support for mail alerts
-- [ ] AWS ECR integration
-- [ ] Add support for multiple users (optionally)
