@@ -142,7 +142,24 @@ async def test_create_dataset_success(setup):
     assert dataset['dataset_name'] == 'test_dataset'
 
 
-# Test for start_iteration function
+@pytest.mark.asyncio
+async def test_get_dataset_by_name_and_version(setup):
+    await drop_database()
+
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            version='1')
+    dataset2 = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            version='2')
+    dataset3 = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            version='3')
+
+    response = mlops.tracking.get_dataset(dataset_name='test_dataset', dataset_version='2')
+
+    assert response['dataset_name'] == 'test_dataset' and response['version'] == '2'
+
 @pytest.mark.asyncio
 async def test_start_iteration(setup):
     await drop_database()
@@ -152,7 +169,6 @@ async def test_start_iteration(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
 
@@ -211,7 +227,6 @@ async def test_start_iteration_with_multiple_params_and_metrics(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameters(params)
         iteration.log_metrics(metrics)
 
@@ -234,7 +249,7 @@ async def test_start_iteration_with_path_to_model(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration')
+        iteration.log_metrics({'test_accuracy': 0.98})
         # iteration.log_path_to_model(os.path.join(os.path.dirname(__file__), "test_tracking.py"))
 
     result = iteration.end_iteration()
@@ -253,7 +268,6 @@ async def test_start_iteration_with_invalid_path_to_model(setup):
     with pytest.raises(FileNotFoundError) as exc_info:
         with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                             experiment_id=experiment['id']) as iteration:
-            iteration.log_model_name('test_iteration')
             iteration.log_path_to_model('INVALID PATH')
 
         result = iteration.end_iteration()
@@ -272,7 +286,6 @@ async def test_start_iteration_with_dataset(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_dataset(dataset['_id'])
@@ -296,7 +309,6 @@ async def test_start_iteration_with_image_charts(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_image_chart('test_chart', input_image_path)
@@ -323,7 +335,6 @@ async def test_start_iteration_with_image_charts_failure_invalid_path(setup):
     with pytest.raises(FileNotFoundError) as exc_info:
         with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                             experiment_id=experiment['id']) as iteration:
-            iteration.log_model_name('test_iteration.py')
             iteration.log_parameter('test_parameter', 100)
             iteration.log_metric('test_accuracy', 0.98)
             iteration.log_image_chart('test_chart', "fake_image_path")
@@ -343,7 +354,6 @@ async def test_start_iteration_with_image_charts_failure_missing_argument(setup)
     with pytest.raises(TypeError) as exc_info:
         with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                             experiment_id=experiment['id']) as iteration:
-            iteration.log_model_name('test_iteration.py')
             iteration.log_parameter('test_parameter', 100)
             iteration.log_metric('test_accuracy', 0.98)
             iteration.log_image_chart(name='test_chart')
@@ -362,7 +372,6 @@ async def test_start_iteration_with_line_chart(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_chart(chart_name="Chart 1", chart_type="line", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
@@ -383,7 +392,6 @@ async def test_start_iteration_with_pie_chart(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_chart(chart_name="Chart 1", chart_type="pie", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
@@ -404,7 +412,6 @@ async def test_start_iteration_with_bar_chart(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_chart(chart_name="Chart 1", chart_type="bar", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
@@ -425,7 +432,6 @@ async def test_start_iteration_with_scatter_chart(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_chart(chart_name="Chart 1", chart_type="scatter", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
@@ -446,7 +452,6 @@ async def test_start_iteration_with_box_chart(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_iteration.py')
         iteration.log_parameter('test_parameter', 100)
         iteration.log_metric('test_accuracy', 0.98)
         iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]],
@@ -469,7 +474,6 @@ async def test_start_iteration_with_box_chart_failed(setup):
     with pytest.raises(Exception) as exc_info:
         with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                             experiment_id=experiment['id']) as iteration:
-            iteration.log_model_name('test_iteration.py')
             iteration.log_parameter('test_parameter', 100)
             iteration.log_metric('test_accuracy', 0.98)
             iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]], y_data=[[1, 2, 3]],
@@ -491,7 +495,6 @@ async def test_start_iteration_with_box_chart_failed_with_wrong_y_data_format(se
     with pytest.raises(Exception) as exc_info:
         with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                             experiment_id=experiment['id']) as iteration:
-            iteration.log_model_name('test_iteration.py')
             iteration.log_parameter('test_parameter', 100)
             iteration.log_metric('test_accuracy', 0.98)
             iteration.log_chart(chart_name="Chart 1", chart_type="boxplot", x_data=[[1, 2, 3]],

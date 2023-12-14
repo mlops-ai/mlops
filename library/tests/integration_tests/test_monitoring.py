@@ -82,7 +82,6 @@ async def test_create_model_with_iteration(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_path_to_model(os.path.join(
             os.path.dirname(__file__), "../test_files/linear_regression_model.pkl"
         ))
@@ -108,7 +107,6 @@ async def test_create_model_with_iteration_no_path_to_model(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_parameters(params)
         iteration.log_metrics(metrics)
 
@@ -134,7 +132,6 @@ async def test_predict_success(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_parameters(params)
         iteration.log_path_to_model(os.path.join(
             os.path.dirname(__file__), "../test_files/linear_regression_model.pkl"
@@ -173,7 +170,6 @@ async def test_predict_failure(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_parameters(params)
         iteration.log_path_to_model(os.path.join(
             os.path.dirname(__file__), "../test_files/linear_regression_model.pkl"
@@ -212,7 +208,6 @@ async def test_predict_multiple_success(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_parameters(params)
         iteration.log_path_to_model(os.path.join(
             os.path.dirname(__file__), "../test_files/linear_regression_model.pkl"
@@ -250,7 +245,6 @@ async def test_predict_multiple_failure_incorrect_data_types(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_parameters(params)
         iteration.log_path_to_model(os.path.join(
             os.path.dirname(__file__), "../test_files/linear_regression_model.pkl"
@@ -287,7 +281,6 @@ async def test_create_monitored_model_with_iteration_in_another_model(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_path_to_model(os.path.join(
             os.path.dirname(__file__), "../test_files/linear_regression_model.pkl"
         ))
@@ -318,7 +311,6 @@ async def test_create_monitored_model_no_ml_model_to_encode(setup):
     with pytest.raises(Exception) as exc_info_iteration:
         with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                             experiment_id=experiment['id']) as iteration:
-            iteration.log_model_name('test_not_a_model')
             iteration.log_path_to_model(os.path.join(
                 os.path.dirname(__file__), "../test_files/test_file.txt"
             ))
@@ -345,7 +337,6 @@ async def test_create_monitored_model_no_ml_model_to_decode(setup):
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:
-        iteration.log_model_name('test_regression_model')
         iteration.log_parameters(params)
         iteration.log_metrics(metrics)
 

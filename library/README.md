@@ -146,15 +146,6 @@ Function creates an instance of Iteration
 * **iteration** dictionary
     JSON data of the created iteration
 
-### iteration.log_model_name
-
-Function logs the model name in the currently running iteration.
-
-**Arguments:**
-
-* **model_name:** string
-
-    Name of the model that's being tracked
 
 ### iteration.log_path_to_model
 

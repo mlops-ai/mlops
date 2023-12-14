@@ -3,7 +3,10 @@ import { IDateFilterParams } from "ag-grid-community";
 import moment from "moment";
 import { Link } from "react-router-dom";
 
-export const IterationInfo = (project_id: string) => {
+export const IterationInfo = (
+    project_id: string,
+    date_format: "humanize" | "default" = "humanize"
+) => {
     /**
      * Filter comparator for date (created_at) column
      * */
@@ -75,10 +78,14 @@ export const IterationInfo = (project_id: string) => {
                 return (
                     <span
                         title={moment(new Date(val.data["created_at"])).format(
-                            "DD-MM-YYYY, HH:mm:ss"
+                            "DD-MM-YYYY, HH:mm:ss.SSS"
                         )}
                     >
-                        {dateToHumanize(val.data["created_at"])}
+                        {date_format === "default"
+                            ? moment(new Date(val.data["created_at"])).format(
+                                  "DD-MM-YYYY, HH:mm:ss.SSS"
+                              )
+                            : dateToHumanize(val.data["created_at"])}
                     </span>
                 );
             },

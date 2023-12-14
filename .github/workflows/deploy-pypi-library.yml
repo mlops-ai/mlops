@@ -6,8 +6,6 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-# TODO...
-
 name: Deploy PyPI library
 
 on:
@@ -30,12 +28,18 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
+        cd library/
         python -m pip install --upgrade pip
-        pip install build
+        pip install build setuptools wheel twine
     - name: Build package
-      run: python -m build
+      run: |
+        cd library/
+        python setup.py sdist bdist_wheel
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        cd library/
+        twine upload dist/*
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        

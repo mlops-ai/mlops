@@ -11,7 +11,7 @@ from beanie import PydanticObjectId
 from app.models.dataset import Dataset, UpdateDataset
 from app.models.project import Project
 
-from app.routers.exceptions.dataset import dataset_not_found_exception
+from app.routers.exceptions.dataset import dataset_not_found_exception, dataset_name_and_version_not_unique_exception
 from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
@@ -85,6 +85,48 @@ async def get_dataset_by_name(name: str) -> Dataset:
     return dataset
 
 
+@dataset_router.get("/name/{name}/version/{version}", response_model=Dataset, status_code=status.HTTP_200_OK)
+async def get_dataset_by_name_and_version(name: str, version: str) -> Dataset:
+    """
+    Retrieve dataset by name and version.
+
+    Args:
+    - **name (str)**: Dataset name
+    - **version (str)**: Dataset version
+
+    Returns:
+    - **Dataset**: Dataset
+    """
+
+    dataset = await Dataset.find_one(
+        Dataset.dataset_name == name,
+        Dataset.version == version
+    )
+    if not dataset:
+        raise dataset_not_found_exception()
+
+    return dataset
+
+
+@dataset_router.get("/names/{name}", response_model=List[Dataset], status_code=status.HTTP_200_OK)
+async def get_datasets_by_name(name: str) -> List[Dataset]:
+    """
+    Retrieve datasets by name.
+
+    Args:
+    - **name (str)**: Dataset name
+
+    Returns:
+    - **List[Dataset]**: List of datasets
+    """
+
+    datasets = await Dataset.find(Dataset.dataset_name == name).to_list()
+    if not datasets:
+        raise dataset_not_found_exception()
+
+    return datasets
+
+
 @dataset_router.get("/{id}", response_model=Dataset, status_code=status.HTTP_200_OK)
 async def get_dataset(id: PydanticObjectId) -> Dataset:
     """
@@ -114,6 +156,10 @@ async def create_dataset(dataset: Dataset) -> Dataset:
     Returns:
     - **Dataset**: Dataset
     """
+    is_unique = await is_name_and_version_unique(dataset.dataset_name, dataset.version)
+    if not is_unique:
+        raise dataset_name_and_version_not_unique_exception()
+
     await validate_path(dataset.path_to_dataset)
 
     dataset.created_at = datetime.now()
@@ -139,6 +185,10 @@ async def update_dataset(id: PydanticObjectId, updated_dataset: UpdateDataset) -
     dataset = await Dataset.get(id)
     if not dataset:
         raise dataset_not_found_exception()
+
+    is_unique = await is_name_and_version_unique(updated_dataset.dataset_name, updated_dataset.version)
+    if not is_unique:
+        raise dataset_name_and_version_not_unique_exception()
 
     if updated_dataset.path_to_dataset:
         await validate_path(updated_dataset.path_to_dataset)
@@ -242,3 +292,24 @@ async def validate_path(value):
     except requests.exceptions.RequestException:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid URL or unable to connect to "
                                                                           "the URL.")
+
+
+async def is_name_and_version_unique(name: str, version: str) -> bool:
+    """
+    Util function for checking if dataset name and version are unique.
+
+    Args:
+        name: Dataset name to check.
+        version: Dataset version to check.
+
+    Returns:
+        True if are unique, False otherwise.
+    """
+
+    dataset = await Dataset.find_one(
+        Dataset.dataset_name == name,
+        Dataset.version == version
+    )
+    if dataset:
+        return False
+    return True
