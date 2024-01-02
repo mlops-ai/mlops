@@ -31,7 +31,7 @@ class Iteration:
         self.user_name: str = settings.user_name
         self.send_email: bool = send_email
         self.path_to_model: str = ''
-        self.encoded_ml_model: str = ''
+        self.encoded_ml_model: str = None
         self.parameters: dict = {}
         self.metrics: dict = {}
         self.dataset_id: str = None
