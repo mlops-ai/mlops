@@ -11,7 +11,6 @@ class MonitoredModel:
     - **model_description (str)**: Monitored model description.
     - **model_status (str)**: Monitored model status.
     - **iteration (Iteration)**: Related Iteration.
-    - **ml_model (object)**: ML model.
     """
 
     def __init__(self, model_name: str, model_description: str = None, iteration: Iteration = None):

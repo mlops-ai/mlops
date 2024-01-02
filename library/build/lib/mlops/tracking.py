@@ -207,7 +207,7 @@ def set_active_experiment(experiment_id: str) -> str:
 
 
 def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description: str = None,
-                   tags: str = None, version: str = None) -> dict:
+                   tags: str = '', version: str = None) -> dict:
     """
     Function for creating mlops datasets
 
@@ -227,6 +227,26 @@ def create_dataset(dataset_name: str, path_to_dataset: str, dataset_description:
     app_response = dataset.create_dataset_in_app()
 
     return app_response
+
+
+def get_dataset(dataset_name: str, dataset_version: str):
+    """
+    Function for getting mlops datasets based on name and version
+
+    Args:
+        dataset_name: name of the dataset
+        dataset_version: version of the dataset
+
+    Returns:
+        dataset: json data of the dataset
+    """
+    app_response = requests.get(f"{settings.url}/datasets/name/{dataset_name}/version/{dataset_version}")
+
+    if app_response.status_code == 200:
+        dataset = app_response.json()
+        return dataset
+    else:
+        raise request_failed_exception(app_response)
 
 
 @contextmanager
