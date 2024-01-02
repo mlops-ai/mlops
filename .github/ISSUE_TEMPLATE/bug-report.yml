@@ -31,9 +31,9 @@ body:
       label: Version
       description: What version of our library are you running?
       options:
-        - 1.2.5 
-        - 1.2.6
         - 1.2.7 (Default)
+        - 1.2.6
+        - 1.2.5
       default: 0
     validations:
       required: true
