@@ -16,6 +16,8 @@ Open-source tool for **tracking** & **monitoring** machine learning models.
 - [Introduction](#introduction)
 - [Technologies](#technologies)
 - [Installation & usage](#installation--usage)
+- [Documentation](#documentation)
+- [Examples](#examples)
 - [License](#license)
 - [Contact](#contact)
 - [References](#references)
@@ -29,9 +31,10 @@ Then, out of all the experiments, a final model must be selected for deployment 
 There are some solutions available to manage the model creation process, such as [mlflow](https://mlflow.org/)
 or [neptune.ai](https://neptune.ai/). However, none of them support the functionality of monitoring a deployed model in production.
 
-As part of the mlops project, we aim to create a ready-to-use tool for professionals in the Machine Learning industry 
+As a part of the mlops project, we aim to create a ready-to-use tool for professionals in the Machine Learning industry 
 allowing them not only to **manage experiments during model creation process (tracking module)**, 
-but also **monitoring a deployed model working on real-world production data (monitoring module)**
+but also **monitoring a deployed model working on real-world production data (monitoring module)** 
+with an option to **setup email alerts using [MailGun](https://www.mailgun.com/) (email alerts module)**.
 
 ## Technologies
 
@@ -62,9 +65,16 @@ Then, you can install the package using pip:
 pip install mlops-ai
 ```
 
-You can find more information about the package in the [PyPI documentation](https://pypi.org/project/mlops-ai/).
-Some example notebooks are also provided inside the `library/tests/notebooks` directory.
+## Documentation
 
+You can find the detailed documentation of the application [here](https://mlops-ai.github.io/mlops/).
+
+## Examples
+
+The main end-to-end notebook that 
+presents key features of the package can be found 
+[here](https://github.com/mlops-ai/mlops/blob/develop/library/tests/notebooks/mlops-ai-library-showcase.ipynb).
+Some other example notebooks are also provided inside the `library/tests/notebooks` directory. 
 
 ## License
 
@@ -74,10 +84,10 @@ Distributed under the open-source Apache 2.0 License. See `LICENSE` for more inf
 ## Contact
 
 Project authors are (in alphabetical order):
-- [Jędrzej Rybczyński (back-end, library)](https://github.com/directtt)
-- [Kacper Pękalski (back-end, library)](https://github.com/kacperxxx)
-- [Kajetan Szal(back-end, library)](https://github.com/kajetsz/)
 - [Paweł Łączkowski (front-end)](https://github.com/dzikafoczka)
+- [Kacper Pękalski (back-end, library)](https://github.com/kacperxxx)
+- [Jędrzej Rybczyński (back-end, library)](https://github.com/directtt)
+- [Kajetan Szal(back-end, library)](https://github.com/kajetsz/)
 
 Feel free to contact us in case of any questions or suggestions.
 
@@ -91,7 +101,7 @@ of [Adam Mickiewicz University](https://amu.edu.pl/en).
 
 Application is still under development.
 Here is a list of features we plan to implement in the future:
-- [ ] Add support for the whole monitoring module
-- [ ] Add support for mail alerts
-- [ ] AWS ECR integration
+- [x] Add support for the whole monitoring module
+- [x] Add support for email alerts
+- [x] AWS EC2 integration
 - [ ] Add support for multiple users (optionally)
