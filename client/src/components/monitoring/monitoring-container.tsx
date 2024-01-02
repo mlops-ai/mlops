@@ -211,7 +211,7 @@ const MonitoringContainer = ({ modelData }: MonitoringContainerProps) => {
 
                 createToast({
                     id: "update-actual-prediction-value",
-                    message: "Real value updated successfully!",
+                    message: "Actual value updated successfully!",
                     type: "success",
                 });
             })

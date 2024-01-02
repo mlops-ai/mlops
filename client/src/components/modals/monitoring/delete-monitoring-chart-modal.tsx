@@ -39,7 +39,7 @@ const DeleteMonitoringChartModal = () => {
 
     const handleDeleteChart = async () => {
         if (!data.model || !data.monitoringChart) return;
-        
+
         setIsLoading(true);
         await axios
             .delete(
@@ -47,7 +47,10 @@ const DeleteMonitoringChartModal = () => {
             )
             .then(() => {
                 onClose();
-                dataStore.deleteMonitoringChart(data.model?._id as string, data.monitoringChart?.id as string);
+                dataStore.deleteMonitoringChart(
+                    data.model?._id as string,
+                    data.monitoringChart?.id as string
+                );
                 createToast({
                     id: "delete-monitoring-chart",
                     message: `Monitoring chart deleted successfully!`,
@@ -77,6 +80,8 @@ const DeleteMonitoringChartModal = () => {
     };
 
     if (!isModalOpen) return null;
+
+    console.log(data);
 
     return (
         <Dialog open={isModalOpen} onOpenChange={onClose}>
