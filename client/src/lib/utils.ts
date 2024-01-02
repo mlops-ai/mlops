@@ -1023,15 +1023,19 @@ export const generateClassesMapping = (classes: any[]) => {
 export const generateChartTitle = (chart: MonitoringChart) => {
     switch (chart.chart_type) {
         case "histogram":
-            return `Histogram of ${chart.first_column}`;
+            return `Histogram of ${chart.x_axis_column}`;
         case "scatter":
-            return `Scatter plot of ${chart.first_column} and ${chart.second_column}`;
+            return `Scatter plot of ${
+                chart.x_axis_column
+            } and ${chart.y_axis_columns?.join(",")}`;
         case "scatter_with_histograms":
-            return `Comparison of ${chart.first_column} and ${chart.second_column} with histograms`;
+            return `Comparison of ${
+                chart.x_axis_column
+            } and ${chart.y_axis_columns?.join(",")} with histograms`;
         case "countplot":
-            return `Countplot of ${chart.first_column}`;
+            return `Countplot of ${chart.x_axis_column}`;
         case "timeseries":
-            return `Timeseries of ${chart.first_column}`;
+            return `Timeseries of ${chart.x_axis_column}`;
         case "regression_metrics":
             return `Regression metrics`;
         case "classification_metrics":
