@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: mlops-ai
-Version: 1.2.4
+Version: 1.2.7
 Summary: Mlops-ai library for managing machine learning projects, experiments, iterations and datasets.
 Author: Kacper Pękalski, Kajetan Szal, Jędrzej Rybczyński
 Author-email: kac.pekalski1@gmail.com
@@ -11,7 +11,9 @@ Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Description-Content-Type: text/markdown
-Requires-Dist: requests
+Requires-Dist: requests==2.29.0
+Requires-Dist: scikit-learn==1.3.0
+Requires-Dist: torch==2.1.1
 
 # mlops-library
 
