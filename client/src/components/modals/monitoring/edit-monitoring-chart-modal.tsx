@@ -77,7 +77,6 @@ const EditMonitoringChartModal = () => {
         form.reset(data.monitoringChart);
     }, [data.monitoringChart]);
 
-
     const { watch } = form;
 
     const isLoading = form.formState.isSubmitting;
@@ -102,6 +101,8 @@ const EditMonitoringChartModal = () => {
             )
             .then((res) => {
                 handleClose();
+
+                console.log(res.data);
 
                 dataStore.updateMonitoringChart(
                     data.model!._id,

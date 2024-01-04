@@ -17,34 +17,32 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
     const { onOpen } = useModal();
 
     const grid = useGrid();
-
+    
     const monitoringCharts = useMemo(() => {
         if (!modelData.interactive_charts) return [];
 
         return modelData.interactive_charts.map((chart) => {
             return (
-                <>
-                    <MonitoringChart
-                        key={chart.id}
-                        type={chart.chart_type}
-                        chart_schema={chart}
-                        predictionsData={modelData.predictions_data}
-                        theme={theme}
-                        onOpen={() =>
-                            onOpen("deleteMonitoringChart", {
-                                monitoringChart: chart,
-                                model: modelData,
-                            })
-                        }
-                        onEdit={() =>
-                            onOpen("editMonitoringChart", {
-                                monitoringChart: chart,
-                                model: modelData,
-                                baseFeatures: grid.baseFeatures,
-                            })
-                        }
-                    />
-                </>
+                <MonitoringChart
+                    key={chart.id}
+                    type={chart.chart_type}
+                    chart_schema={chart}
+                    predictionsData={modelData.predictions_data}
+                    theme={theme}
+                    onOpen={() =>
+                        onOpen("deleteMonitoringChart", {
+                            monitoringChart: chart,
+                            model: modelData,
+                        })
+                    }
+                    onEdit={() =>
+                        onOpen("editMonitoringChart", {
+                            monitoringChart: chart,
+                            model: modelData,
+                            baseFeatures: grid.baseFeatures,
+                        })
+                    }
+                />
             );
         });
     }, [
@@ -53,6 +51,11 @@ const MonitoringCharts = ({ modelData }: MonitoringChartsProps) => {
         theme,
         grid.baseFeatures,
         onOpen,
+        ...modelData.interactive_charts.map((chart) => chart.x_axis_column),
+        ...modelData.interactive_charts.map((chart) => chart.y_axis_columns),
+        ...modelData.interactive_charts.map((chart) => chart.metrics),
+        ...modelData.interactive_charts.map((chart) => chart.bin_method),
+        ...modelData.interactive_charts.map((chart) => chart.bin_number),
     ]);
 
     return (

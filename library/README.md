@@ -1,262 +1,96 @@
-# mlops-library
+# mlops
+Open-source tool for **tracking** & **monitoring** machine learning models. 
 
-# MLOps Tracking Module
+## Table of Contents
+- [Introduction](#introduction)
+- [Technologies](#technologies)
+- [Installation & usage](#installation--usage)
+- [Documentation](#documentation)
+- [Examples](#examples)
+- [License](#license)
+- [Contact](#contact)
+- [References](#references)
+- [To-Do](#to-do)
 
-Tracking module is used to track machine learning module during the process of their creation, training and evaluation. It allows users to store the most important information about the model (model name, dataset, parameters etc.) and later displays the information in MLOps App to provide insight.
+## Introduction
 
-## Projects
+End-to-end machine learning projects require long-term lifecycles during which different models are evaluated,
+with various hyperparameters or data representations. 
+Then, out of all the experiments, a final model must be selected for deployment in the production environment.
+There are some solutions available to manage the model creation process, such as [mlflow](https://mlflow.org/)
+or [neptune.ai](https://neptune.ai/). However, none of them support the functionality of monitoring a deployed model in production.
 
-An MLOps Project is a single machine learning project that consists of multiple experiments and models run as iterations
+As a part of the mlops project, we aim to create a ready-to-use tool for professionals in the Machine Learning industry 
+allowing them not only to **manage experiments during model creation process (tracking module)**, 
+but also **monitoring a deployed model working on real-world production data (monitoring module)** 
+with an option to **setup email alerts using [MailGun](https://www.mailgun.com/) (email alerts module)**.
 
-### mlops.tracking.create_project
+## Technologies
 
-Function creates a project based on the unique title.
+Application consist of two main components:
+- Main application (client + server) written in [React](https://reactjs.org/) and [FastAPI](https://fastapi.tiangolo.com/), 
+which you can run using [Docker](https://www.docker.com/).
+- [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
 
-**Arguments:**
+Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
 
-* **title:** string
+## Installation & usage
 
-  Title of the created project
+To install the application locally, you need to have [docker](https://docs.docker.com/get-docker/) and 
+[docker-compose](https://docs.docker.com/compose/install/) installed on your machine. 
+Then, you can run the following command:
 
-* **description:** string, _optional_
+```bash
+docker-compose up
+```
 
-  Description of the created project.
+After that you can access the application at [http://localhost:3000](http://localhost:3000).
 
-* **status**: string, _optional_
 
-  Status of the created project
+To install the python package make sure you have [Python >=3.9](https://www.python.org/downloads/) installed on your machine.
+Then, you can install the package using pip:
 
-* **archived**: bool, _optional_
-  
-  Archived status of the created project
+```bash
+pip install mlops-ai
+```
 
-**Returns:**
+## Documentation
 
-* **project**: dictionary
-  
-  JSON data of the created project
+You can find the detailed documentation of the application & library [here](https://mlops-ai.github.io/mlops/).
 
-### mlops.tracking.get_project
+## Examples
 
-Function retrieves an existing project from MLOps App
+The main end-to-end notebook that 
+presents key features of the package can be found 
+[here](https://github.com/mlops-ai/mlops/blob/develop/library/tests/notebooks/mlops-ai-library-showcase.ipynb).
+Some other example notebooks are also provided inside the `library/tests/notebooks` directory. 
 
-**Arguments:**
+## License
 
-* **project_id:**
+Distributed under the open-source Apache 2.0 License. See [LICENSE](https://github.com/mlops-ai/mlops/blob/main/LICENSE) for more information.
 
-    Id od the desired project, that will be retrieved from MLOps app
 
-**Returns:**
+## Contact
 
-* **project:** dictionary
+Project authors are (in alphabetical order):
+- [Paweł Łączkowski (front-end)](https://github.com/dzikafoczka)
+- [Kacper Pękalski (back-end, library)](https://github.com/kacperxxx)
+- [Jędrzej Rybczyński (back-end, library)](https://github.com/directtt)
+- [Kajetan Szal(back-end, library)](https://github.com/kajetsz/)
 
-    JSON data of the project
+Feel free to contact us in case of any questions or suggestions.
 
-## Experiments
+## References
 
-MLOps experiment is a machine learning experiment that can contain many iterations
+This project was created as a final BE project of Computer Science course at
+[Faculty of Mathematics and Computer Science](https://wmi.amu.edu.pl/en) 
+of [Adam Mickiewicz University](https://amu.edu.pl/en). 
 
-### mlops.tracking.get_experiment
+## To-Do
 
-Function retrieves an experiment from MLOps App
-
-**Arguments:**
-
-* **experiment_id:** string
-
-    Id of the experiment, that will be retrieved from MLOps app
-
-* **project_id:** string, _optional_
-
-    Id of the project, that the experiment comes from. By default value is the active project
-
-**Returns:**
-
-* **experiment:** dictionary
-
-    JSON data of the experiment
-
-### mlops.tracking.create_experiment
-
-Function creates a new experiment
-
-**Arguments:**
-* **name:** string
-
-    Name of the created experiment
-
-* **description:** string, _optional_
-
-    Description of the created experiment
-
-* **project_id:** string, _optional_
-
-    Id of the project, that the experiment comes from
-
-**Returns:**
-
-* **experiment:** dictionary
-
-    JSON data of the created experiment
-
-### mlops.tracking.create_dataset
-
-Function creates new mlops dataset
-
-**Arguments**
-
-* **dataset_name**: name of the created dataset
-
-* **path_to_dataset**: path to dataset files
-
-* **dataset_description**: short description of the dataset displayed in the app
-
-* **tags**: tags for dataset
-
-* **version**: version of the dataset
-
-**Returns**:
-
-* **dataset**: json data of created dataset
-
-## Iterations
-
-MLOps Iterations contain informations of a single machine learning model run
-
-### mlops.tracking.start_iteration
-
-Function creates an instance of Iteration
-
-**Arguments:**
-
-* **iteration_name:** string
-
-    name of the created iteration
-
-* **project_id:** string, _optional_
-
-    Id of the target project. By default value is the id of the active project
-
-* **experiment_id:** string, _optional_
-
-    Id of the target experiment. By default value is the id of the active experiment
-
-**Returns:**
-
-* **iteration** dictionary
-    JSON data of the created iteration
-
-
-### iteration.log_path_to_model
-
-Function logs the path to model file
-
-**Arguments:**
-
-* **path_to_model:** string
-
-    Path to the file containing the tracked model
-
-### iteration.log_metric
-
-Function logs a single metric along with it's value
-
-**Arguments:**
-
-* **metric_name:** string
-
-    Name of the logged metric
-
-* **value:**
-
-    Value of the logged metric
-
-### iteration.log_metrics
-
-Function logs multiple metrics at once
-
-**Arguments:**
-
-* **metrics**: dictionary
-
-    Dictionary containing metric: value pairs that are going to be logged
-
-### iteration.log_parameter
-
-Function logs a single parameter along with it's value
-
-**Arguments:**
-
-* **parameter_name:**
-
-    Name of the logged parameter
-
-* **value:**
-
-    Value of the logged parameter
-
-### iteration.log_parameters
-
-Function logs multiple parameters at once
-
-**Arguments:**
-
-* **parameters:** dictionary
-
-    Dictionary containing parameter: value pairs that are going to be logged
-
-### iteration.log_dataset
-
-Function logs an existing dataset with an iteration.
-
-**Arguments:**
-
-* **dataset_id:** string
-    
-    Id of an existing dataset in webapp
-
-### iteration.end_iteration
-
-Function ends the iteration and sends the logged data to the MLOps App
-
-**Returns:**
-
-* **iteration:** dictionary
-
-    JSON data of created iteration
-
-## Settings
-
-Tracking module contains local settings that can specify active project and experiment
-
-### mlops.tracking.set_active_project
-
-Function sets the active project to given project id of an existing MLOps project
-
-**Arguments:**
-
-* **project_id:** string
-
-    Id of the project, that will be set as active
-
-**Returns:**
-
-* **result:** string
-
-    Message informing about the new active project
-
-### mlops.tracking.set_active_experiment
-
-Function sets the active experiment to given experiment id of an existing MLOps experiment
-
-**Arguments:**
-
-* **experiment_id:** string
-
-    Id of the experiment, that will be set as active
-
-**Returns:**
-
-* **result:** string
-
-    Message informing about the new active experiment
+Application is still under development.
+Here is a list of features we plan to implement in the future:
+- [x] Add support for the whole monitoring module
+- [x] Add support for email alerts
+- [x] AWS EC2 integration
+- [ ] Add support for multiple users (optionally)
