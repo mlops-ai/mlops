@@ -340,18 +340,19 @@ async def get_monitored_model_ml_model_metadata(id: PydanticObjectId) -> dict:
 
 
 @monitored_model_router.post('/{id}/predict', response_model=list[PredictionData], status_code=status.HTTP_200_OK)
-async def monitored_model_predict(id: PydanticObjectId, data: list[dict]) -> list[PredictionData]:
+async def monitored_model_predict(id: PydanticObjectId, input_data: list[dict]) -> list[PredictionData]:
     """
     Make prediction using monitored model ml model. <br>
     **NOTE:** ml model needs to be complied with scikit-learn API.
 
     Args:
     - **id (str)**: Monitored model id
-    - **data (list[dict])**: List of samples to make prediction on.
+    - **input_data (list[dict])**: List of samples to make prediction on.
 
     Returns:
     - **list[PredictionData]**: List of predictions data.
     """
+    input_data_df = pd.DataFrame(input_data)
     monitored_model = await MonitoredModel.get(id)
 
     if not monitored_model:
@@ -364,19 +365,26 @@ async def monitored_model_predict(id: PydanticObjectId, data: list[dict]) -> lis
     except Exception as e:
         raise monitored_model_load_ml_model_exception(str(e))
 
-    predictions_data = []
-    for sample in data:
-        try:
-            prediction = ml_model.predict(pd.DataFrame([sample]))[0]
-            prediction_data = PredictionData(
-                input_data=sample,
-                prediction=prediction
-            )
-            predictions_data.append(prediction_data)
-            monitored_model.predictions_data.append(prediction_data)
-            await monitored_model.save()
-        except Exception as e:
-            raise monitored_model_prediction_exception(str(e))
+    try:
+        predictions = ml_model.predict(input_data_df)
+    except Exception as e:
+        raise monitored_model_prediction_exception(str(e))
+
+    # predictions_data = []
+    # for sample, prediction in zip(input_data, predictions):
+    #     prediction_data = PredictionData(
+    #         input_data=sample,
+    #         prediction=prediction
+    #     )
+    #     predictions_data.append(prediction_data)
+    #     monitored_model.predictions_data.append(prediction_data)
+    #     await monitored_model.save()
+    predictions_data = [PredictionData(
+        input_data=sample,
+        prediction=prediction
+    ) for sample, prediction in zip(input_data, predictions)]
+    monitored_model.predictions_data.extend(predictions_data)
+    await monitored_model.save()
 
     return predictions_data
 
