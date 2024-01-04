@@ -370,19 +370,12 @@ async def monitored_model_predict(id: PydanticObjectId, input_data: list[dict]) 
     except Exception as e:
         raise monitored_model_prediction_exception(str(e))
 
-    # predictions_data = []
-    # for sample, prediction in zip(input_data, predictions):
-    #     prediction_data = PredictionData(
-    #         input_data=sample,
-    #         prediction=prediction
-    #     )
-    #     predictions_data.append(prediction_data)
-    #     monitored_model.predictions_data.append(prediction_data)
-    #     await monitored_model.save()
-    predictions_data = [PredictionData(
-        input_data=sample,
-        prediction=prediction
-    ) for sample, prediction in zip(input_data, predictions)]
+    predictions_data = [
+        PredictionData(
+            input_data=sample,
+            prediction=prediction
+        ) for sample, prediction in zip(input_data, predictions)
+    ]
     monitored_model.predictions_data.extend(predictions_data)
     await monitored_model.save()
 
