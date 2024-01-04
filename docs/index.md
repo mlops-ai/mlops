@@ -21,7 +21,6 @@ nav_order: 1
 - [Introduction](#introduction)
 - [Technologies](#technologies)
 - [Installation & usage](#installation--usage)
-- [Documentation](#documentation)
 - [Examples](#examples)
 - [License](#license)
 - [Contact](#contact)
@@ -69,10 +68,6 @@ Then, you can install the package using pip:
 ```bash
 pip install mlops-ai
 ```
-
-## Documentation
-
-You can find the detailed documentation of the application [here](https://mlops-ai.github.io/mlops/).
 
 ## Examples
 
