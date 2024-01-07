@@ -9,7 +9,7 @@ README = (HERE/"README.md").read_text()
 
 setup(
    name="mlops-ai",
-   version="1.2.9",
+   version="1.3.0",
    description="Mlops-ai library for managing machine learning projects, experiments, iterations and datasets.",
    long_description=README,
    long_description_content_type="text/markdown",
