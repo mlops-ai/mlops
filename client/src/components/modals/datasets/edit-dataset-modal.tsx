@@ -215,13 +215,13 @@ const EditDatasetModal = () => {
                             render={({ field }) => (
                                 <FormItem className="px-4 mb-2">
                                     <FormLabel className="font-semibold text-md">
-                                        Model path
+                                        Dataset path
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             className="transition duration-300 text-md focus-visible:ring-mlops-primary-tx focus-visible:dark:ring-mlops-primary-tx-dark hover:border-mlops-primary-tx hover:dark:border-mlops-primary-tx-dark bg-[#a1a1aa25] hover:dark:bg-[#a1a1aa44] focus:dark:bg-[#a1a1aa44] hover:bg-[#a1a1aa20] focus:bg-[#a1a1aa20] border border-mlops-secondary-tx/25 focus:dark:border-mlops-primary-tx-dark focus:border-mlops-primary-tx"
                                             disabled={isLoading}
-                                            placeholder="Model path ..."
+                                            placeholder="Dataset path ..."
                                             {...field}
                                         />
                                     </FormControl>

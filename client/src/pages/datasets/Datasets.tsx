@@ -183,6 +183,7 @@ const Datasets = () => {
         if (!isArchived && (datasetsInDatabase === 0 || activeDatasets === 0)) {
             return (
                 <>
+                    <DatasetsHeader />
                     <DatasetsPanel
                         query={query}
                         setQuery={setQuery}

@@ -8,3 +8,7 @@ def iteration_request_failed_exception(response: Response):
 
 def model_path_not_exist_exception():
     raise FileNotFoundError("Provided model path does not exist.")
+
+
+def monitored_model_encoding_pkl_file_exception(description: str):
+    raise Exception(f"Cannot encode pkl file: {description}")
