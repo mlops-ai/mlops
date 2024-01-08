@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Server API
+title: Server
 nav_order: 2
 has_children: true
 has_toc: true
