@@ -9,7 +9,7 @@ README = (HERE/"README.md").read_text()
 
 setup(
    name="mlops-ai",
-   version="1.3.0",
+   version="1.3.1",
    description="Mlops-ai library for managing machine learning projects, experiments, iterations and datasets.",
    long_description=README,
    long_description_content_type="text/markdown",
@@ -28,4 +28,9 @@ setup(
    packages=find_packages(exclude=["tests*"]),
    include_package_data=True,
    install_requires=["requests==2.29.0", "scikit-learn==1.3.0", "torch==2.1.1", "json2html==1.3.0"],
+   project_urls={
+        "Homepage": "https://mlops-ai.github.io/mlops/",
+        "Documentation": "https://mlops-ai.github.io/mlops/library_docs/library_overview.html",
+        "Repository": "https://github.com/mlops-ai/mlops",
+    },
  )
