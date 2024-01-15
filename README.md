@@ -10,6 +10,7 @@ Open-source tool for **tracking** & **monitoring** machine learning models.
 ![PyPI](https://img.shields.io/badge/PyPI-3775A9.svg?style=for-the-badge&logo=PyPI&logoColor=white)
 
 [![PyPI version](https://badge.fury.io/py/mlops-ai.svg)](https://badge.fury.io/py/mlops-ai)
+[![PyPI - Downloads](https://img.shields.io/pypi/dw/mlops-ai)](https://pypistats.org/packages/mlops-ai)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Table of Contents
