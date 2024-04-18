@@ -25,7 +25,7 @@ def test_format_unix_path(setup):
 
     iteration.format_path()
 
-    assert iteration.path_to_model == '..\\mlops\\library\\tests\\test_tracking.py'
+    assert iteration.path_to_model == '../mlops/library/tests/test_tracking.py'
 
 
 def test_format_good_path(setup):
@@ -39,7 +39,7 @@ def test_format_good_path(setup):
 
     iteration.format_path()
 
-    assert iteration.path_to_model == '..\\mlops\\library\\tests\\test_tracking.py'
+    assert iteration.path_to_model == '../mlops/library/tests/test_tracking.py'
 
 
 def test_format_path_with_special_characters(setup):
@@ -49,11 +49,11 @@ def test_format_path_with_special_characters(setup):
         experiment_id='test_experiment'
     )
 
-    iteration.path_to_model = '..\rlops\fibrary\tests\test_tracking.py'
+    iteration.path_to_model = '..\\rlops\\fibrary\\tests\\test_tracking.py'
 
     iteration.format_path()
 
-    assert iteration.path_to_model == '..\\rlops\\fibrary\\tests\\test_tracking.py'
+    assert iteration.path_to_model == '../rlops/fibrary/tests/test_tracking.py'
 
 
 def test_single_backslash_path_formatting(setup):
@@ -63,17 +63,17 @@ def test_single_backslash_path_formatting(setup):
         experiment_id='test_experiment'
     )
 
-    iteration.path_to_model = '..\mlops\library\tests\test_tracking.py'
+    iteration.path_to_model = '..\\mlops\\library\\tests\\test_tracking.py'
 
     iteration.format_path()
 
-    assert iteration.path_to_model == '..\\mlops\\library\\tests\\test_tracking.py'
+    assert iteration.path_to_model == '../mlops/library/tests/test_tracking.py'
 
 
 @pytest.mark.asyncio
 async def test_log_dataset(setup):
     dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
-                                            path_to_dataset="https://www.kaggle.com/c/titanic/data",
+                                            path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris",
                                             version='1.0')
 
     iteration = Iteration(

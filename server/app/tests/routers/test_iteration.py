@@ -252,7 +252,7 @@ async def test_delete_iteration_with_dataset(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/data",
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris",
     }
 
     response = await client.post("/datasets/", json=dataset)

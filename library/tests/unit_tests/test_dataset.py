@@ -14,8 +14,7 @@ async def setup():
 
 
 def test_create_dataset_success():
-    dataset = Dataset(dataset_name='test_dataset', path_to_dataset='https://www.kaggle.com/c'
-                                                                   '/titanic/download/train.csv')
+    dataset = Dataset(dataset_name='test_dataset', path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris")
     result = dataset.create_dataset_in_app()
 
     assert result['dataset_name'] == 'test_dataset'

@@ -70,7 +70,6 @@ async def test_set_active_model(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_model_with_iteration(setup):
     await drop_database()
 
@@ -120,7 +119,6 @@ async def test_create_model_with_iteration_no_path_to_model(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_success(setup):
     await drop_database()
 
@@ -158,7 +156,6 @@ async def test_predict_success(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_failure(setup):
     await drop_database()
 
@@ -196,7 +193,6 @@ async def test_predict_failure(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_multiple_success(setup):
     await drop_database()
 
@@ -233,7 +229,6 @@ async def test_predict_multiple_success(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_predict_multiple_failure_incorrect_data_types(setup):
     await drop_database()
 
@@ -269,7 +264,6 @@ async def test_predict_multiple_failure_incorrect_data_types(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_monitored_model_with_iteration_in_another_model(setup):
     await drop_database()
 
@@ -298,7 +292,6 @@ async def test_create_monitored_model_with_iteration_in_another_model(setup):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 async def test_create_monitored_model_no_ml_model_to_encode(setup):
     await drop_database()
 

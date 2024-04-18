@@ -136,8 +136,8 @@ async def test_set_active_experiment(setup):
 async def test_create_dataset_success(setup):
     await drop_database()
 
-    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset', path_to_dataset='https://www.kaggle.com/c'
-                                                                                         '/titanic/download/train.csv')
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris")
 
     assert dataset['dataset_name'] == 'test_dataset'
 
@@ -147,18 +147,19 @@ async def test_get_dataset_by_name_and_version(setup):
     await drop_database()
 
     dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
-                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
+                                            path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris",
                                             version='1')
     dataset2 = mlops.tracking.create_dataset(dataset_name='test_dataset',
-                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
-                                            version='2')
+                                             path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris",
+                                             version='2')
     dataset3 = mlops.tracking.create_dataset(dataset_name='test_dataset',
-                                            path_to_dataset='https://www.kaggle.com/c/titanic/download/train.csv',
-                                            version='3')
+                                             path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris",
+                                             version='3')
 
     response = mlops.tracking.get_dataset(dataset_name='test_dataset', dataset_version='2')
 
     assert response['dataset_name'] == 'test_dataset' and response['version'] == '2'
+
 
 @pytest.mark.asyncio
 async def test_start_iteration(setup):
@@ -281,8 +282,8 @@ async def test_start_iteration_with_dataset(setup):
 
     project = mlops.tracking.create_project(title='test_project')
     experiment = mlops.tracking.create_experiment(name='test_experiment', project_id=project['_id'])
-    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset', path_to_dataset='https://www.kaggle.com/c'
-                                                                                         '/titanic/download/train.csv')
+    dataset = mlops.tracking.create_dataset(dataset_name='test_dataset',
+                                            path_to_dataset="https://archive.ics.uci.edu/dataset/53/iris")
 
     with mlops.tracking.start_iteration('test_iteration', project_id=project['_id'],
                                         experiment_id=experiment['id']) as iteration:

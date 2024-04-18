@@ -40,7 +40,7 @@ async def test_create_dataset_url(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -66,7 +66,7 @@ async def test_get_dataset_by_id(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -140,7 +140,7 @@ async def test_get_dataset_by_name(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/data",
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris",
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -308,7 +308,7 @@ async def test_create_duplicated_dataset(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -338,7 +338,7 @@ async def test_get_dataset_by_name_and_version(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.1",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -389,7 +389,7 @@ async def test_get_list_of_datasets_by_name(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -403,7 +403,7 @@ async def test_get_list_of_datasets_by_name(client: AsyncClient):
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.1",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
@@ -434,7 +434,7 @@ async def test_update_dataset_to_existing_pair_of_name_and_version_failure(clien
         "tags": "Test, dataset",
         "archived": False,
         "version": "0.0.0",
-        "path_to_dataset": "https://www.kaggle.com/c/titanic/download/train.csv"
+        "path_to_dataset": "https://archive.ics.uci.edu/dataset/53/iris"
     }
 
     response = await client.post("/datasets/", json=dataset)
