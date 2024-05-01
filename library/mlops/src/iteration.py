@@ -1,6 +1,7 @@
 import os
 import base64
 import pickle
+from pathlib import Path
 
 import requests
 
@@ -41,8 +42,7 @@ class Iteration:
         self.image_charts: list = []
 
     def format_path(self):
-        self.path_to_model = self.path_to_model.replace('\f', '\\f').replace('\t', '\\t').replace(
-            '\n', '\\n').replace('\r', '\\r').replace('\b', '\\b').replace('/', '\\')
+        self.path_to_model = Path(r'' + self.path_to_model).as_posix()
 
     def path_to_model_exists(self) -> bool:
         """
@@ -79,8 +79,6 @@ class Iteration:
         except Exception as e:
             # Handle any exceptions or errors that may occur
             raise monitored_model_encoding_pkl_file_exception(str(e))
-
-
 
     def log_metric(self, metric_name: str, value):
         """
