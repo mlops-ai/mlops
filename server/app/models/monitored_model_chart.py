@@ -57,7 +57,7 @@ class MonitoredModelInteractiveChart(BaseModel):
         bin_methods = ["squareRoot", "scott", "freedmanDiaconis", "sturges", "fixedNumber"]
         metrics = {
             "regression": ["r2", "mae", "mse", "rmse", "medae", "msle", "rmsle", "smape"],
-            "classification": ["accuracy", "precision", "recall", "f1score", "mmc"]
+            "classification": ["accuracy", "precision", "recall", "f1score", "mcc"]
         }
 
     class Config:
@@ -122,7 +122,7 @@ class UpdateMonitoredModelInteractiveChart(MonitoredModelInteractiveChart):
         bin_methods = ["squareRoot", "scott", "freedmanDiaconis", "sturges", "fixedNumber"]
         metrics = {
             "regression": ["r2", "mae", "mse", "rmse", "medae", "msle", "rmsle", "smape"],
-            "classification": ["accuracy", "precision", "recall", "f1score", "mmc"]
+            "classification": ["accuracy", "precision", "recall", "f1score", "mcc"]
         }
 
     class Config:

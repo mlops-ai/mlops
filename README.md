@@ -1,4 +1,4 @@
-<img src="https://github.com/kajetsz/mlops/blob/develop/client/public/mlops.svg" alt="MLOps logo" height="100">
+<img src="https://raw.githubusercontent.com/mlops-ai/mlops/develop/client/public/mlops.svg?sanitize=true" alt="MLOps logo" height="100">
 
 # mlops
 Open-source tool for **tracking** & **monitoring** machine learning models. 
