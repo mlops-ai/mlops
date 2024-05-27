@@ -23,8 +23,12 @@ class Settings:
         # Check if the code is running in a GitHub Actions environment
         if os.getenv('GITHUB_ACTIONS') == 'true':
             return os.getenv('GITHUB_ACTOR')
+        elif os.getenv('USERNAME') is not None:
+            return os.getenv('USERNAME')
+        elif os.getenv('USER') is not None:
+            return os.getenv('USER')
         else:
-            return os.getlogin()
+            return 'root'
 
     def change_username(self, username: str):
         self.user_name = username
