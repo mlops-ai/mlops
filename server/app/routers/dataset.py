@@ -283,7 +283,7 @@ async def validate_path(value):
         return value
 
     try:
-        response = requests.head(value)
+        response = requests.get(value)
         if response.ok:
             return value
         else:
