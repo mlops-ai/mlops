@@ -38,45 +38,10 @@ def iteration_has_no_path_to_model_exception():
     )
 
 
-def monitored_model_load_ml_model_exception(description: str):
-    return HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=f"Cannot load ml model: {description}"
-    )
-
-
 def monitored_model_prediction_exception(description: str):
     return HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=f"Cannot make prediction: {description}"
-    )
-
-
-def monitored_model_encoding_pkl_file_exception(description: str):
-    return HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=f"Cannot encode pkl file: {description}"
-    )
-
-
-def monitored_model_no_ml_model_to_decode_exception():
-    return HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="No ml model to decode."
-    )
-
-
-def monitored_model_decoding_pkl_file_exception(description: str):
-    return HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=f"Cannot decode pkl file: {description}"
-    )
-
-
-def monitored_model_has_no_iteration_to_check_exception():
-    return HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Monitored model has no iteration."
     )
 
 

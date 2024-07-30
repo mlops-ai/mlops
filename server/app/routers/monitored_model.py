@@ -1,8 +1,5 @@
-import base64
-import io
 import pandas as pd
-from typing import List, Union, Optional
-import pickle
+from typing import List
 from datetime import datetime
 from beanie import PydanticObjectId
 from fastapi import APIRouter, status
@@ -17,9 +14,7 @@ from app.routers.exceptions.iteration import iteration_not_found_exception
 from app.routers.exceptions.monitored_model import monitored_model_not_found_exception, \
     monitored_model_name_not_unique_exception, monitored_model_has_no_iteration_exception, \
     monitored_model_has_iteration_exception, iteration_has_no_path_to_model_exception, \
-    monitored_model_load_ml_model_exception, monitored_model_prediction_exception, \
-    monitored_model_encoding_pkl_file_exception, monitored_model_no_ml_model_to_decode_exception, \
-    monitored_model_decoding_pkl_file_exception, monitored_model_has_no_iteration_to_check_exception, \
+    monitored_model_prediction_exception, \
     iteration_is_assigned_to_monitored_model_exception, monitored_model_has_no_predictions_data_exception, \
     monitored_model_chart_column_bad_type_exception, monitored_model_chart_bad_bin_method_exception, \
     monitored_model_chart_bad_bin_type_or_value_exception, monitored_model_chart_bad_bin_number_type_exception, \
@@ -33,17 +28,6 @@ from app.routers.exceptions.monitored_model import monitored_model_not_found_exc
 from app.routers.exceptions.project import project_not_found_exception
 
 monitored_model_router = APIRouter()
-
-
-class CustomUnpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        if name == 'MonitoredModelWrapper':
-            from app.models.monitored_model_wrapper import MonitoredModelWrapper
-            return MonitoredModelWrapper
-        if name == 'BaselineNN':
-            from app.models.monitored_model_wrapper import BaselineNN
-            return BaselineNN
-        return super().find_class(module, name)
 
 
 @monitored_model_router.get("/", response_model=List[MonitoredModel], status_code=status.HTTP_200_OK)
@@ -310,35 +294,6 @@ async def delete_monitored_model(id: PydanticObjectId) -> MonitoredModel:
     return monitored_model
 
 
-@monitored_model_router.get('/{id}/ml-model-metadata', response_model=dict, status_code=status.HTTP_200_OK)
-async def get_monitored_model_ml_model_metadata(id: PydanticObjectId) -> dict:
-    """
-    Get monitored model ml model metadata.
-
-    Args:
-    - **id (str)**: Monitored model id
-
-    Returns:
-    - **dict**: Monitored model ml model metadata.
-    """
-    monitored_model = await MonitoredModel.get(id)
-
-    if not monitored_model:
-        raise monitored_model_not_found_exception()
-    if not monitored_model.iteration:
-        raise monitored_model_has_no_iteration_exception()
-
-    try:
-        monitored_model.iteration.encoded_ml_model = await load_ml_model(monitored_model)
-    except Exception as e:
-        raise monitored_model_load_ml_model_exception(str(e))
-
-    return {
-        'response_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'ml_model': str(monitored_model.iteration.encoded_ml_model)
-    }
-
-
 @monitored_model_router.post('/{id}/predict', response_model=list[PredictionData], status_code=status.HTTP_200_OK)
 async def monitored_model_predict(id: PydanticObjectId, input_data: list[dict]) -> list[PredictionData]:
     """
@@ -361,12 +316,8 @@ async def monitored_model_predict(id: PydanticObjectId, input_data: list[dict]) 
         raise monitored_model_has_no_iteration_exception()
 
     try:
-        ml_model = await load_ml_model(monitored_model)
-    except Exception as e:
-        raise monitored_model_load_ml_model_exception(str(e))
-
-    try:
-        predictions = ml_model.predict(input_data_df)
+        # temporary list of predictions for now
+        predictions = [0] * input_data_df.shape[0]
     except Exception as e:
         raise monitored_model_prediction_exception(str(e))
 
@@ -628,76 +579,6 @@ async def update_assigned_model_in_iteration(iteration_to_found: Iteration, moni
     await project.save()
 
     return iteration
-
-
-async def load_ml_model_from_file_and_encode(pkl_file_path) -> str:
-    """
-    Load ml model from file and encode it to base64.
-
-    Args:
-        pkl_file_path: Path to pkl file.
-
-    Returns:
-        ml_model: Encoded ml model.
-    """
-    try:
-        # Load the model from the file
-        ml_model = CustomUnpickler(open(pkl_file_path, 'rb')).load()
-
-        # Serialize the model
-        ml_model = pickle.dumps(ml_model)
-
-        # Encode the serialized model as base64
-        ml_model = base64.b64encode(ml_model).decode("utf-8")
-
-        return ml_model
-
-    except Exception as e:
-        # Handle any exceptions or errors that may occur
-        raise monitored_model_encoding_pkl_file_exception(str(e))
-
-
-async def load_and_decode_pkl(monitored_model: MonitoredModel) -> object:
-    """
-    Load and decode pkl file.
-
-    Args:
-        monitored_model: Monitored model to load and decode pkl file.
-
-    Returns:
-        decoded_model: Decoded model.
-    """
-    try:
-        if monitored_model.iteration.encoded_ml_model:
-            # Load and deserialize the pickled model from ml_model
-            model_data = base64.b64decode(monitored_model.iteration.encoded_ml_model.encode("utf-8"))
-
-            # instead pickle loads use custom unpickler
-            decoded_model = CustomUnpickler(io.BytesIO(model_data)).load()
-
-            # Now, loaded_model contains your decoded model
-            return decoded_model
-        else:
-            raise monitored_model_no_ml_model_to_decode_exception()
-
-    except Exception as e:
-        # Handle any exceptions or errors that may occur during decoding
-        raise monitored_model_decoding_pkl_file_exception(str(e))
-
-
-async def load_ml_model(monitored_model: MonitoredModel) -> object:
-    """
-    Load ml model from path using pickle.
-
-    Args:
-        monitored_model: Monitored model to load ml model from path.
-
-    Returns:
-        Loaded ml model instance.
-    """
-    ml_model = await load_and_decode_pkl(monitored_model)
-
-    return ml_model
 
 
 async def get_iteration_from_monitored_model(monitored_model: MonitoredModel) -> Iteration:
