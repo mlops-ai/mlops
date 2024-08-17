@@ -17,6 +17,7 @@ class Experiment(BaseModel):
     - **created_at (datetime)**: Experiment creation date.
     - **updated_at (Optional[datetime])**: Experiment last update date.
     - **iterations (List[Iteration])**: Experiment iterations.
+    - **columns_metadata (dict)**: Experiment's iterations columns metadata.
     """
 
     id: PydanticObjectId = Field(default_factory=PydanticObjectId, alias="id")
@@ -26,6 +27,7 @@ class Experiment(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
     iterations: List[Iteration] = []
+    columns_metadata: dict = {}
 
     def __repr__(self) -> str:
         return f"<Experiment {self.name}>"

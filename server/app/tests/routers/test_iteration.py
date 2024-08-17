@@ -76,6 +76,13 @@ async def test_add_iteration(client: AsyncClient):
     assert response.status_code == 201
     assert response.json()['iteration_name'] == iteration['iteration_name']
 
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}")
+    experiment = response.json()
+
+    assert "columns_metadata" in experiment and isinstance(experiment["columns_metadata"], dict)
+    assert "accuracy" in experiment["columns_metadata"] and isinstance(experiment["columns_metadata"]["accuracy"], dict)
+    assert experiment["columns_metadata"]["accuracy"]["type"] == "metric"
+    assert experiment["columns_metadata"]["accuracy"]["count"] == 1
 
 @pytest.mark.asyncio
 async def test_add_iteration2(client: AsyncClient):
@@ -110,6 +117,14 @@ async def test_add_iteration2(client: AsyncClient):
     response = await client.post(f"/projects/{project_id}/experiments/{experiment_id}/iterations/", json=iteration)
     assert response.status_code == 201
     assert response.json()['iteration_name'] == iteration['iteration_name']
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}")
+    experiment = response.json()
+
+    assert "columns_metadata" in experiment and isinstance(experiment["columns_metadata"], dict)
+    assert "learning_rate" in experiment["columns_metadata"] and isinstance(experiment["columns_metadata"]["learning_rate"], dict)
+    assert experiment["columns_metadata"]["learning_rate"]["type"] == "parameter"
+    assert experiment["columns_metadata"]["learning_rate"]["count"] == 2
 
 
 @pytest.mark.asyncio
@@ -232,6 +247,14 @@ async def test_delete_iteration_by_id(client: AsyncClient):
 
     response = await client.delete(f"/projects/{project_id}/experiments/{experiment_id}/iterations/{iteration_id}")
     assert response.status_code == 204
+
+    response = await client.get(f"/projects/{project_id}/experiments/{experiment_id}")
+    experiment = response.json()
+
+    assert "columns_metadata" in experiment and isinstance(experiment["columns_metadata"], dict)
+    assert "learning_rate" in experiment["columns_metadata"] and isinstance(experiment["columns_metadata"]["learning_rate"], dict)
+    assert experiment["columns_metadata"]["learning_rate"]["type"] == "parameter"
+    assert experiment["columns_metadata"]["learning_rate"]["count"] == 2
 
 
 @pytest.mark.asyncio
