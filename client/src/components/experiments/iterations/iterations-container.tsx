@@ -48,6 +48,7 @@ import { Iteration } from "@/types/iteration";
 import NoIterationsInfo from "./no-iterations-info";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { ColumnsMetadata } from "@/types/columns-metadata";
 
 interface IterationsContainerProps {
     projectData: Project;
@@ -105,12 +106,18 @@ const IterationsContainer = ({
             JSON.stringify(TreeSelectBaseColumnsChecked)
         );
 
+        const columns_metadata: ColumnsMetadata[] = activeExperiments.map(
+            (experiment) => experiment.columns_metadata
+        );
+
+        console.log(columns_metadata);
+
         let [
             gridColumnsParameters,
             TreeSelectBaseColumnsOptionsWithParams,
             TreeSelectBaseColumnsCheckedWithParams,
         ] = extractColumnsData(
-            rowData,
+            columns_metadata,
             "parameters",
             TreeSelectBaseColumnsOptionsAll,
             TreeSelectBaseColumnsCheckedAll
@@ -121,7 +128,7 @@ const IterationsContainer = ({
             TreeSelectBaseColumnsOptionsWithParamsAndMetrics,
             TreeSelectBaseColumnsCheckedWithParamsAndMetrics,
         ] = extractColumnsData(
-            rowData,
+            columns_metadata,
             "metrics",
             TreeSelectBaseColumnsOptionsWithParams,
             TreeSelectBaseColumnsCheckedWithParams

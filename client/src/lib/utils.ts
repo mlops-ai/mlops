@@ -1,6 +1,5 @@
 import { Chart } from "@/types/chart";
 import { Dataset } from "@/types/dataset";
-import { Iteration } from "@/types/iteration";
 import { Model } from "@/types/model";
 import {
     BinMethod,
@@ -178,34 +177,34 @@ export const dateToHumanize = (date: string) => {
 };
 
 export const extractColumnsData = (
-    rowData: Iteration[],
+    columns_metadata: any[],
     type: "parameters" | "metrics",
     TreeSelectBaseColumnsOptionsAll: any,
     TreeSelectBaseColumnsCheckedAll: any
 ) => {
-    let columnsPerIterations = rowData.map(
-        (iteration) =>
-            new Set(
-                iteration[type]
-                    ? Object.getOwnPropertyNames(iteration[type])
-                    : ""
-            )
-    );
+    const columns: Set<string> = new Set();
 
-    let columnsUniqueSet = new Set<string>();
+    const mapping = {
+        parameters: "parameter",
+        metrics: "metric",
+    };
 
-    columnsPerIterations.forEach((set) => {
-        set.forEach((value) => {
-            columnsUniqueSet.add(value);
+    const metadataType = mapping[type];
+
+    columns_metadata.forEach((metadata) => {
+        Object.keys(metadata).forEach((key) => {
+            if (metadata[key].type === metadataType) {
+                columns.add(key);
+            }
         });
     });
 
-    let columnsUniqueArray = Array.from(columnsUniqueSet);
+    const columnsArray = Array.from(columns);
 
-    let gridColumns = [];
-    let treeselectColumns = [];
+    const gridColumns = [];
+    const treeselectColumns = [];
 
-    if (columnsUniqueArray.length > 0) {
+    if (columnsArray.length > 0) {
         Object.assign(TreeSelectBaseColumnsCheckedAll, {
             [type]: {
                 checked: true,
@@ -213,25 +212,22 @@ export const extractColumnsData = (
             },
         });
 
-        for (let i = 0; i < columnsUniqueArray.length; i++) {
-            const key = `${type}.` + columnsUniqueArray[i];
+        for (let i = 0; i < columnsArray.length; i++) {
+            const key = `${type}.` + columnsArray[i];
             gridColumns.push({
                 field: key,
-                headerName: columnsUniqueArray[i],
+                headerName: columnsArray[i],
                 filter: "agNumberColumnFilter",
                 cellRenderer: (val: any) => {
-                    if (
-                        val.data[type] &&
-                        val.data[type][columnsUniqueArray[i]]
-                    ) {
-                        return val.data[type][columnsUniqueArray[i]];
+                    if (val.data[type] && val.data[type][columnsArray[i]]) {
+                        return val.data[type][columnsArray[i]];
                     }
                     return "-";
                 },
             });
             treeselectColumns.push({
                 key: key,
-                label: columnsUniqueArray[i],
+                label: columnsArray[i],
             });
             Object.assign(TreeSelectBaseColumnsCheckedAll, {
                 [key]: {
