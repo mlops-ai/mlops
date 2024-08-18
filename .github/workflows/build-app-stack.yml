@@ -23,5 +23,5 @@ jobs:
       run: curl -I http://localhost:3000/projects
 
     - name: Stop the containers
-      run: docker-compose down
+      run: docker compose down
       
