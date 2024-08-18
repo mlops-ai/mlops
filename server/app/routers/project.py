@@ -2,11 +2,10 @@ from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
-from typing import List, Dict
+from typing import List
 
 from app.models.dataset import Dataset
 from app.models.experiment import Experiment
-from app.models.iteration import Iteration
 from app.models.project import Project, UpdateProject, DisplayProject
 from app.routers.exceptions.dataset import dataset_not_found_exception
 from app.routers.exceptions.iteration import iteration_in_experiment_in_project_assigned_to_monitored_model_exception
@@ -14,6 +13,7 @@ from app.routers.exceptions.project import (
     project_not_found_exception,
     project_title_not_unique_exception,
 )
+from app.services.experiment_service import ExperimentService
 
 router = APIRouter()
 
@@ -30,6 +30,14 @@ async def get_all_projects() -> List[Project]:
     - **List[Project]**: List of all projects.
     """
     projects = await Project.find_all().to_list()
+
+    # For backward compatibility, update experiment columns metadata if not present
+    for project in projects:
+        for experiment in project.experiments:
+            ExperimentService.update_experiment_columns_metadata(experiment)
+
+        await project.save()
+
     return projects
 
 

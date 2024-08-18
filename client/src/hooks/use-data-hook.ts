@@ -231,16 +231,56 @@ export const useData = create<DataStore>((set) => ({
 
                     if (experiment_index === -1) return state;
 
+                    let experiment: Experiment =
+                        state.projects[index].experiments[experiment_index];
+
                     state.projects[index].experiments[
                         experiment_index
                     ].iterations = state.projects[index].experiments[
                         experiment_index
-                    ].iterations.filter(
-                        (iteration) =>
-                            !iterationsToDelete[experiment_id].includes(
+                    ].iterations.filter((iteration) => {
+                        if (
+                            iterationsToDelete[experiment_id].includes(
                                 iteration.id
                             )
-                    );
+                        ) {
+                            const metrics = Object.keys(iteration.metrics);
+                            const parameters = Object.keys(
+                                iteration.parameters
+                            );
+
+                            for (const metric of metrics) {
+                                experiment.columns_metadata[metric][
+                                    "count"
+                                ]! -= 1;
+                                if (
+                                    experiment.columns_metadata[metric][
+                                        "count"
+                                    ] === 0
+                                ) {
+                                    delete experiment.columns_metadata[metric];
+                                }
+                            }
+
+                            for (const parameter of parameters) {
+                                experiment.columns_metadata[parameter][
+                                    "count"
+                                ]! -= 1;
+                                if (
+                                    experiment.columns_metadata[parameter][
+                                        "count"
+                                    ] === 0
+                                ) {
+                                    delete experiment.columns_metadata[
+                                        parameter
+                                    ];
+                                }
+                            }
+
+                            return false;
+                        }
+                        return true;
+                    });
                 }
 
                 return { projects: [...state.projects] };

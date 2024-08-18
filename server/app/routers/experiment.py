@@ -13,6 +13,7 @@ from app.routers.exceptions.experiment import experiment_name_not_unique_excepti
 from app.routers.exceptions.iteration import iteration_not_found_exception, \
     iteration_in_experiment_assigned_to_monitored_model_exception, iteration_assigned_to_monitored_model_exception
 from app.routers.exceptions.project import project_not_found_exception
+from app.services.experiment_service import ExperimentService
 
 experiment_router = APIRouter()
 
@@ -218,6 +219,7 @@ List[PydanticObjectId]]) -> None:
                 await delete_iteration_from_dataset_deleting_iterations(iteration)
 
             experiment.iterations.remove(iteration)
+            ExperimentService.update_experiment_columns_metadata(experiment, iteration, "deleted")
 
     await project.save()
 

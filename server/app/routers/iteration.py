@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, status
 from beanie import PydanticObjectId
-from typing import List, Dict
+from typing import List
 
 from app.models.dataset import Dataset
 from app.models.iteration import Iteration, UpdateIteration
@@ -13,6 +13,7 @@ from app.routers.exceptions.experiment import experiment_not_found_exception
 from app.routers.exceptions.project import project_not_found_exception
 from app.routers.exceptions.iteration import iteration_not_found_exception, \
     iteration_assigned_to_monitored_model_exception, iteration_no_path_to_model_exception
+from app.services.experiment_service import ExperimentService
 
 iteration_router = APIRouter()
 
@@ -147,6 +148,7 @@ async def add_iteration(project_id: PydanticObjectId, experiment_id: PydanticObj
         await add_iteration_to_dataset_linked_iterations(iteration)
 
     experiment.iterations.append(iteration)
+    ExperimentService.update_experiment_columns_metadata(experiment, iteration, "created")
     await project.save()
 
     return iteration
@@ -218,6 +220,7 @@ async def delete_iteration(project_id: PydanticObjectId, experiment_id: Pydantic
         await delete_iteration_from_dataset_deleting_iteration(iteration)
 
     experiment.iterations.remove(iteration)
+    ExperimentService.update_experiment_columns_metadata(experiment, iteration, "deleted")
     await project.save()
 
     return None
