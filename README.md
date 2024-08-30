@@ -14,6 +14,7 @@ Open-source tool for **tracking** & **monitoring** machine learning models.
 
 ## Table of Contents
 - [Introduction](#introduction)
+- [Explanatory video](#explanatory-video)
 - [Technologies](#technologies)
 - [Installation & usage](#installation--usage)
 - [Documentation](#documentation)
@@ -35,6 +36,9 @@ As a part of the mlops project, we aim to create a ready-to-use tool for profess
 allowing them not only to **manage experiments during model creation process (tracking module)**, 
 but also **monitoring a deployed model working on real-world production data (monitoring module)** 
 with an option to **setup email alerts using [MailGun](https://www.mailgun.com/) (email alerts module)**.
+
+## Explanatory video
+[![mlops-ai explanatory video](https://img.youtube.com/vi/eM1tSxPxrsU/0.jpg)](https://www.youtube.com/watch?v=eM1tSxPxrsU)
 
 ## Technologies
 
