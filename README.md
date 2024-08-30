@@ -15,8 +15,8 @@ Open-source tool for **tracking** & **monitoring** machine learning models.
 ## Table of Contents
 - [Introduction](#introduction)
 - [Explanatory video](#explanatory-video)
-- [Technologies](#technologies)
 - [Installation & usage](#installation--usage)
+- [Technologies](#technologies)
 - [Documentation](#documentation)
 - [Examples](#examples)
 - [License](#license)
@@ -40,13 +40,6 @@ with an option to **setup email alerts using [MailGun](https://www.mailgun.com/)
 ## Explanatory video
 [![mlops-ai explanatory video](https://img.youtube.com/vi/eM1tSxPxrsU/maxresdefault.jpg)](https://www.youtube.com/watch?v=eM1tSxPxrsU)
 
-## Technologies
-
-Application consist of two main components:
-- Main application (client + server) written in [React](https://reactjs.org/) and [FastAPI](https://fastapi.tiangolo.com/), 
-which you can run using [Docker](https://www.docker.com/).
-- [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
-
 Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
 
 ## Installation & usage
@@ -68,6 +61,12 @@ Then, you can install the package using pip:
 ```bash
 pip install mlops-ai
 ```
+## Technologies
+
+Application consist of two main components:
+- Main application (client + server) written in [React](https://reactjs.org/) and [FastAPI](https://fastapi.tiangolo.com/), 
+which you can run using [Docker](https://www.docker.com/).
+- [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
 
 ## Documentation
 
