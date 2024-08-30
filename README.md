@@ -38,7 +38,7 @@ but also **monitoring a deployed model working on real-world production data (mo
 with an option to **setup email alerts using [MailGun](https://www.mailgun.com/) (email alerts module)**.
 
 ## Explanatory video
-[![mlops-ai explanatory video](https://img.youtube.com/vi/eM1tSxPxrsU/0.jpg)](https://www.youtube.com/watch?v=eM1tSxPxrsU)
+[![mlops-ai explanatory video](https://img.youtube.com/vi/eM1tSxPxrsU/maxresdefault.jpg)](https://www.youtube.com/watch?v=eM1tSxPxrsU)
 
 ## Technologies
 
