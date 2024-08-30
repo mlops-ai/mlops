@@ -40,8 +40,6 @@ with an option to **setup email alerts using [MailGun](https://www.mailgun.com/)
 ## Explanatory video
 [![mlops-ai explanatory video](https://img.youtube.com/vi/eM1tSxPxrsU/maxresdefault.jpg)](https://www.youtube.com/watch?v=eM1tSxPxrsU)
 
-Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
-
 ## Installation & usage
 
 To install the application locally, you need to have [docker](https://docs.docker.com/get-docker/) and 
@@ -67,6 +65,8 @@ Application consist of two main components:
 - Main application (client + server) written in [React](https://reactjs.org/) and [FastAPI](https://fastapi.tiangolo.com/), 
 which you can run using [Docker](https://www.docker.com/).
 - [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
+
+Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
 
 ## Documentation
 
