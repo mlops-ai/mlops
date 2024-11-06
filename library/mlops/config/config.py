@@ -1,6 +1,8 @@
 import os
+from dataclasses import dataclass
 
 
+@dataclass
 class Settings:
     """
     Main settings for MLOps library

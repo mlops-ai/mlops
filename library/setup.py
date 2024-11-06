@@ -27,7 +27,7 @@ setup(
    ],
    packages=find_packages(exclude=["tests*"]),
    include_package_data=True,
-   install_requires=["requests==2.29.0", "scikit-learn==1.3.0", "torch==2.1.1", "json2html==1.3.0"],
+   install_requires=["requests==2.29.0", "json2html==1.3.0"],
    project_urls={
         "Documentation": "https://mlops-ai.github.io/mlops/library_docs/library_overview.html",
         "Repository": "https://github.com/mlops-ai/mlops",
