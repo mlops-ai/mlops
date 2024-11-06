@@ -14,8 +14,9 @@ Open-source tool for **tracking** & **monitoring** machine learning models.
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Technologies](#technologies)
+- [Explanatory video](#explanatory-video)
 - [Installation & usage](#installation--usage)
+- [Technologies](#technologies)
 - [Documentation](#documentation)
 - [Examples](#examples)
 - [License](#license)
@@ -36,14 +37,8 @@ allowing them not only to **manage experiments during model creation process (tr
 but also **monitoring a deployed model working on real-world production data (monitoring module)** 
 with an option to **setup email alerts using [MailGun](https://www.mailgun.com/) (email alerts module)**.
 
-## Technologies
-
-Application consist of two main components:
-- Main application (client + server) written in [React](https://reactjs.org/) and [FastAPI](https://fastapi.tiangolo.com/), 
-which you can run using [Docker](https://www.docker.com/).
-- [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
-
-Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
+## Explanatory video
+[![mlops-ai explanatory video](https://img.youtube.com/vi/eM1tSxPxrsU/maxresdefault.jpg)](https://www.youtube.com/watch?v=eM1tSxPxrsU)
 
 ## Installation & usage
 
@@ -64,6 +59,14 @@ Then, you can install the package using pip:
 ```bash
 pip install mlops-ai
 ```
+## Technologies
+
+Application consist of two main components:
+- Main application (client + server) written in [React](https://reactjs.org/) and [FastAPI](https://fastapi.tiangolo.com/), 
+which you can run using [Docker](https://www.docker.com/).
+- [Python package](https://pypi.org/project/mlops-ai/) for communication with the application.
+
+Additionally, we use [mongoDB](https://www.mongodb.com/) database for storing tracking module data.
 
 ## Documentation
 
